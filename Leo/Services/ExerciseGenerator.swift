@@ -18,7 +18,7 @@ struct ExerciseGenerator {
         """
         You create reading comprehension exercises for students aged 15 to 18.
         Write original, accurate, age-appropriate texts in clear \(language.name).
-        Write the title, passage, question and every answer in \(language.name), \
+        Write the title, passage, question, every answer and the explanation in \(language.name), \
         even though these instructions are in English.
         Each exercise has a passage, one question, one correct answer and plausible incorrect answers.
         The correct answer must be supported by the passage. Incorrect answers must be wrong \

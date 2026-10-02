@@ -49,6 +49,10 @@ struct ExerciseView: View {
             withAnimation { proxy.scrollTo(Self.feedbackID, anchor: .bottom) }
         }
         }
+        .sensoryFeedback(trigger: quiz.selectedOption) { _, selected in
+            guard let selected else { return nil }
+            return selected == exercise.correctIndex ? .success : .error
+        }
         .navigationTitle("Exercise \(quiz.currentIndex + 1)")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -68,6 +72,12 @@ struct ExerciseView: View {
             Label(isCorrect ? "Correct!" : "Not quite", systemImage: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.headline)
                 .foregroundStyle(isCorrect ? .green : .red)
+            if !isCorrect, !exercise.explanation.isEmpty {
+                Text(exercise.explanation)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
             Button(action: quiz.next) {
                 Text(quiz.isLastExercise ? "See results" : "Next")
                     .font(.headline)
@@ -94,6 +104,9 @@ private struct OptionButton: View {
     let state: State
     let action: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @SwiftUI.State private var shakes: CGFloat = 0
+
     var body: some View {
         Button(action: action) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -114,6 +127,11 @@ private struct OptionButton: View {
             }
         }
         .buttonStyle(.plain)
+        .modifier(ShakeEffect(shakes: shakes))
+        .onChange(of: state) {
+            guard state == .incorrect, !reduceMotion else { return }
+            withAnimation(.linear(duration: 0.4)) { shakes += 1 }
+        }
         // Not `.disabled`, which would grey out the highlighted answers.
         .allowsHitTesting(state == .idle)
         .accessibilityValue(accessibilityValue)
@@ -153,5 +171,19 @@ private struct OptionButton: View {
         case .incorrect: String(localized: "Your answer, incorrect")
         case .idle, .dimmed: ""
         }
+    }
+}
+
+/// Shakes the view horizontally a few times per unit of `shakes`.
+private struct ShakeEffect: GeometryEffect {
+    var shakes: CGFloat
+
+    var animatableData: CGFloat {
+        get { shakes }
+        set { shakes = newValue }
+    }
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        ProjectionTransform(CGAffineTransform(translationX: 8 * sin(shakes * .pi * 6), y: 0))
     }
 }

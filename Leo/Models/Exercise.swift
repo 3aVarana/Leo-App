@@ -20,6 +20,9 @@ nonisolated struct GeneratedExercise {
 
     @Guide(description: "Plausible but clearly incorrect answers, each different from the correct answer and from each other, about as long as the correct answer", .count(2...3))
     var incorrectAnswers: [String]
+
+    @Guide(description: "One or two short sentences explaining why the correct answer is right, pointing to what the passage says")
+    var explanation: String
 }
 
 /// A ready-to-present exercise with shuffled options.
@@ -32,6 +35,8 @@ nonisolated struct Exercise: Identifiable, Sendable {
     let question: String
     let options: [String]
     let correctIndex: Int
+    /// Why the correct answer is right, shown after an incorrect pick. May be empty.
+    let explanation: String
 
     /// Validates and normalizes model output. Returns `nil` when the content is unusable.
     init?(generated: GeneratedExercise, topic: String, skill: ComprehensionSkill) {
@@ -62,6 +67,7 @@ nonisolated struct Exercise: Identifiable, Sendable {
         self.question = question
         self.options = options
         self.correctIndex = options.firstIndex(of: correct)!
+        self.explanation = clean(generated.explanation)
     }
 }
 
