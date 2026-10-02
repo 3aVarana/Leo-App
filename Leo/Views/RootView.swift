@@ -11,6 +11,7 @@ struct RootView: View {
                 switch model.availability {
                 case .available:
                     content
+                        .task { quiz.prepare() }
                 case .unavailable(let reason):
                     UnavailableView(reason: reason)
                 }
@@ -56,13 +57,13 @@ private struct UnavailableView: View {
     private var message: String {
         switch reason {
         case .deviceNotEligible:
-            "This device doesn't support Apple Intelligence, which Leo uses to create exercises."
+            String(localized: "This device doesn't support Apple Intelligence, which Leo uses to create exercises.")
         case .appleIntelligenceNotEnabled:
-            "Turn on Apple Intelligence in Settings to start practicing."
+            String(localized: "Turn on Apple Intelligence in Settings to start practicing.")
         case .modelNotReady:
-            "Apple Intelligence is still getting ready. Please try again in a few minutes."
+            String(localized: "Apple Intelligence is still getting ready. Please try again in a few minutes.")
         @unknown default:
-            "Apple Intelligence isn't available right now."
+            String(localized: "Apple Intelligence isn't available right now.")
         }
     }
 }

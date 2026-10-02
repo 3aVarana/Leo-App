@@ -45,8 +45,13 @@ nonisolated struct Exercise: Identifiable, Sendable {
 
         let passage = clean(generated.passage)
         let question = clean(generated.question)
+        // Counts words linguistically, so languages written without spaces (e.g. Japanese) work too.
+        var wordCount = 0
+        passage.enumerateSubstrings(in: passage.startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in
+            wordCount += 1
+        }
         guard !correct.isEmpty, (2...3).contains(distractors.count),
-              passage.split(separator: " ").count >= 60, !question.isEmpty
+              wordCount >= 60, !question.isEmpty
         else { return nil }
 
         let options = (distractors + [correct]).shuffled()
@@ -66,11 +71,11 @@ nonisolated enum ComprehensionSkill: String, CaseIterable, Sendable {
 
     var displayName: String {
         switch self {
-        case .mainIdea: "Main idea"
-        case .detail: "Key detail"
-        case .inference: "Inference"
-        case .vocabulary: "Vocabulary in context"
-        case .purpose: "Author's purpose"
+        case .mainIdea: String(localized: "Main idea")
+        case .detail: String(localized: "Key detail")
+        case .inference: String(localized: "Inference")
+        case .vocabulary: String(localized: "Vocabulary in context")
+        case .purpose: String(localized: "Author's purpose")
         }
     }
 

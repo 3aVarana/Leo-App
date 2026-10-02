@@ -6,15 +6,20 @@ enum ExerciseGenerationError: LocalizedError {
     case failed
 
     var errorDescription: String? {
-        "We couldn't create this exercise. Please try again."
+        String(localized: "We couldn't create this exercise. Please try again.")
     }
 }
 
 /// Generates reading comprehension exercises with the on-device model.
 struct ExerciseGenerator {
-    private static let instructions = """
+    let language: ContentLanguage
+
+    private var instructions: String {
+        """
         You create reading comprehension exercises for students aged 15 to 18.
-        Write original, accurate, age-appropriate texts in clear English.
+        Write original, accurate, age-appropriate texts in clear \(language.name).
+        Write the title, passage, question and every answer in \(language.name), \
+        even though these instructions are in English.
         Each exercise has a passage, one question, one correct answer and plausible incorrect answers.
         The correct answer must be supported by the passage. Incorrect answers must be wrong \
         according to the passage, but believable to someone who read carelessly.
@@ -23,6 +28,7 @@ struct ExerciseGenerator {
         Write every answer as a direct, natural option without phrases like "The main idea is".
         All answers must have a similar length and style, so the correct one doesn't stand out.
         """
+    }
 
     private static let maxAttempts = 3
 
@@ -34,11 +40,11 @@ struct ExerciseGenerator {
         for topic in topics.prefix(Self.maxAttempts) {
             try Task.checkCancellation()
             let prompt = """
-                Create a reading comprehension exercise about \(topic).
+                Create a reading comprehension exercise in \(language.name) about \(topic).
                 \(skill.promptHint)
                 """
             // A fresh session per exercise keeps each request well inside the context window.
-            let session = LanguageModelSession(instructions: Self.instructions)
+            let session = LanguageModelSession(instructions: instructions)
             do {
                 let response = try await session.respond(
                     to: prompt,

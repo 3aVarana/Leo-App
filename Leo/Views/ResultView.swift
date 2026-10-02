@@ -37,10 +37,10 @@ struct ResultView: View {
     }
 
     private var message: String {
-        if ratio == 1 { return "Perfect score! You understood every text." }
-        if ratio >= 0.8 { return "Great reading! You're paying close attention." }
-        if ratio >= 0.5 { return "Good work. Keep practicing to sharpen your understanding." }
-        return "Keep going! Try reading each text slowly and look for key ideas."
+        if ratio == 1 { return String(localized: "Perfect score! You understood every text.") }
+        if ratio >= 0.8 { return String(localized: "Great reading! You're paying close attention.") }
+        if ratio >= 0.5 { return String(localized: "Good work. Keep practicing to sharpen your understanding.") }
+        return String(localized: "Keep going! Try reading each text slowly and look for key ideas.")
     }
 }
 

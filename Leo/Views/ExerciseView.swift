@@ -100,10 +100,11 @@ private struct OptionButton: View {
                 Text(text)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                if let icon {
-                    Image(systemName: icon)
-                        .foregroundStyle(border)
-                }
+                // Always laid out, so the text keeps the same width when the icon appears.
+                Image(systemName: icon ?? "checkmark.circle.fill")
+                    .foregroundStyle(border)
+                    .opacity(icon == nil ? 0 : 1)
+                    .accessibilityHidden(icon == nil)
             }
             .padding()
             .foregroundStyle(foreground)
@@ -148,8 +149,8 @@ private struct OptionButton: View {
 
     private var accessibilityValue: String {
         switch state {
-        case .correct: "Correct answer"
-        case .incorrect: "Your answer, incorrect"
+        case .correct: String(localized: "Correct answer")
+        case .incorrect: String(localized: "Your answer, incorrect")
         case .idle, .dimmed: ""
         }
     }
