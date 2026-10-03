@@ -13,10 +13,16 @@ enum ExerciseGenerationError: LocalizedError {
 /// Generates reading comprehension exercises with the on-device model.
 struct ExerciseGenerator {
     let language: ContentLanguage
+    let ageGroup: AgeGroup
+
+    private var wordRange: String {
+        "between \(ageGroup.passageWordRange.lowerBound) and \(ageGroup.passageWordRange.upperBound) words"
+    }
 
     private var instructions: String {
         """
-        You create reading comprehension exercises for students aged 15 to 18.
+        You create reading comprehension exercises for \(ageGroup.promptAudience).
+        The passage must be \(wordRange). \(ageGroup.styleGuidance)
         Write original, accurate, age-appropriate texts in clear \(language.name).
         Write the title, passage, question, every answer and the explanation in \(language.name), \
         even though these instructions are in English.
@@ -41,6 +47,7 @@ struct ExerciseGenerator {
             try Task.checkCancellation()
             let prompt = """
                 Create a reading comprehension exercise in \(language.name) about \(topic).
+                The passage must be \(wordRange).
                 \(skill.promptHint)
                 """
             // A fresh session per exercise keeps each request well inside the context window.
@@ -51,7 +58,7 @@ struct ExerciseGenerator {
                     generating: GeneratedExercise.self,
                     options: GenerationOptions(temperature: 0.8)
                 )
-                if let exercise = Exercise(generated: response.content, topic: topic, skill: skill) {
+                if let exercise = Exercise(generated: response.content, topic: topic, skill: skill, minimumWordCount: ageGroup.minimumWordCount) {
                     return exercise
                 }
                 logger.error("Invalid content for topic '\(topic)'")
