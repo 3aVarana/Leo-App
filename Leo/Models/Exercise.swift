@@ -9,7 +9,7 @@ nonisolated struct GeneratedExercise {
     @Guide(description: "A short, engaging title for the text, at most 6 words")
     var title: String
 
-    @Guide(description: "An original, self-contained reading passage of 120 to 180 words, written for students aged 15 to 18")
+    @Guide(description: "An original, self-contained reading passage, with the length and reading level requested in the instructions")
     var passage: String
 
     @Guide(description: "One question about the passage that can only be answered by understanding it")
@@ -39,7 +39,7 @@ nonisolated struct Exercise: Identifiable, Sendable {
     let explanation: String
 
     /// Validates and normalizes model output. Returns `nil` when the content is unusable.
-    init?(generated: GeneratedExercise, topic: String, skill: ComprehensionSkill) {
+    init?(generated: GeneratedExercise, topic: String, skill: ComprehensionSkill, acceptedWordCount: ClosedRange<Int>) {
         func clean(_ text: String) -> String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
 
         let correct = clean(generated.correctAnswer)
@@ -50,13 +50,8 @@ nonisolated struct Exercise: Identifiable, Sendable {
 
         let passage = clean(generated.passage)
         let question = clean(generated.question)
-        // Counts words linguistically, so languages written without spaces (e.g. Japanese) work too.
-        var wordCount = 0
-        passage.enumerateSubstrings(in: passage.startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in
-            wordCount += 1
-        }
         guard !correct.isEmpty, (2...3).contains(distractors.count),
-              wordCount >= 60, !question.isEmpty
+              acceptedWordCount.contains(passage.wordCount), !question.isEmpty
         else { return nil }
 
         let options = (distractors + [correct]).shuffled()
@@ -68,6 +63,17 @@ nonisolated struct Exercise: Identifiable, Sendable {
         self.options = options
         self.correctIndex = options.firstIndex(of: correct)!
         self.explanation = clean(generated.explanation)
+    }
+}
+
+extension String {
+    /// Counts words linguistically, so languages written without spaces (e.g. Japanese) work too.
+    nonisolated var wordCount: Int {
+        var count = 0
+        enumerateSubstrings(in: startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in
+            count += 1
+        }
+        return count
     }
 }
 

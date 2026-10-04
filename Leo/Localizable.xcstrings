@@ -33,6 +33,294 @@
         }
       }
     },
+    "12 to 14": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12 a 14"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12 a 14"
+          }
+        }
+      }
+    },
+    "15 to 17": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 a 17"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 a 17"
+          }
+        }
+      }
+    },
+    "18 or older": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "18 o más"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "18 ou mais"
+          }
+        }
+      }
+    },
+    "6 to 8": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 a 8"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 a 8"
+          }
+        }
+      }
+    },
+    "9 to 11": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "9 a 11"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "9 a 11"
+          }
+        }
+      }
+    },
+    "A day at school": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un día en la escuela"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um dia na escola"
+          }
+        }
+      }
+    },
+    "A kind robot": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un robot amable"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um robô gentil"
+          }
+        }
+      }
+    },
+    "A lost toy finds its way home": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un juguete perdido vuelve a casa"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um brinquedo perdido volta para casa"
+          }
+        }
+      }
+    },
+    "A magical adventure": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una aventura mágica"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma aventura mágica"
+          }
+        }
+      }
+    },
+    "A mystery at school": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un misterio en la escuela"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um mistério na escola"
+          }
+        }
+      }
+    },
+    "A story about friendship": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una historia de amistad"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma história sobre amizade"
+          }
+        }
+      }
+    },
+    "A teenager facing a challenge": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un adolescente ante un reto"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um adolescente diante de um desafio"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar"
+          }
+        }
+      }
+    },
+    "Add a topic": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade un tema"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicione um tema"
+          }
+        }
+      }
+    },
+    "Age group": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edad"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idade"
+          }
+        }
+      }
+    },
+    "Ancient Egypt": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El antiguo Egipto"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Egito Antigo"
+          }
+        }
+      }
+    },
+    "Ancient civilizations": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Civilizaciones antiguas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Civilizações antigas"
+          }
+        }
+      }
+    },
+    "Animal behavior": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comportamiento animal"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comportamento animal"
+          }
+        }
+      }
+    },
     "Apple Intelligence is still getting ready. Please try again in a few minutes.": {
       "localizations": {
         "es": {
@@ -81,6 +369,54 @@
         }
       }
     },
+    "Architecture": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arquitectura"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arquitetura"
+          }
+        }
+      }
+    },
+    "Architecture of famous buildings": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arquitectura de edificios famosos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arquitetura de edifícios famosos"
+          }
+        }
+      }
+    },
+    "Art movements": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movimientos artísticos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movimentos artísticos"
+          }
+        }
+      }
+    },
     "Author's purpose": {
       "localizations": {
         "es": {
@@ -93,6 +429,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Propósito do autor"
+          }
+        }
+      }
+    },
+    "Baking cookies": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hornear galletas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fazer biscoitos"
+          }
+        }
+      }
+    },
+    "Birthday parties": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fiestas de cumpleaños"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Festas de aniversário"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        }
+      }
+    },
+    "Climate and weather": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El clima y el tiempo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clima e tempo"
+          }
+        }
+      }
+    },
+    "Coding and robots": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programación y robots"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Programação e robôs"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
           }
         }
       }
@@ -129,6 +561,70 @@
         }
       }
     },
+    "Dinosaurs": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinosaurios"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinossauros"
+          }
+        }
+      }
+    },
+    "Dinosaurs and fossils": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinosaurios y fósiles"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dinossauros e fósseis"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Economics in daily life": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La economía en la vida diaria"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Economia no dia a dia"
+          }
+        }
+      }
+    },
     "Exercise %lld": {
       "localizations": {
         "es": {
@@ -141,6 +637,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exercício %lld"
+          }
+        }
+      }
+    },
+    "Famous explorers": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploradores famosos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploradores famosos"
+          }
+        }
+      }
+    },
+    "Food and culture around the world": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comida y cultura en el mundo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comida e cultura pelo mundo"
+          }
+        }
+      }
+    },
+    "Friendly dragons and fairies": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dragones amigables y hadas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dragões amigáveis e fadas"
           }
         }
       }
@@ -177,6 +721,70 @@
         }
       }
     },
+    "Helping at home": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayudar en casa"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajudar em casa"
+          }
+        }
+      }
+    },
+    "History's turning points": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentos decisivos de la historia"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentos decisivos da história"
+          }
+        }
+      }
+    },
+    "How machines work": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo funcionan las máquinas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como as máquinas funcionam"
+          }
+        }
+      }
+    },
+    "How old are you?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cuántos años tienes?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantos anos você tem?"
+          }
+        }
+      }
+    },
     "Inference": {
       "localizations": {
         "es": {
@@ -189,6 +797,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inferência"
+          }
+        }
+      }
+    },
+    "Insects and bugs": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insectos y bichos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Insetos e bichinhos"
+          }
+        }
+      }
+    },
+    "Inventions": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inventos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invenções"
+          }
+        }
+      }
+    },
+    "Inventions that changed the world": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inventos que cambiaron el mundo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invenções que mudaram o mundo"
+          }
+        }
+      }
+    },
+    "Inventors": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inventores"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inventores"
+          }
+        }
+      }
+    },
+    "Keep at least 3 topics on.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja al menos 3 temas activados."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantenha pelo menos 3 temas ativados."
           }
         }
       }
@@ -244,6 +932,86 @@
         }
       }
     },
+    "Music and its history": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La música y su historia"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A música e sua história"
+          }
+        }
+      }
+    },
+    "Music history": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historia de la música"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "História da música"
+          }
+        }
+      }
+    },
+    "Mysteries of history": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Misterios de la historia"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mistérios da história"
+          }
+        }
+      }
+    },
+    "Mythology": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitología"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitologia"
+          }
+        }
+      }
+    },
+    "Natural disasters": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desastres naturales"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desastres naturais"
+          }
+        }
+      }
+    },
     "Next": {
       "localizations": {
         "es": {
@@ -276,6 +1044,38 @@
         }
       }
     },
+    "Nutrition and health": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutrición y salud"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutrição e saúde"
+          }
+        }
+      }
+    },
+    "Ocean life": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La vida en el océano"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A vida no oceano"
+          }
+        }
+      }
+    },
     "Perfect score! You understood every text.": {
       "localizations": {
         "es": {
@@ -288,6 +1088,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pontuação perfeita! Você entendeu todos os textos."
+          }
+        }
+      }
+    },
+    "Personal finance": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finanzas personales"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finanças pessoais"
+          }
+        }
+      }
+    },
+    "Pets and farm animals": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mascotas y animales de granja"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animais de estimação e da fazenda"
+          }
+        }
+      }
+    },
+    "Philosophy and ethics": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filosofía y ética"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filosofia e ética"
+          }
+        }
+      }
+    },
+    "Photography": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotografía"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotografia"
+          }
+        }
+      }
+    },
+    "Pirates and treasure": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piratas y tesoros"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Piratas e tesouros"
+          }
+        }
+      }
+    },
+    "Playground games": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juegos en el patio"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brincadeiras no parquinho"
           }
         }
       }
@@ -308,18 +1204,114 @@
         }
       }
     },
-    "Practice reading comprehension with %lld short texts. Read each one carefully and choose the best answer.": {
+    "Psychology and habits": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Practica la comprensión lectora con %lld textos cortos. Lee cada uno con atención y elige la mejor respuesta."
+            "value": "Psicología y hábitos"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pratique a compreensão de leitura com %lld textos curtos. Leia cada um com atenção e escolha a melhor resposta."
+            "value": "Psicologia e hábitos"
+          }
+        }
+      }
+    },
+    "Rainforests": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selvas tropicales"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Florestas tropicais"
+          }
+        }
+      }
+    },
+    "Recycling": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reciclaje"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reciclagem"
+          }
+        }
+      }
+    },
+    "Renewable energy": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Energías renovables"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Energia renovável"
+          }
+        }
+      }
+    },
+    "Reset suggested topics": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer temas sugeridos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redefinir temas sugeridos"
+          }
+        }
+      }
+    },
+    "Robots and artificial intelligence": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Robots e inteligencia artificial"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Robôs e inteligência artificial"
+          }
+        }
+      }
+    },
+    "Science breakthroughs": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grandes avances científicos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grandes descobertas científicas"
           }
         }
       }
@@ -340,6 +1332,70 @@
         }
       }
     },
+    "Settings": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes"
+          }
+        }
+      }
+    },
+    "Short literary fiction": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ficción literaria breve"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ficção literária curta"
+          }
+        }
+      }
+    },
+    "Six short texts for readers aged %@, about the topics you chose.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seis textos cortos para lectores de %@ años, sobre los temas que elegiste."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seis textos curtos para leitores de %@ anos, sobre os temas que você escolheu."
+          }
+        }
+      }
+    },
+    "Social media and friendship": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redes sociales y amistad"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redes sociais e amizade"
+          }
+        }
+      }
+    },
     "Something went wrong": {
       "localizations": {
         "es": {
@@ -356,6 +1412,54 @@
         }
       }
     },
+    "Space exploration": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploración espacial"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exploração espacial"
+          }
+        }
+      }
+    },
+    "Sports heroes": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Héroes del deporte"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heróis do esporte"
+          }
+        }
+      }
+    },
+    "Sports science": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciencia del deporte"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciência do esporte"
+          }
+        }
+      }
+    },
     "Start": {
       "localizations": {
         "es": {
@@ -368,6 +1472,246 @@
           "stringUnit": {
             "state": "translated",
             "value": "Começar"
+          }
+        }
+      }
+    },
+    "Street art and graffiti": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arte urbano y grafiti"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arte de rua e grafite"
+          }
+        }
+      }
+    },
+    "Suggested": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugeridos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugeridos"
+          }
+        }
+      }
+    },
+    "Survival stories": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historias de supervivencia"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Histórias de sobrevivência"
+          }
+        }
+      }
+    },
+    "Technology and society": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecnología y sociedad"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecnologia e sociedade"
+          }
+        }
+      }
+    },
+    "That topic is already on your list.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ese tema ya está en tu lista."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esse tema já está na sua lista."
+          }
+        }
+      }
+    },
+    "That topic isn't a good fit for your reading practice. Try another one.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ese tema no es adecuado para tu práctica de lectura. Prueba con otro."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esse tema não é adequado para a sua prática de leitura. Tente outro."
+          }
+        }
+      }
+    },
+    "The beach": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La playa"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A praia"
+          }
+        }
+      }
+    },
+    "The history of language": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La historia del lenguaje"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A história da linguagem"
+          }
+        }
+      }
+    },
+    "The human body": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El cuerpo humano"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O corpo humano"
+          }
+        }
+      }
+    },
+    "The human brain": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El cerebro humano"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O cérebro humano"
+          }
+        }
+      }
+    },
+    "The moon and stars": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La luna y las estrellas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A lua e as estrelas"
+          }
+        }
+      }
+    },
+    "The ocean floor": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El fondo del mar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O fundo do mar"
+          }
+        }
+      }
+    },
+    "The science of sleep": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La ciencia del sueño"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A ciência do sono"
+          }
+        }
+      }
+    },
+    "The seasons": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las estaciones"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As estações do ano"
+          }
+        }
+      }
+    },
+    "The solar system": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sistema solar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O sistema solar"
           }
         }
       }
@@ -404,6 +1748,54 @@
         }
       }
     },
+    "Topics must be between 2 and 60 characters.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los temas deben tener entre 2 y 60 caracteres."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os temas devem ter entre 2 e 60 caracteres."
+          }
+        }
+      }
+    },
+    "Trains and trucks": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trenes y camiones"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trens e caminhões"
+          }
+        }
+      }
+    },
+    "Travel and geography": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viajes y geografía"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viagens e geografia"
+          }
+        }
+      }
+    },
     "Try again": {
       "localizations": {
         "es": {
@@ -436,6 +1828,38 @@
         }
       }
     },
+    "Video game design": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diseño de videojuegos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design de videogames"
+          }
+        }
+      }
+    },
+    "Video games": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videojuegos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videogames"
+          }
+        }
+      }
+    },
     "Vocabulary in context": {
       "localizations": {
         "es": {
@@ -448,6 +1872,70 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vocabulário no contexto"
+          }
+        }
+      }
+    },
+    "Volcanoes": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volcanes"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vulcões"
+          }
+        }
+      }
+    },
+    "Volcanoes and earthquakes": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volcanes y terremotos"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vulcões e terremotos"
+          }
+        }
+      }
+    },
+    "Volunteering and community": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voluntariado y comunidad"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voluntariado e comunidade"
+          }
+        }
+      }
+    },
+    "We couldn't check that topic. Please try again.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pudimos revisar ese tema. Inténtalo de nuevo."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não conseguimos verificar esse tema. Tente novamente."
           }
         }
       }
@@ -468,6 +1956,70 @@
         }
       }
     },
+    "What do you like reading about?": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Sobre qué te gusta leer?"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre o que você gosta de ler?"
+          }
+        }
+      }
+    },
+    "Wild animals": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animales salvajes"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animais selvagens"
+          }
+        }
+      }
+    },
+    "World cultures": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Culturas del mundo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Culturas do mundo"
+          }
+        }
+      }
+    },
+    "World literature": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Literatura universal"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Literatura mundial"
+          }
+        }
+      }
+    },
     "Writing text %lld of %lld…": {
       "localizations": {
         "es": {
@@ -484,6 +2036,22 @@
         }
       }
     },
+    "You can have up to 20 of your own topics.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes tener hasta 20 temas propios."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você pode ter até 20 temas próprios."
+          }
+        }
+      }
+    },
     "Your answer, incorrect": {
       "localizations": {
         "es": {
@@ -496,6 +2064,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sua resposta, incorreta"
+          }
+        }
+      }
+    },
+    "Your topics": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus temas"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seus temas"
           }
         }
       }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    let ageGroup: AgeGroup
     let onStart: () -> Void
 
     var body: some View {
@@ -12,7 +13,7 @@ struct WelcomeView: View {
             VStack(spacing: 8) {
                 Text("Leo")
                     .font(.largeTitle.bold())
-                Text("Practice reading comprehension with \(QuizModel.exerciseCount) short texts. Read each one carefully and choose the best answer.")
+                Text("Six short texts for readers aged \(ageGroup.displayName), about the topics you chose.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -31,5 +32,5 @@ struct WelcomeView: View {
 }
 
 #Preview {
-    WelcomeView(onStart: {})
+    WelcomeView(ageGroup: .twelve, onStart: {})
 }

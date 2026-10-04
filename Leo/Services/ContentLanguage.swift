@@ -16,8 +16,15 @@ nonisolated struct ContentLanguage: Sendable {
         return model.supportsLocale(locale) ? ContentLanguage(locale: locale) : .english
     }
 
-    /// The language's name in English, e.g. "Spanish (Mexico)", for use in prompts.
+    /// The language's name in English, e.g. "Spanish", for use in prompts. Leaves out the region:
+    /// with "English (Bolivia)" the model writes about Bolivia instead of the reader's topic.
+    /// Keeps a non-default script, e.g. "Chinese, Traditional".
     var name: String {
-        Locale(identifier: "en").localizedString(forIdentifier: locale.identifier) ?? "English"
+        guard let code = locale.language.languageCode else { return "English" }
+        var identifier = code.identifier
+        if let script = locale.language.script, script != Locale.Language(languageCode: code).script {
+            identifier += "-\(script.identifier)"
+        }
+        return Locale(identifier: "en").localizedString(forIdentifier: identifier) ?? "English"
     }
 }

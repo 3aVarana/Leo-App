@@ -2,29 +2,52 @@ import SwiftUI
 import FoundationModels
 
 struct RootView: View {
+    @Environment(PreferencesStore.self) private var store
     @State private var quiz = QuizModel()
+    @State private var isShowingSettings = false
     private let model = SystemLanguageModel.default
 
     var body: some View {
-        NavigationStack {
-            Group {
-                switch model.availability {
-                case .available:
-                    content
-                        .task { quiz.prepare() }
-                case .unavailable(let reason):
-                    UnavailableView(reason: reason)
+        Group {
+            switch model.availability {
+            case .available:
+                if let preferences = store.preferences {
+                    NavigationStack {
+                        content(ageGroup: preferences.ageGroup)
+                            // Runs after onboarding, on launch and whenever settings are saved.
+                            // Unchanged settings keep the round already prepared.
+                            .task(id: preferences.roundSettings) {
+                                quiz.configure(preferences.roundSettings)
+                            }
+                            .toolbar {
+                                if quiz.phase == .welcome || quiz.phase == .finished {
+                                    ToolbarItem(placement: .topBarTrailing) {
+                                        Button("Settings", systemImage: "gearshape") {
+                                            isShowingSettings = true
+                                        }
+                                    }
+                                }
+                            }
+                            .sheet(isPresented: $isShowingSettings) {
+                                SettingsView(preferences: preferences)
+                            }
+                    }
+                    .animation(.default, value: quiz.phase)
+                } else {
+                    OnboardingView()
                 }
+            case .unavailable(let reason):
+                UnavailableView(reason: reason)
             }
-            .animation(.default, value: quiz.phase)
         }
+        .animation(.default, value: store.preferences == nil)
     }
 
     @ViewBuilder
-    private var content: some View {
+    private func content(ageGroup: AgeGroup) -> some View {
         switch quiz.phase {
         case .welcome:
-            WelcomeView(onStart: quiz.start)
+            WelcomeView(ageGroup: ageGroup, onStart: quiz.start)
         case .loading:
             LoadingView(index: quiz.currentIndex, total: QuizModel.exerciseCount)
         case .answering:
@@ -70,4 +93,5 @@ private struct UnavailableView: View {
 
 #Preview {
     RootView()
+        .environment(PreferencesStore(defaults: UserDefaults(suiteName: "preview")!))
 }
