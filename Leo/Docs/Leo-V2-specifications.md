@@ -32,6 +32,7 @@ Out of scope for V2: per-age-group changes to exercise count, option count or qu
 - iOS 27.0 SDK, deployment target 26.6, `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, `SWIFT_APPROACHABLE_CONCURRENCY = YES`.
 - `knownRegions`: en, es, pt-BR.
 - No test target exists.
+- Simulators: the "iPhone 17" family runs iOS 26.4/26.5, below the deployment target. Use an iOS 27 simulator such as "iPhone 18 Pro".
 - Existing files: `Leo/MyApp.swift`, `Leo/Models/Exercise.swift`, `Leo/Models/Topics.swift`, `Leo/Services/ContentLanguage.swift`, `Leo/Services/ExerciseGenerator.swift`, `Leo/Services/QuizModel.swift`, `Leo/Views/{RootView,WelcomeView,LoadingView,ExerciseView,ResultView}.swift`.
 
 ## 4. Architecture
@@ -44,8 +45,8 @@ ReaderPreferences (Codable)          PreferencesStore (@Observable, UserDefaults
 
 AgeGroup (enum)                      DefaultTopics (per group: id + LocalizedStringResource name + English prompt)
   displayName, promptAudience,
-  passageWordRange, minimumWordCount,
-  styleGuidance
+  passageWordRange, passageSentenceRange,
+  acceptedWordCount, styleGuidance
 
 RoundSettings (ageGroup + [topic prompts])  ──►  QuizModel.configure(_:)
                                                    └─ ExerciseGenerator(language:, ageGroup:)
@@ -65,23 +66,30 @@ App flow in `RootView`:
 ### `Leo/Models/AgeGroup.swift`
 
 ```swift
-nonisolated enum AgeGroup: String, CaseIterable, Codable, Sendable {
+nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
     case six = "6-8", nine = "9-11", twelve = "12-14", fifteen = "15-17", adult = "18+"
     var displayName: String              // localized: "6 to 8" … "18 or older"
     var promptAudience: String           // English: "children aged 6 to 8" … "adult readers"
     var passageWordRange: ClosedRange<Int>
-    var minimumWordCount: Int            // ~60% of lower bound; replaces hard-coded 60
+    var passageSentenceRange: ClosedRange<Int>?   // sentence count asked for with the word range, or nil
+    var acceptedWordCount: ClosedRange<Int>       // 60% of lower bound ... 150% of upper bound
     var styleGuidance: String            // English prose for the instructions
 }
 ```
 
-| Group | Word range | Style guidance (gist) |
-|---|---|---|
-| 6–8 | 50–80 | Short sentences, familiar words, warm tone, concrete question and answers |
-| 9–11 | 80–120 | Simple sentences, everyday vocabulary, concrete ideas |
-| 12–14 | 100–150 | Clear paragraphs, some new vocabulary, light inference |
-| 15–17 | 120–180 | Current V1 level |
-| 18+ | 160–230 | Varied sentence structure, precise vocabulary, questions may require nuance |
+`CodingKeyRepresentable` makes the `[AgeGroup: …]` dictionaries in `ReaderPreferences` encode as JSON objects keyed by the raw value rather than as flat arrays.
+
+| Group | Word range | Sentences asked for | Style guidance (gist) |
+|---|---|---|---|
+| 6–8 | 50–80 | 10–13 | Short sentences, familiar words, warm tone, concrete question and answers |
+| 9–11 | 80–120 | 10–13 | Simple sentences, everyday vocabulary, concrete ideas |
+| 12–14 | 100–150 | 10–13 | Clear paragraphs, some new vocabulary, light inference |
+| 15–17 | 120–180 | — | Current V1 level |
+| 18+ | 160–230 | — | Varied sentence structure, precise vocabulary, questions may require nuance |
+
+Why the sentence counts: given only a word range, the model wrote passages well under it for the younger groups (6–8 averaged ~40 words), because their style guidance asks for short sentences. Adding a sentence count brings them into range. For 15–17 and 18+ a sentence count made passages run on without stopping, so those groups get the word target only.
+
+`acceptedWordCount` is the range `Exercise` accepts. It is wider than the requested range because the model doesn't count words precisely, but it rejects passages that were cut off or never stopped.
 
 ### `Leo/Models/Topic.swift` (replaces `Topics.swift`, which is deleted)
 
@@ -145,9 +153,9 @@ Rules:
 @Generable nonisolated struct TopicReview {
     @Guide(description: "Whether the topic is safe and suitable for reading texts for the given reader age")
     var isSuitable: Bool
-    @Guide(description: "If suitable, the topic rewritten as a short, clear phrase of at most 6 words, in the same language the reader typed it in; otherwise empty")
+    @Guide(description: "If suitable, the reader's topic tidied up as a short phrase of at most 6 words: fix spelling and capitalization, keep the reader's own words and meaning, in the same language the reader typed it in; otherwise empty")
     var topic: String
-    @Guide(description: "If not suitable, one short friendly sentence for the reader explaining why; otherwise empty")
+    @Guide(description: "If not suitable, one short friendly sentence for the reader explaining why, in the language the instructions ask for; otherwise empty")
     var reason: String
 }
 struct TopicValidator {
@@ -159,7 +167,10 @@ struct TopicValidator {
 
 - Keep property order `isSuitable`, `topic`, `reason`: guided generation fills in declaration order.
 - Fresh `LanguageModelSession` per call, `GenerationOptions(temperature: 0.2)`.
-- Instructions: "You review topics a reader wants to practice reading about. Accept a topic only if it is appropriate reading material for `promptAudience`. Write the topic phrase and the reason in `language.name`." Do not enumerate unsafe categories; that raises guardrail false positives on benign topics.
+- Instructions: "You review topics a reader wants to practice reading about. Each topic becomes short reading texts written for `promptAudience`, at their level: a story, or an explanation of facts. So everyday, school, real-world and imaginative topics all work, and a topic doesn't need to be realistic. Accept a topic if it is appropriate reading material for `promptAudience`. Write the topic phrase and the reason in `language.name`." Do not enumerate unsafe categories; that raises guardrail false positives on benign topics.
+- Prompt: "Topic: `text`" followed by "Write the reason in `language.name`." Without the repeated line, model-written reasons came back in English for Spanish and Portuguese readers.
+- Why the instructions describe what the texts are: with only "Accept a topic only if it is appropriate reading material", the model rejected "dinosaurs that play soccer" as unrealistic, the suggested topic "pirates and treasure" as dangerous, and "the history of basketball" as too complex.
+- Why the `topic` guide asks to keep the reader's words: "rewritten as a short, clear phrase" let the model paraphrase freely ("volcanoes" became "Lava mountains").
 - Error mapping: guardrail hit or refusal → `.rejected` with a generic localized reason. Anything else is thrown and shown as "We couldn't check that topic. Please try again." Catch both the deprecated and the iOS 27 error types:
 
 ```swift
@@ -178,6 +189,8 @@ catch {
 1. `AgeGroupPicker`: title "How old are you?", `List` of `AgeGroup.allCases` rows with checkmark selection, prominent "Continue" disabled until a group is picked.
 2. Topics step: title "What do you like reading about?", a `List` containing the `TopicsEditor` sections, toolbar "Done". Done builds `ReaderPreferences` from the draft and sets `store.preferences`.
 
+Both titles are a private `OnboardingTitle` view used as a section header: the header of the age rows' section, and of an empty section above the topic sections. It uses `.largeTitle.bold()`, `Color.primary` (a header draws in a secondary style, which `.primary` would follow), `.textCase(nil)`, zero leading inset so it lines up with the card edge, and the header accessibility trait. Not a navigation title, because a navigation large title doesn't wrap and truncates long translations ("Quantos anos você te…"). Not a list row, because the row's rounded card corners clip the large text.
+
 ### `Leo/Views/Settings/SettingsView.swift`
 
 Sheet content wrapped in its own `NavigationStack` (a sheet does not inherit the presenter's). Inside: `Form` with section "Age group" (`Picker` with `.navigationLink` style over `displayName`) followed by `TopicsEditor` sections for the selected group. Works on `@State var draft: ReaderPreferences`. Toolbar "Done" writes `store.preferences = draft` and dismisses. "Cancel" discards the draft.
@@ -188,28 +201,42 @@ A `@ViewBuilder` returning `Section`s (never its own `List`/`Form`). Bound to a 
 
 - Section "Suggested": `Toggle` per `DefaultTopic` with `Text(topic.name)`.
 - Section "Your topics": `ForEach` of custom topics with `.onDelete`, then `TextField("Add a topic")` and "Add". While reviewing: inline `ProgressView`, field disabled. Local-check or rejection message under the field in red `.footnote`.
-- Review runs in a `Task` held in `@State`, cancelled in `.onDisappear`.
+- Review runs in a `Task` held by a private `@Observable` `Review` object in `@State`. The task is cancelled when the object is deinitialized (the editor goes away) and when the age group changes. Not `.onDisappear`: inside a `List` it also fires when the section scrolls out of view, or when settings pushes the age group picker.
+- The message under the field clears as soon as the text changes.
 - `enabledCount` = enabled defaults + custom topics for the group. When `enabledCount <= 3`: enabled toggles are `.disabled`, custom rows get `.deleteDisabled(true)`, footer "Keep at least 3 topics on."
 - "Reset suggested topics" restores all defaults for the group.
 - All edits go to the draft; nothing persists until Done.
 
-Add-topic sequence:
-1. Local checks on trimmed input: 2–60 characters, fewer than 20 custom topics, not already present (case-insensitive against `String(localized: default.name)` and custom names for the group). Failures show a message and skip the model.
+Add-topic sequence. Matching a name ignores case and accents, and compares against `String(localized: default.name)` and the custom names for the group.
+1. Local checks on trimmed input, in order, all without calling the model:
+   1. Not 2–60 characters → "Topics must be between 2 and 60 characters."
+   2. Matches an enabled default or a custom topic → "That topic is already on your list."
+   3. Matches a disabled default → re-enable that default and clear the field.
+   4. Already 20 custom topics → "You can have up to 20 of your own topics."
 2. `TopicValidator.review`.
-3. On `.accepted(phrase)`, repeat the duplicate check on the phrase. If it matches a disabled default, re-enable that default instead of adding. If it matches an enabled topic, show the duplicate message. Otherwise append a `CustomTopic`.
+3. On `.accepted(phrase)`, repeat the matching on the phrase. If it matches a disabled default, re-enable that default instead of adding. If it matches an enabled topic, show the duplicate message. Otherwise append a `CustomTopic`. The field is cleared unless the duplicate message is shown. On `.rejected(reason)`, show the reason. If the review throws, show "We couldn't check that topic. Please try again."
 
 ## 6. Modified files
 
 ### `Leo/Models/Exercise.swift`
 - `GeneratedExercise.passage` guide becomes age-neutral: "An original, self-contained reading passage, with the length and reading level requested in the instructions". Other guides unchanged.
-- `Exercise.init?(generated:topic:skill:minimumWordCount:)` replaces the hard-coded `wordCount >= 60`.
+- `Exercise.init?(generated:topic:skill:acceptedWordCount:)` replaces the hard-coded `wordCount >= 60`. The passage's word count must be inside `acceptedWordCount`.
+- The linguistic word count (`enumerateSubstrings(.byWords)`, so languages without spaces work) moves into a `String.wordCount` extension, shared with `ExerciseGenerator`.
 - `ComprehensionSkill` unchanged.
 
 ### `Leo/Services/ExerciseGenerator.swift`
 - Add `let ageGroup: AgeGroup`.
-- Instructions start with: "You create reading comprehension exercises for `promptAudience`. The passage must be between X and Y words. `styleGuidance`", then the existing rules unchanged.
-- The per-exercise prompt in `generate(topics:skill:)` repeats the word range.
-- Pass `ageGroup.minimumWordCount` to `Exercise.init?`.
+- Word range phrase: "between X and Y words long, about M words", where M is the midpoint, plus " in A to B sentences" when `passageSentenceRange` isn't nil. For example, 6–8 gives "between 50 and 80 words long, about 65 words in 10 to 13 sentences".
+- Instructions start with: "You create reading comprehension exercises for `promptAudience`. The passage must be `word range phrase`. `styleGuidance`", then the existing rules unchanged.
+- The per-exercise prompt in `generate(topics:skill:)` repeats the word range phrase.
+- Pass `ageGroup.acceptedWordCount` to `Exercise.init?`.
+- Generate with `streamResponse` instead of `respond`. On each snapshot, if the partial passage is longer than `acceptedWordCount.upperBound` words, throw a private `RunawayPassage` error. The attempt loop logs it and tries the next topic. When the stream finishes, build `GeneratedExercise` from the last snapshot's `rawContent`.
+- `GenerationOptions(temperature: 0.8, maximumResponseTokens: 1200)`, as a backstop for a runaway outside the passage. A complete exercise takes well under 800 tokens even for long passages in Spanish or Portuguese.
+- Why: the model sometimes keeps writing the passage and never stops. Without these limits an attempt ran until the 8,192-token context was full, about 3 minutes, before the next topic was tried; two in a row kept an exercise loading for 5 minutes. With them, a runaway attempt is abandoned after about 6 seconds.
+
+### `Leo/Services/ContentLanguage.swift`
+- `name` returns the language only ("English", "Spanish", "Portuguese"), not the region. It keeps the script when it isn't the language's default ("Chinese, Traditional").
+- Why: with the region, prompts said "in English (Bolivia)" and the model wrote about Bolivia, e.g. "trains around the world" became "Trains in Bolivia".
 
 ### `Leo/Services/QuizModel.swift`
 - `private var settings: RoundSettings?`. `prepareRound()` and `retry()` begin with `guard let settings else { return }`; `start()` is a no-op without settings.
@@ -247,20 +274,20 @@ Add-topic sequence:
 Build:
 
 ```
-xcodebuild -scheme Leo -destination 'platform=iOS Simulator,name=iPhone 17' build
+xcodebuild -scheme Leo -destination 'platform=iOS Simulator,name=iPhone 18 Pro' build
 ```
 
-Foundation Models runs in the simulator on a Mac with Apple Intelligence enabled; otherwise verify on a device.
+Foundation Models runs in the simulator on a Mac with Apple Intelligence enabled; otherwise verify on a device. The Mac runs the same model, so prompt changes can be measured faster with a command-line Swift harness that compiles `AgeGroup`, `Exercise`, `Topic`, `ContentLanguage`, `ExerciseGenerator` and `TopicValidator` and calls them directly.
 
 Manual checks:
 
 1. Fresh install: onboarding appears; Continue disabled until an age is picked; topics step shows that group's defaults all on.
 2. Turn off topics until 3 remain: remaining enabled toggles disable and the footer appears.
-3. Custom topics: "dinosaurs that play soccer" accepted and shown as a cleaned phrase; a duplicate shows a local error with no model call; an obviously unsafe topic is rejected with a reason; 61 characters shows a local error; "pirates and treasure" and "volcanoes" are accepted (soften instructions if not); typing a disabled default's name re-enables that default instead of adding a duplicate.
-4. Done → welcome shows the age group; a round generates immediately; passage lengths match the group's range.
+3. Custom topics: "dinosaurs that play soccer" accepted and shown as a cleaned phrase that keeps its meaning; a duplicate shows a local error with no model call; an obviously unsafe topic is rejected with a reason; 61 characters shows a local error; "pirates and treasure" and "volcanoes" are accepted; typing a disabled default's name re-enables that default instead of adding a duplicate. Run with a device region other than the US (e.g. en-BO) to catch the region leaking into phrases.
+4. Done → welcome shows the age group; a round generates immediately and no exercise takes more than a few seconds; passage lengths roughly match the group's range. Expect 18+ to come in around 150–160 words, at or just under its 160 lower bound: no prompt wording tried got this model longer without passages running on.
 5. Kill and relaunch: welcome appears directly, no onboarding; Start works.
 6. Change age group from the welcome gear → Done → Start: passages visibly change. Cancel after edits, or Done with no edits → no regeneration (temporary debug log in `prepareRound()`).
 7. Open settings while generation is in flight, change a topic, Done → old generation cancelled, new round uses the new topic list.
 8. From results, change topics → Practice again → new round uses the new topics.
-9. Simulator in Spanish and in Portuguese: all new UI strings and default topic names are translated; a custom topic typed in that language gets a cleaned phrase and passages in that language.
+9. Simulator in Spanish and in Portuguese: all new UI strings and default topic names are translated, and long titles wrap instead of truncating; a custom topic typed in that language gets a cleaned phrase and passages in that language; a rejected topic's reason is in that language.
 10. With exactly 3 topics enabled, confirm `retry()` still produces an exercise.
