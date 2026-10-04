@@ -16,7 +16,10 @@ struct ExerciseGenerator {
     let ageGroup: AgeGroup
 
     private var wordRange: String {
-        "between \(ageGroup.passageWordRange.lowerBound) and \(ageGroup.passageWordRange.upperBound) words"
+        let range = ageGroup.passageWordRange
+        let words = "between \(range.lowerBound) and \(range.upperBound) words long, about \((range.lowerBound + range.upperBound) / 2) words"
+        guard let sentences = ageGroup.passageSentenceRange else { return words }
+        return "\(words) in \(sentences.lowerBound) to \(sentences.upperBound) sentences"
     }
 
     private var instructions: String {
@@ -38,6 +41,14 @@ struct ExerciseGenerator {
 
     private static let maxAttempts = 3
 
+    /// A complete exercise takes well under 800 tokens even for long passages in wordier languages.
+    /// Sometimes the model never stops writing; without a cap it runs until the context window
+    /// is full, which takes minutes, before the next topic is tried.
+    private static let maxResponseTokens = 1200
+
+    /// The model kept writing the passage past the accepted length.
+    private struct RunawayPassage: Error {}
+
     private let logger = Logger(subsystem: "Leo", category: "ExerciseGenerator")
 
     /// Tries each topic in order, so a topic that trips the model's guardrails
@@ -53,12 +64,8 @@ struct ExerciseGenerator {
             // A fresh session per exercise keeps each request well inside the context window.
             let session = LanguageModelSession(instructions: instructions)
             do {
-                let response = try await session.respond(
-                    to: prompt,
-                    generating: GeneratedExercise.self,
-                    options: GenerationOptions(temperature: 0.8)
-                )
-                if let exercise = Exercise(generated: response.content, topic: topic, skill: skill, minimumWordCount: ageGroup.minimumWordCount) {
+                let generated = try await respond(to: prompt, in: session)
+                if let exercise = Exercise(generated: generated, topic: topic, skill: skill, acceptedWordCount: ageGroup.acceptedWordCount) {
                     return exercise
                 }
                 logger.error("Invalid content for topic '\(topic)'")
@@ -69,5 +76,24 @@ struct ExerciseGenerator {
             }
         }
         throw ExerciseGenerationError.failed
+    }
+
+    /// Streams the response so a passage that never ends is abandoned as soon as it runs past
+    /// the accepted length, after seconds rather than when the token cap is reached.
+    private func respond(to prompt: String, in session: LanguageModelSession) async throws -> GeneratedExercise {
+        let stream = session.streamResponse(
+            to: prompt,
+            generating: GeneratedExercise.self,
+            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens)
+        )
+        var content: GeneratedContent?
+        for try await snapshot in stream {
+            if let passage = snapshot.content.passage, passage.wordCount > ageGroup.acceptedWordCount.upperBound {
+                throw RunawayPassage()
+            }
+            content = snapshot.rawContent
+        }
+        guard let content else { throw ExerciseGenerationError.failed }
+        return try GeneratedExercise(content)
     }
 }

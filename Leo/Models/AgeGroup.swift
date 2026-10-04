@@ -40,10 +40,20 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
         }
     }
 
-    /// The shortest passage accepted from the model, a little under the requested range
-    /// since the model doesn't count words precisely.
-    var minimumWordCount: Int {
-        passageWordRange.lowerBound * 6 / 10
+    /// How many sentences to ask for alongside the word range, if any. With short, simple sentences
+    /// the model stops well under the word range unless it's also given a sentence count. Older
+    /// groups reach the range without one, and asking them for sentences makes passages run on.
+    var passageSentenceRange: ClosedRange<Int>? {
+        switch self {
+        case .six, .nine, .twelve: 10...13
+        case .fifteen, .adult: nil
+        }
+    }
+
+    /// The passage lengths accepted from the model: wider than the requested range, since the
+    /// model doesn't count words precisely, but excluding passages it never finished or that ran on.
+    var acceptedWordCount: ClosedRange<Int> {
+        passageWordRange.lowerBound * 6 / 10...passageWordRange.upperBound * 3 / 2
     }
 
     /// How the passages and questions should read, for use in English prompts.

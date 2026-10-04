@@ -8,10 +8,10 @@ nonisolated struct TopicReview {
     @Guide(description: "Whether the topic is safe and suitable for reading texts for the given reader age")
     var isSuitable: Bool
 
-    @Guide(description: "If suitable, the topic rewritten as a short, clear phrase of at most 6 words, in the same language the reader typed it in; otherwise empty")
+    @Guide(description: "If suitable, the reader's topic tidied up as a short phrase of at most 6 words: fix spelling and capitalization, keep the reader's own words and meaning, in the same language the reader typed it in; otherwise empty")
     var topic: String
 
-    @Guide(description: "If not suitable, one short friendly sentence for the reader explaining why; otherwise empty")
+    @Guide(description: "If not suitable, one short friendly sentence for the reader explaining why, in the language the instructions ask for; otherwise empty")
     var reason: String
 }
 
@@ -33,13 +33,16 @@ struct TopicValidator {
     func review(_ text: String, for group: AgeGroup) async throws -> Outcome {
         let instructions = """
             You review topics a reader wants to practice reading about. \
-            Accept a topic only if it is appropriate reading material for \(group.promptAudience). \
+            Each topic becomes short reading texts written for \(group.promptAudience), at their level: \
+            a story, or an explanation of facts. So everyday, school, real-world and imaginative topics \
+            all work, and a topic doesn't need to be realistic. \
+            Accept a topic if it is appropriate reading material for \(group.promptAudience). \
             Write the topic phrase and the reason in \(language.name).
             """
         let session = LanguageModelSession(instructions: instructions)
         do {
             let response = try await session.respond(
-                to: "Topic: \(text)",
+                to: "Topic: \(text)\nWrite the reason in \(language.name).",
                 generating: TopicReview.self,
                 options: GenerationOptions(temperature: 0.2)
             )

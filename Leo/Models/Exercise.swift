@@ -39,7 +39,7 @@ nonisolated struct Exercise: Identifiable, Sendable {
     let explanation: String
 
     /// Validates and normalizes model output. Returns `nil` when the content is unusable.
-    init?(generated: GeneratedExercise, topic: String, skill: ComprehensionSkill, minimumWordCount: Int) {
+    init?(generated: GeneratedExercise, topic: String, skill: ComprehensionSkill, acceptedWordCount: ClosedRange<Int>) {
         func clean(_ text: String) -> String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
 
         let correct = clean(generated.correctAnswer)
@@ -50,13 +50,8 @@ nonisolated struct Exercise: Identifiable, Sendable {
 
         let passage = clean(generated.passage)
         let question = clean(generated.question)
-        // Counts words linguistically, so languages written without spaces (e.g. Japanese) work too.
-        var wordCount = 0
-        passage.enumerateSubstrings(in: passage.startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in
-            wordCount += 1
-        }
         guard !correct.isEmpty, (2...3).contains(distractors.count),
-              wordCount >= minimumWordCount, !question.isEmpty
+              acceptedWordCount.contains(passage.wordCount), !question.isEmpty
         else { return nil }
 
         let options = (distractors + [correct]).shuffled()
@@ -68,6 +63,17 @@ nonisolated struct Exercise: Identifiable, Sendable {
         self.options = options
         self.correctIndex = options.firstIndex(of: correct)!
         self.explanation = clean(generated.explanation)
+    }
+}
+
+extension String {
+    /// Counts words linguistically, so languages written without spaces (e.g. Japanese) work too.
+    nonisolated var wordCount: Int {
+        var count = 0
+        enumerateSubstrings(in: startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in
+            count += 1
+        }
+        return count
     }
 }
 
