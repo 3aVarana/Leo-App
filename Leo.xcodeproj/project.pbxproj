@@ -25,18 +25,6 @@
 		10285AE430731B5E00EE2ED8 /* LeoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		10285AF430731B5E00EE2ED8 /* Exceptions for "LeoTests" folder in "LeoTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Models/__Snapshots__,
-				Services/__Snapshots__,
-				Snapshots/__Snapshots__,
-			);
-			target = 10285AE330731B5E00EE2ED8 /* LeoTests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* Leo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -45,14 +33,6 @@
 		};
 		10285AE530731B5E00EE2ED8 /* LeoTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				10285AF430731B5E00EE2ED8 /* Exceptions for "LeoTests" folder in "LeoTests" target */,
-			);
-			explicitFolders = (
-				Models/__Snapshots__,
-				Services/__Snapshots__,
-				Snapshots/__Snapshots__,
-			);
 			path = LeoTests;
 			sourceTree = "<group>";
 		};

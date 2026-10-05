@@ -53,6 +53,6 @@ struct ExerciseGeneratorPromptTests {
     func promptSnapshot(_ group: AgeGroup) {
         let generator = ExerciseGenerator(language: .english, ageGroup: group)
         let text = generator.instructions + "\n\n---\n\n" + generator.prompt(topic: "volcanoes", skill: .inference)
-        assertSnapshot(of: text, as: .lines, named: "\(group)")
+        assertReferenceSnapshot(of: text, as: .lines, named: "\(group)")
     }
 }

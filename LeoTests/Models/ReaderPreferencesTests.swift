@@ -44,7 +44,7 @@ struct ReaderPreferencesTests {
             ],
             .adult: [CustomTopic(id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!, name: "Jazz")],
         ]
-        assertSnapshot(of: preferences, as: .json)
+        assertReferenceSnapshot(of: preferences, as: .json)
     }
 
     @Test func isEnabled() throws {

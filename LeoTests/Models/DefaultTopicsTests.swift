@@ -36,7 +36,7 @@ struct DefaultTopicsTests {
         let text = AgeGroup.allCases.map { group in
             ([group.rawValue] + DefaultTopics.topics(for: group).map { "  \($0.id)" }).joined(separator: "\n")
         }.joined(separator: "\n")
-        assertSnapshot(of: text, as: .lines)
+        assertReferenceSnapshot(of: text, as: .lines)
     }
 
     @Test func comprehensionSkills() {

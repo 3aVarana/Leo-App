@@ -78,8 +78,10 @@ Add `https://github.com/pointfreeco/swift-snapshot-testing`, "Up to Next Major" 
 
 ### 4.2 Snapshot reference images
 
-- swift-snapshot-testing writes references to `LeoTests/<Subfolder>/__Snapshots__/<TestFile>/`. Commit them to git.
-- Because `LeoTests/` is a synchronized group, Xcode would copy those PNGs into the test bundle. Files with the same name in different folders then cause "Multiple commands produce" build errors. **Exclude every `__Snapshots__` folder from `LeoTests`.** In Xcode 27 a membership exception on a plain folder doesn't apply to the files inside it, so each folder (`Models/`, `Services/` and `Snapshots/__Snapshots__`) is listed both in the group's `explicitFolders` (Xcode treats it as one item) and in the `LeoTests` membership exceptions. A new `__Snapshots__` folder needs both entries, added once the folder exists (Xcode drops entries for missing folders).
+- References are stored in `LeoTestsSnapshots/<TestFile>/` at the repo root, outside `LeoTests/`. Commit them to git.
+- By default swift-snapshot-testing writes them to `__Snapshots__/<TestFile>/` next to the test file. Inside `LeoTests/`, a synchronized folder, Xcode would add them to the test target and copy them into the test bundle. That bundle is installed on every test run, and the tests never read those copies; they read the references from the source tree. Copying also drops the `<TestFile>` folder, so two files with the same name would cause "Multiple commands produce" build errors.
+- Excluding the folders from the target instead turned out to be fragile in Xcode 27. A membership exception on a plain folder doesn't apply to the files inside it, so each folder had to be listed in both `explicitFolders` and the membership exceptions. Xcode also drops those entries while the folder doesn't exist yet. A folder outside `LeoTests/` needs no project entries.
+- **Every snapshot test calls `assertReferenceSnapshot` or `assertViewSnapshot` (section 5.3), never `assertSnapshot` directly.** Both pass `snapshotDirectory:` so references land in `LeoTestsSnapshots/`.
 - Record with `@Suite(.snapshots(record: .missing))`: missing images are recorded and the test fails once, then passes. Re-record intentionally with `.all` on the suite, or set `SNAPSHOT_TESTING_RECORD=all` in the test plan's environment, then switch back.
 
 ### 4.3 Test plans and coverage
@@ -131,7 +133,7 @@ LeoTests/
     SplitMix64.swift           // seeded RandomNumberGenerator (for B)
     StubGenerator.swift        // ExerciseGenerating fake + factory spy (for A)
     WaitUntil.swift            // await a condition on the main actor with a timeout
-    SnapshotHelpers.swift      // assertViewSnapshot(...) wrapper
+    SnapshotHelpers.swift      // assertReferenceSnapshot(...), assertViewSnapshot(...)
   Models/
     AgeGroupTests.swift
     ExerciseTests.swift
@@ -157,6 +159,7 @@ LeoTests/
   LiveModel/
     ExerciseGeneratorLiveTests.swift
     TopicValidatorLiveTests.swift
+LeoTestsSnapshots/             // reference snapshots, one folder per test file (section 4.2)
 ```
 
 ## 5. Support code (test target only)
@@ -182,12 +185,18 @@ Any equivalent works, as long as each test has a unique suite (Swift Testing run
 
 ### 5.3 `SnapshotHelpers`
 
+`assertReferenceSnapshot(of:as:named:fileID:filePath:testName:line:column:)`:
+
+- Calls `verifySnapshot` with `snapshotDirectory` set to `LeoTestsSnapshots/<TestFile>/`. The repo root is found from the helper's own `#filePath`.
+- Records a failure with `Issue.record` at the caller's source location. Record mode still comes from the suite's `.snapshots(record:)` trait.
+- Used directly by the text snapshots (`.lines`, `.json`).
+
 `assertViewSnapshot(of view: some View, named: String, colorScheme: UIUserInterfaceStyle = .light, sizeCategory: UIContentSizeCategory = .large, fileID:filePath:testName:line:column:)`:
 
 - Wraps the view in `UIHostingController`. `ImageRenderer` can't be used, because it doesn't draw `List`, `Form`, `NavigationStack` or `ProgressView`.
-- Calls `assertSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, perceptualPrecision: 0.98, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test.
+- Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, perceptualPrecision: 0.98, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test.
 - Adds the app language to the snapshot name: `"\(named)-\(TestEnvironment.appLanguage)"` (always `en` for now; see section 4.3).
-- Passes through `fileID`/`filePath`/`testName`/`line`/`column` so references land next to the calling test.
+- Passes through `fileID`/`filePath`/`testName`/`line`/`column`, so references are filed under the calling test's file and failures point at the calling line.
 - Views that read `@Environment(PreferencesStore.self)` get `.environment(PreferencesStore(defaults: testDefaults.defaults))`.
 
 ### 5.4 `WaitUntil` (for A)
@@ -478,7 +487,7 @@ Tags: `.liveModel`. Traits: `.enabled(if: TestEnvironment.isModelAvailable)` (`S
 
 Each step builds, passes `Leo.xctestplan` on the iPhone 18 Pro (iOS 27.0) simulator, and is committed separately.
 
-1. **E** + infrastructure: package, test plans (with `--leo-running-tests`), coverage on, `__Snapshots__` exception, delete the placeholder, add `Support/` (everything except `StubGenerator` and `WaitUntil`).
+1. **E** + infrastructure: package, test plans (with `--leo-running-tests`), coverage on, delete the placeholder, add `Support/` (everything except `StubGenerator` and `WaitUntil`).
 2. **Phase 1 unit tests** (7.1).
 3. **Phase 2 snapshots** (7.2): record the English references and review every image before committing.
 4. **B** + `QuizPlanTests`.
@@ -539,7 +548,7 @@ All confirmed during implementation:
 
 - Test-plan tag include/exclude for Swift Testing works in Xcode 27 (`skippedTags` / `selectedTags` on the test target). No fallback needed.
 - "Arguments Passed On Launch" reaches the test host app: `RootView`'s body shows 0% coverage.
-- The `__Snapshots__` exclusion needs `explicitFolders` plus a membership exception (section 4.2).
+- Excluding `__Snapshots__` folders from the synchronized `LeoTests` folder needs `explicitFolders` plus a membership exception, and Xcode drops both while the folder doesn't exist. References were moved to `LeoTestsSnapshots/` instead (section 4.2).
 - The unsuitable topic in `TopicValidatorLiveTests` is "gory horror movies" for `.six`.
 
 Also found:
