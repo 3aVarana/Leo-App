@@ -201,7 +201,7 @@ Any equivalent works, as long as each test has a unique suite (Swift Testing run
 - Fails with one clear message, without comparing, when it doesn't run on the iPhone 18 Pro simulator (`iPhone19,2`) with iOS 27.0, the environment the references were recorded on.
 - Takes two snapshots of every view, one in light mode and one in dark mode, so no test has to ask for dark mode. The dark one adds `-dark` to the name.
 - Wraps the view in `UIHostingController`. `ImageRenderer` can't be used, because it doesn't draw `List`, `Form`, `NavigationStack` or `ProgressView`.
-- Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, perceptualPrecision: 0.98, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test.
+- Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test. No `perceptualPrecision`: that comparison runs on Metal and gives wrong results on the CI runner's virtualized GPU (section 12.1).
 - Adds the app language to the snapshot name: `"\(named)-\(TestEnvironment.appLanguage)"` and `"\(named)-dark-\(TestEnvironment.appLanguage)"` (always `en` for now; see section 4.3).
 - Passes through `fileID`/`filePath`/`testName`/`line`/`column`, so references are filed under the calling test's file and failures point at the calling line.
 - Views that read `@Environment(PreferencesStore.self)` get `.environment(PreferencesStore(defaults: testDefaults.defaults))`.
@@ -597,7 +597,7 @@ The workflow itself is the next step and isn't part of this plan. This section r
 ### 12.1 Environment
 
 - **Xcode 27.0, the iOS 27.0 simulator runtime and the iPhone 18 Pro simulator.** `assertViewSnapshot` fails with a clear message on any other device or iOS version (section 5.3). Select Xcode explicitly (`xcode-select` or `DEVELOPER_DIR`) and record the version in the repo, for example in an `.xcode-version` file.
-- Apple Silicon runner. *Unverified* on Intel. The precision settings (0.99 and 0.98) absorb small rendering differences, but not a different OS version.
+- Apple Silicon runner. *Unverified* on Intel. On the hosted `xcode-27` runner, views with GPU effects (prominent buttons, toggles) render a few pixels 1/255 off from a local recording. `precision: 0.99` (up to 1% of bytes may differ) absorbs that, but not a different OS version. `perceptualPrecision` isn't used: it sends any image that isn't byte-identical to a Metal comparison, which on the runner's virtualized GPU reported about 14% of pixels as different in images that matched.
 - *Unverified:* whether the hosted runner image already has Xcode 27.0 and the iOS 27.0 runtime. If not, use a self-hosted Mac. Xcode Cloud is another option, but it hasn't been checked that its build and test steps run on the same machine (see 12.2).
 - The default plan doesn't use the on-device model, so a runner without Apple Intelligence is fine. `LeoLiveModel` is never run on CI by default: run it by hand (for example `workflow_dispatch`) on a Mac with the model available.
 
@@ -626,8 +626,8 @@ xcodebuild test \
 
 ### 12.4 Failures and artifacts
 
-- Upload `build/Leo-tests.xcresult` when the job fails (`if: failure()`). Under Xcode, swift-snapshot-testing 1.19.6 attaches the new, reference and diff images to the result bundle for Swift Testing failures.
-- `SNAPSHOT_ARTIFACTS` (a folder for the failing images) isn't needed. A shell variable doesn't reach the hosted tests (`SIMCTL_CHILD_…` didn't work for `SNAPSHOT_TESTING_RECORD`), and the images are already in the result bundle. It could be passed through the test plan like the record mode. *Unverified.*
+- Upload `build/Leo-tests.xcresult` when the job fails (`if: failure()`). It holds only the failure messages: on CI, swift-snapshot-testing 1.19.6 didn't attach the images to the result bundle.
+- The failing images are in the simulator app's `tmp` folder, on the runner's disk. The workflow copies each one next to its reference into `build/snapshot-failures/` and uploads it with the result bundle. `SNAPSHOT_ARTIFACTS` isn't needed for that.
 - Coverage: `xcrun xccov view --report --json build/Leo-tests.xcresult`, written to the job summary. No gate (section 9).
 
 ### 12.5 Re-recording references

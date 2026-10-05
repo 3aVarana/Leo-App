@@ -45,13 +45,14 @@ func assertViewSnapshot(
             $0.preferredContentSizeCategory = sizeCategory
             $0.displayScale = 3
         }
+        // No perceptualPrecision: that comparison runs on Metal, which gives wrong results on the
+        // virtualized GPU of the CI runner. The byte comparison behind `precision` runs on the CPU.
         assertReferenceSnapshot(
             of: controller,
             as: .image(
                 on: config,
                 drawHierarchyInKeyWindow: true,
                 precision: 0.99,
-                perceptualPrecision: 0.98,
                 size: size,
                 traits: traits,
             ),
