@@ -4,7 +4,6 @@ import Testing
 @testable import Leo
 
 @MainActor
-@Suite(.snapshots(record: .missing))
 struct ExerciseGeneratorPromptTests {
     private static let spanish = ContentLanguage(locale: Locale(identifier: "es_ES"))
 

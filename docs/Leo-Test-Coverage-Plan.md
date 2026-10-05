@@ -16,7 +16,7 @@ Out of scope: UI tests (XCUITest), `RootView` snapshots, CI setup, coverage gate
 | Area | Decision |
 |---|---|
 | Unit test framework | Swift Testing only (`import Testing`). No XCTest test cases. |
-| Snapshot framework | Point-Free's [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing), 1.17.0 or later, linked to the `LeoTests` target only. Used from `@Test` functions with the `.snapshots(record:)` trait. |
+| Snapshot framework | Point-Free's [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing), 1.17.0 or later, linked to the `LeoTests` target only. Used from `@Test` functions. The record mode comes from `SNAPSHOT_TESTING_RECORD`, not from a trait (section 4.2). |
 | Approved code changes | **A** QuizModel generator seam, **B** pure round-plan function, **C** TopicValidator outcome mapping, **D** internal prompt building in ExerciseGenerator, **E** test-host guard in `MyApp`, **F** non-random `Exercise` init, **G** internal `UnavailableView`. See section 6. |
 | Live model suite | Included, opt-in only: tagged `.liveModel`, runs only when the model is available, excluded from the default test plan, never blocks a merge. |
 | Questionable current behavior | Lock the current behavior in tests, no app changes: `Exercise` accepts an empty title; `ContentLanguage.name` returns "Unknown language" for identifiers like `und`. |
@@ -82,7 +82,11 @@ Add `https://github.com/pointfreeco/swift-snapshot-testing`, "Up to Next Major" 
 - By default swift-snapshot-testing writes them to `__Snapshots__/<TestFile>/` next to the test file. Inside `LeoTests/`, a synchronized folder, Xcode would add them to the test target and copy them into the test bundle. That bundle is installed on every test run, and the tests never read those copies; they read the references from the source tree. Copying also drops the `<TestFile>` folder, so two files with the same name would cause "Multiple commands produce" build errors.
 - Excluding the folders from the target instead turned out to be fragile in Xcode 27. A membership exception on a plain folder doesn't apply to the files inside it, so each folder had to be listed in both `explicitFolders` and the membership exceptions. Xcode also drops those entries while the folder doesn't exist yet. A folder outside `LeoTests/` needs no project entries.
 - **Every snapshot test calls `assertReferenceSnapshot` or `assertViewSnapshot` (section 5.3), never `assertSnapshot` directly.** Both pass `snapshotDirectory:` so references land in `LeoTestsSnapshots/`.
-- Record with `@Suite(.snapshots(record: .missing))`: missing images are recorded and the test fails once, then passes. Re-record intentionally with `.all` on the suite, or set `SNAPSHOT_TESTING_RECORD=all` in the test plan's environment, then switch back.
+- No suite sets a `.snapshots(record:)` trait: a trait overrides `SNAPSHOT_TESTING_RECORD`, so the variable would stop working. The default mode is `missing`: missing images are recorded and the test fails once, then passes.
+- `Leo.xctestplan` passes `SNAPSHOT_TESTING_RECORD=$(SNAPSHOT_TESTING_RECORD)` to the tests, so the mode is set from the command line as a build setting: `xcodebuild test … SNAPSHOT_TESTING_RECORD=all` re-records every image, and `=never` (for CI) fails on a missing reference without writing it. Unset, the default applies. (`SIMCTL_CHILD_SNAPSHOT_TESTING_RECORD` doesn't reach the hosted tests.)
+- The references are found from `#filePath`, which is fixed when the tests are compiled. Build and run the tests on the same machine, from the same checkout: don't split `build-for-testing` and `test-without-building` across machines. `assertReferenceSnapshot` fails with a clear message when `LeoTestsSnapshots/` isn't found.
+- `.gitattributes` marks `LeoTestsSnapshots/**` as `binary linguist-generated`, so git doesn't try to merge the images and GitHub collapses them in diffs.
+- `SnapshotLayoutTests` fails when two test files share a name, because they would share a reference folder.
 
 ### 4.3 Test plans and coverage
 
@@ -134,6 +138,7 @@ LeoTests/
     StubGenerator.swift        // ExerciseGenerating fake + factory spy (for A)
     WaitUntil.swift            // await a condition on the main actor with a timeout
     SnapshotHelpers.swift      // assertReferenceSnapshot(...), assertViewSnapshot(...)
+    SnapshotLayoutTests.swift  // test file names are unique (one reference folder per file)
   Models/
     AgeGroupTests.swift
     ExerciseTests.swift
@@ -188,11 +193,12 @@ Any equivalent works, as long as each test has a unique suite (Swift Testing run
 `assertReferenceSnapshot(of:as:named:fileID:filePath:testName:line:column:)`:
 
 - Calls `verifySnapshot` with `snapshotDirectory` set to `LeoTestsSnapshots/<TestFile>/`. The repo root is found from the helper's own `#filePath`.
-- Records a failure with `Issue.record` at the caller's source location. Record mode still comes from the suite's `.snapshots(record:)` trait.
+- Records a failure with `Issue.record` at the caller's source location. Record mode comes from `SNAPSHOT_TESTING_RECORD` (section 4.2).
 - Used directly by the text snapshots (`.lines`, `.json`).
 
 `assertViewSnapshot(of view: some View, named: String, colorScheme: UIUserInterfaceStyle = .light, sizeCategory: UIContentSizeCategory = .large, fileID:filePath:testName:line:column:)`:
 
+- Fails with one clear message, without comparing, when it doesn't run on the iPhone 18 Pro simulator (`iPhone19,2`) with iOS 27.0, the environment the references were recorded on.
 - Wraps the view in `UIHostingController`. `ImageRenderer` can't be used, because it doesn't draw `List`, `Form`, `NavigationStack` or `ProgressView`.
 - Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, perceptualPrecision: 0.98, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test.
 - Adds the app language to the snapshot name: `"\(named)-\(TestEnvironment.appLanguage)"` (always `en` for now; see section 4.3).
@@ -389,7 +395,7 @@ Every suite that touches app types is `@MainActor`. Use parameterized `@Test(arg
 
 ### 7.2 Phase 2 — snapshot tests that need no app code changes
 
-All snapshot suites are tagged `.snapshot`, use `.snapshots(record: .missing)` and run in English. "+ dark, + AX" means two extra variants: dark mode, and `.accessibilityExtraExtraExtraLarge`.
+All snapshot suites are tagged `.snapshot`, run in English. "+ dark, + AX" means two extra variants: dark mode, and `.accessibilityExtraExtraExtraLarge`.
 
 | Suite | Snapshots |
 |---|---|

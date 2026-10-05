@@ -4,7 +4,6 @@ import Testing
 @testable import Leo
 
 @MainActor
-@Suite(.snapshots(record: .missing))
 struct DefaultTopicsTests {
     /// One main topic plus 2 backups per exercise.
     @Test(arguments: AgeGroup.allCases)

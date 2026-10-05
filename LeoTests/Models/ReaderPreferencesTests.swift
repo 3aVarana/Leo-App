@@ -4,7 +4,6 @@ import Testing
 @testable import Leo
 
 @MainActor
-@Suite(.snapshots(record: .missing))
 struct ReaderPreferencesTests {
     private func decode(_ json: String) throws -> ReaderPreferences {
         try JSONDecoder().decode(ReaderPreferences.self, from: Data(json.utf8))

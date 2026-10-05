@@ -24,6 +24,12 @@
         "argument" : "--leo-running-tests"
       }
     ],
+    "environmentVariableEntries" : [
+      {
+        "key" : "SNAPSHOT_TESTING_RECORD",
+        "value" : "$(SNAPSHOT_TESTING_RECORD)"
+      }
+    ],
     "targetForVariableExpansion" : {
       "containerPath" : "container:Leo.xcodeproj",
       "identifier" : "000000000000000100000000",

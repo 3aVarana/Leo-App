@@ -22,6 +22,14 @@ func assertViewSnapshot(
     line: UInt = #line,
     column: UInt = #column
 ) {
+    if let problem = snapshotEnvironmentProblem {
+        // One clear failure instead of a pixel difference in every image.
+        Issue.record(
+            Comment(rawValue: problem),
+            sourceLocation: SourceLocation(fileID: "\(fileID)", filePath: "\(filePath)", line: Int(line), column: Int(column))
+        )
+        return
+    }
     let controller = UIHostingController(rootView: view)
     // The trait override alone doesn't reach the navigation bar's buttons.
     controller.overrideUserInterfaceStyle = colorScheme
@@ -57,6 +65,21 @@ func assertReferenceSnapshot<Value, Format>(
     line: UInt = #line,
     column: UInt = #column
 ) {
+    let sourceLocation = SourceLocation(
+        fileID: "\(fileID)",
+        filePath: "\(filePath)",
+        line: Int(line),
+        column: Int(column)
+    )
+    guard FileManager.default.fileExists(atPath: referencesDirectory.path) else {
+        // `#filePath` is fixed when the tests are compiled, so the tests have to run on the
+        // machine that built them, from the same checkout.
+        Issue.record(
+            "Can't find the snapshot references at \(referencesDirectory.path). Build and run the tests on the same machine, from the same checkout.",
+            sourceLocation: sourceLocation
+        )
+        return
+    }
     let testFile = URL(fileURLWithPath: "\(filePath)").deletingPathExtension().lastPathComponent
     let failure = verifySnapshot(
         of: try value(),
@@ -70,16 +93,21 @@ func assertReferenceSnapshot<Value, Format>(
         column: column
     )
     guard let failure else { return }
-    Issue.record(
-        Comment(rawValue: failure),
-        sourceLocation: SourceLocation(
-            fileID: "\(fileID)",
-            filePath: "\(filePath)",
-            line: Int(line),
-            column: Int(column)
-        )
-    )
+    Issue.record(Comment(rawValue: failure), sourceLocation: sourceLocation)
 }
+
+/// The simulator and OS the view references were recorded on. Other combinations render
+/// differently, so view snapshots fail early with a clear message instead.
+private let recordedModelIdentifier = "iPhone19,2" // iPhone 18 Pro
+private let recordedSystemVersion = "27.0"
+
+private let snapshotEnvironmentProblem: String? = {
+    let model = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "a physical device"
+    let os = ProcessInfo.processInfo.operatingSystemVersion
+    let version = "\(os.majorVersion).\(os.minorVersion)"
+    guard model != recordedModelIdentifier || version != recordedSystemVersion else { return nil }
+    return "View snapshots are recorded on the iPhone 18 Pro simulator (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). This run is on \(model) with iOS \(version)."
+}()
 
 /// `LeoTestsSnapshots/`, found from this file's path: `LeoTests/Support/SnapshotHelpers.swift`.
 private let referencesDirectory = URL(fileURLWithPath: #filePath)
@@ -89,7 +117,9 @@ private let referencesDirectory = URL(fileURLWithPath: #filePath)
     .appendingPathComponent("LeoTestsSnapshots", isDirectory: true)
 
 /// Groups the view snapshot suites so they run one at a time: images are drawn in the app's
-/// key window, which tests running side by side would share.
+/// key window, which tests running side by side would share. No record trait: the mode comes
+/// from `SNAPSHOT_TESTING_RECORD` (`missing` by default, `never` on CI, `all` to re-record).
+/// A `.snapshots(record:)` trait would override that variable.
 @MainActor
-@Suite(.serialized, .tags(.snapshot), .snapshots(record: .missing))
+@Suite(.serialized, .tags(.snapshot))
 enum ViewSnapshots {}

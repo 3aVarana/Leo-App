@@ -1,0 +1,2 @@
+# Snapshot references are binary: never diff or merge them as text, and collapse them in GitHub diffs.
+LeoTestsSnapshots/** binary linguist-generated
