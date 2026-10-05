@@ -1,11 +1,10 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct TopicsEditorSnapshotTests {
         private func editor(_ preferences: ReaderPreferences) -> some View {
             List {
@@ -14,7 +13,11 @@ extension ViewSnapshots {
         }
 
         private var customizedPreferences: ReaderPreferences {
-            .fixture(ageGroup: .nine, disabled: [.nine: ["volcanoes", "pirates-treasure"]], custom: [.nine: ["Chess", "Origami"]])
+            .fixture(
+                ageGroup: .nine,
+                disabled: [.nine: ["volcanoes", "pirates-treasure"]],
+                custom: [.nine: ["Chess", "Origami"]],
+            )
         }
 
         /// Every suggested topic in `.six` turned off except the last 3.

@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import Leo
+import Testing
 
 /// Results vary between runs: a failure means "look at the prompts", not a broken build.
 extension LiveModel {
@@ -11,7 +11,7 @@ extension LiveModel {
 
         @Test func acceptsDinosaursForYoungReaders() async throws {
             let outcome = try await validator.review("dinosaurs", for: .six)
-            guard case .accepted(let topic) = outcome else {
+            guard case let .accepted(topic) = outcome else {
                 Issue.record("Expected accepted, got \(outcome)")
                 return
             }
@@ -29,7 +29,7 @@ extension LiveModel {
 
         @Test func rejectsGoryHorrorForYoungReaders() async throws {
             let outcome = try await validator.review("gory horror movies", for: .six)
-            guard case .rejected(let reason) = outcome else {
+            guard case let .rejected(reason) = outcome else {
                 Issue.record("Expected rejected, got \(outcome)")
                 return
             }

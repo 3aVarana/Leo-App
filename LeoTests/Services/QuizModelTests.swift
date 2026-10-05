@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import Leo
+import Testing
 
 @MainActor
 struct QuizModelTests {
@@ -43,7 +43,10 @@ struct QuizModelTests {
 
     // MARK: - With a stub generator
 
-    private let settings = RoundSettings(ageGroup: .nine, topics: ["owls", "rivers", "kites", "bread", "comets", "drums"])
+    private let settings = RoundSettings(
+        ageGroup: .nine,
+        topics: ["owls", "rivers", "kites", "bread", "comets", "drums"],
+    )
     private let otherSettings = RoundSettings(ageGroup: .twelve, topics: ["chess", "glaciers", "radios"])
     private let failure = Result<Exercise, any Error>.failure(ExerciseGenerationError.failed)
 
@@ -67,9 +70,11 @@ struct QuizModelTests {
         quiz.select(correctly ? exercise.correctIndex : (exercise.correctIndex + 1) % exercise.options.count)
         quiz.next()
     }
+}
 
-    // MARK: Configure
+// MARK: - Configure
 
+extension QuizModelTests {
     @Test func configureStartsGenerating() async {
         let spy = GeneratorFactorySpy()
         let quiz = makeQuiz(spy)
@@ -127,16 +132,18 @@ struct QuizModelTests {
         await waitUntil { quiz.phase == .answering }
         #expect(quiz.currentExercise?.title == "New")
     }
+}
 
-    // MARK: Generation order
+// MARK: - Generation order
 
+extension QuizModelTests {
     @Test func generatesOneAtATime() async {
         let spy = GeneratorFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         let stub = spy.latest
 
-        for index in 0..<QuizModel.exerciseCount {
+        for index in 0 ..< QuizModel.exerciseCount {
             await waitUntil { stub.waitingCount == 1 }
             await settle()
             #expect(stub.calls.count == index + 1)
@@ -155,9 +162,11 @@ struct QuizModelTests {
         #expect(spy.latest.calls.count == QuizModel.exerciseCount)
         #expect(quiz.phase == .welcome)
     }
+}
 
-    // MARK: Start
+// MARK: - Start
 
+extension QuizModelTests {
     @Test func startBeforeFirstExerciseIsReady() async {
         let spy = GeneratorFactorySpy()
         let quiz = makeQuiz(spy)
@@ -186,20 +195,22 @@ struct QuizModelTests {
         #expect(spy.settings.count == 1)
         #expect(spy.latest.calls.count == QuizModel.exerciseCount)
     }
+}
 
-    // MARK: Answering
+// MARK: - Answering
 
-    @Test func selectCorrectAnswer() async {
+extension QuizModelTests {
+    @Test func selectCorrectAnswer() async throws {
         let quiz = await startedQuiz()
-        let exercise = quiz.currentExercise!
+        let exercise = try #require(quiz.currentExercise)
         quiz.select(exercise.correctIndex)
         #expect(quiz.selectedOption == exercise.correctIndex)
         #expect(quiz.correctCount == 1)
     }
 
-    @Test func secondSelectionIsIgnored() async {
+    @Test func secondSelectionIsIgnored() async throws {
         let quiz = await startedQuiz()
-        let exercise = quiz.currentExercise!
+        let exercise = try #require(quiz.currentExercise)
         let wrong = (exercise.correctIndex + 1) % exercise.options.count
         quiz.select(wrong)
         quiz.select(exercise.correctIndex)
@@ -207,15 +218,17 @@ struct QuizModelTests {
         #expect(quiz.correctCount == 0)
     }
 
-    @Test func selectWrongAnswer() async {
+    @Test func selectWrongAnswer() async throws {
         let quiz = await startedQuiz()
-        let exercise = quiz.currentExercise!
+        let exercise = try #require(quiz.currentExercise)
         quiz.select((exercise.correctIndex + 1) % exercise.options.count)
         #expect(quiz.correctCount == 0)
     }
+}
 
-    // MARK: Next
+// MARK: - Next
 
+extension QuizModelTests {
     @Test func nextShowsNextExercise() async {
         let quiz = await startedQuiz()
         quiz.select(0)
@@ -248,7 +261,7 @@ struct QuizModelTests {
 
     @Test func lastExerciseFinishesRound() async {
         let quiz = await startedQuiz()
-        for index in 0..<QuizModel.exerciseCount - 1 {
+        for index in 0 ..< QuizModel.exerciseCount - 1 {
             #expect(!quiz.isLastExercise, "index \(index)")
             answer(quiz, correctly: true)
         }
@@ -266,9 +279,11 @@ struct QuizModelTests {
         #expect(quiz.phase == .finished)
         #expect(quiz.correctCount == 4)
     }
+}
 
-    // MARK: Failure and retry
+// MARK: - Failure and retry
 
+extension QuizModelTests {
     @Test func failureWhileWaiting() async {
         let spy = GeneratorFactorySpy()
         let quiz = makeQuiz(spy)
@@ -284,7 +299,7 @@ struct QuizModelTests {
     }
 
     @Test func failureShowsWhenReaderReachesIt() async {
-        let spy = GeneratorFactorySpy { StubGenerator(results: [.success(.fixture()), self.failure]) }
+        let spy = GeneratorFactorySpy { StubGenerator(results: [.success(.fixture()), failure]) }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
@@ -300,7 +315,7 @@ struct QuizModelTests {
     }
 
     @Test func retryGeneratesFailedExerciseAgain() async {
-        let spy = GeneratorFactorySpy { StubGenerator(results: [.success(.fixture()), self.failure]) }
+        let spy = GeneratorFactorySpy { StubGenerator(results: [.success(.fixture()), failure]) }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
@@ -315,7 +330,7 @@ struct QuizModelTests {
         await waitUntil { stub.waitingCount == 1 }
         let retryCall = stub.calls[2]
         #expect(retryCall.skill == failedCall.skill)
-        #expect((1...3).contains(retryCall.topics.count))
+        #expect((1 ... 3).contains(retryCall.topics.count))
         #expect(Set(retryCall.topics).isSubset(of: settings.topics))
 
         stub.resume(returning: .fixture(title: "Retried"))
@@ -336,13 +351,15 @@ struct QuizModelTests {
         #expect(quiz.phase == .welcome)
         #expect(spy.latest.calls.count == QuizModel.exerciseCount)
     }
+}
 
-    // MARK: Practice again
+// MARK: - Practice again
 
+extension QuizModelTests {
     @Test func practiceAgainStartsNewRound() async {
         let spy = GeneratorFactorySpy { .ready() }
         let quiz = await startedQuiz(spy)
-        for _ in 0..<QuizModel.exerciseCount {
+        for _ in 0 ..< QuizModel.exerciseCount {
             answer(quiz, correctly: true)
         }
         #expect(quiz.phase == .finished)

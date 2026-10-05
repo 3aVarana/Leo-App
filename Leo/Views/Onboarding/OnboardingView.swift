@@ -23,8 +23,7 @@ struct OnboardingView: View {
 
     private var topics: some View {
         List {
-            Section {
-            } header: {
+            Section {} header: {
                 OnboardingTitle("What do you like reading about?")
             }
             TopicsEditor(preferences: $draft, group: draft.ageGroup)

@@ -1,11 +1,10 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct ResultViewSnapshotTests {
         /// Together these cover every symbol and every message.
         @Test(arguments: [6, 5, 3, 0])
@@ -14,7 +13,11 @@ extension ViewSnapshots {
         }
 
         @Test func accessibilitySize() {
-            assertViewSnapshot(of: ResultView(correct: 5, total: 6, onRestart: {}), named: "5-of-6-ax", sizeCategory: .accessibilityExtraExtraExtraLarge)
+            assertViewSnapshot(
+                of: ResultView(correct: 5, total: 6, onRestart: {}),
+                named: "5-of-6-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+            )
         }
     }
 }

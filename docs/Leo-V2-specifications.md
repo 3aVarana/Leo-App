@@ -32,7 +32,7 @@ Out of scope for V2: per-age-group changes to exercise count, option count or qu
 - iOS 27.0 SDK, deployment target 26.5, `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, `SWIFT_APPROACHABLE_CONCURRENCY = YES`.
 - `knownRegions`: en, es, pt-BR.
 - No test target exists.
-- Simulators: snapshots and tests run on the "iPhone 17" simulator with iOS 26.5, which matches the deployment target.
+- Simulators: snapshots and tests run on the "iPhone 18 Pro" simulator with iOS 27.0, which is newer than the deployment target (26.5), so the tests run against the newest runtime rather than the oldest supported one.
 - Existing files: `Leo/MyApp.swift`, `Leo/Models/Exercise.swift`, `Leo/Models/Topics.swift`, `Leo/Services/ContentLanguage.swift`, `Leo/Services/ExerciseGenerator.swift`, `Leo/Services/QuizModel.swift`, `Leo/Views/{RootView,WelcomeView,LoadingView,ExerciseView,ResultView}.swift`.
 
 ## 4. Architecture
@@ -274,7 +274,7 @@ Add-topic sequence. Matching a name ignores case and accents, and compares again
 Build:
 
 ```
-xcodebuild -scheme Leo -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' build
+xcodebuild -scheme Leo -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' build
 ```
 
 Foundation Models runs in the simulator on a Mac with Apple Intelligence enabled; otherwise verify on a device. The Mac runs the same model, so prompt changes can be measured faster with a command-line Swift harness that compiles `AgeGroup`, `Exercise`, `Topic`, `ContentLanguage`, `ExerciseGenerator` and `TopicValidator` and calls them directly.

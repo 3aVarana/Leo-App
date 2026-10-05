@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import Leo
+import Testing
 
 /// Not tested: `current(model:)`, which depends on the device language and the real model.
 @MainActor

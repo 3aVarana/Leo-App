@@ -1,15 +1,15 @@
-import Testing
 @testable import Leo
+import Testing
 
 /// Checks `QuizModel.makePlan` over seeds `0..<100` for each topic count. With exactly 2 topics
 /// the plan repeats a main topic back to back (exercises 1 and 2), but the app always has at
 /// least 3, so counts below 3 aren't tested.
 @MainActor
 struct QuizPlanTests {
-    private static let seeds: Range<UInt64> = 0..<100
+    private static let seeds: Range<UInt64> = 0 ..< 100
 
     private func topics(_ count: Int) -> [String] {
-        (0..<count).map { "topic \($0)" }
+        (0 ..< count).map { "topic \($0)" }
     }
 
     private func plan(_ topics: [String], seed: UInt64) -> [QuizModel.PlanItem] {
@@ -17,7 +17,7 @@ struct QuizPlanTests {
         return QuizModel.makePlan(topics: topics, using: &rng)
     }
 
-    @Test(arguments: 3...20)
+    @Test(arguments: 3 ... 20)
     func plan(topicCount: Int) {
         let topics = topics(topicCount)
         for seed in Self.seeds {

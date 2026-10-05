@@ -22,19 +22,19 @@ Out of scope: UI tests (XCUITest), `RootView` snapshots, the CI workflow itself 
 | Questionable current behavior | Lock the current behavior in tests, no app changes: `Exercise` accepts an empty title; `ContentLanguage.name` returns "Unknown language" for identifiers like `und`. |
 | Languages tested | **English only.** The test plans have a single configuration with Application Language English and Region United States. Spanish and Brazilian Portuguese UI testing is deferred (section 11). |
 | Non-English exercise content | The language the model writes in is still covered where it is pure logic: `ContentLanguage.name` for non-English locales, and the check that prompts include `language.name` (with English and Spanish). Live generation in Spanish is deferred. |
-| Snapshot device | One pinned simulator: iPhone 17, iOS 26.5. Images differ across devices and OS versions. |
+| Snapshot device | One pinned simulator: iPhone 18 Pro, iOS 27.0. Images differ across devices and OS versions. |
 | Actor isolation in tests | Annotate suites that touch app types with `@MainActor` (the app target defaults to `MainActor`, the test target does not). No build-setting change. |
 
 ## 3. Project facts relevant to implementation
 
-- Xcode 27.0. App deployment target 26.6, project default 27.0 (the test target inherits 27.0).
+- Xcode 27.0. App deployment target 26.5, project default 27.0 (the test target inherits 27.0).
 - App target: `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, `SWIFT_APPROACHABLE_CONCURRENCY = YES`, `SWIFT_VERSION = 5.0`.
 - Test target `LeoTests` (bundle id `com.aranasoft.LeoTests`): hosted by `Leo.app` (`TEST_HOST` / `BUNDLE_LOADER`), no default actor isolation, `ENABLE_TESTABILITY = YES` in Debug. Import the app with `@testable import Leo`.
 - Both `Leo/` and `LeoTests/` are **file-system synchronized groups**: any file added to `LeoTests/` is compiled or bundled automatically.
 - The `Leo` scheme has no test plan (`shouldAutocreateTestPlan = YES`) and **code coverage is off**.
 - Only one test file exists: the `LeoTests/LeoTests.swift` placeholder (to be deleted).
 - Localizations: en (source), es, pt-BR in `Leo/Localizable.xcstrings`. This plan tests English only.
-- Simulator: iPhone 17 on iOS 26.5, the deployment target. On this Mac, `SystemLanguageModel.default.availability` is `.available` in the simulator.
+- Simulator: iPhone 18 Pro on iOS 27.0, which matches the project default and the SDK. On this Mac, `SystemLanguageModel.default.availability` is `.available` in the simulator.
 
 ### 3.1 Verified with a probe test (deleted after the analysis)
 
@@ -198,10 +198,10 @@ Any equivalent works, as long as each test has a unique suite (Swift Testing run
 
 `assertViewSnapshot(of view: some View, named: String, sizeCategory: UIContentSizeCategory = .large, height: CGFloat? = nil, fileID:filePath:testName:line:column:)`:
 
-- Fails with one clear message, without comparing, when it doesn't run on the iPhone 17 simulator (`iPhone18,3`) with iOS 26.5, the environment the references were recorded on.
+- Fails with one clear message, without comparing, when it doesn't run on the iPhone 18 Pro simulator (`iPhone19,2`) with iOS 27.0, the environment the references were recorded on.
 - Takes two snapshots of every view, one in light mode and one in dark mode, so no test has to ask for dark mode. The dark one adds `-dark` to the name.
 - Wraps the view in `UIHostingController`. `ImageRenderer` can't be used, because it doesn't draw `List`, `Form`, `NavigationStack` or `ProgressView`.
-- Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, perceptualPrecision: 0.98, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test.
+- Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test. With `drawHierarchyInKeyWindow`, the library shrinks the app's key window on the iPhone 18 Pro screen (402 × 874 points, safe area 62 / 34) to the config's 390 × 844 and ignores the config's safe area (47 / 34). Views are laid out at 390 × 844 with a safe area of 62 top and 4 bottom (measured): not a real device, but the same on every run. Buttons pinned to the bottom sit about 30 points lower than on a real phone, so a regression in bottom safe-area handling wouldn't show. Changing this means re-recording every reference. No `perceptualPrecision`: that comparison runs on Metal and gives wrong results on the CI runner's virtualized GPU (section 12.1).
 - Adds the app language to the snapshot name: `"\(named)-\(TestEnvironment.appLanguage)"` and `"\(named)-dark-\(TestEnvironment.appLanguage)"` (always `en` for now; see section 4.3).
 - Passes through `fileID`/`filePath`/`testName`/`line`/`column`, so references are filed under the calling test's file and failures point at the calling line.
 - Views that read `@Environment(PreferencesStore.self)` get `.environment(PreferencesStore(defaults: testDefaults.defaults))`.
@@ -492,7 +492,7 @@ Tags: `.liveModel`. Traits: `.enabled(if: TestEnvironment.isModelAvailable)` (`S
 
 ## 8. Implementation order
 
-Each step builds, passes `Leo.xctestplan` on the iPhone 17 (iOS 26.5) simulator, and is committed separately.
+Each step builds, passes `Leo.xctestplan` on the iPhone 18 Pro (iOS 27.0) simulator, and is committed separately.
 
 1. **E** + infrastructure: package, test plans (with `--leo-running-tests`), coverage on, delete the placeholder, add `Support/` (everything except `StubGenerator` and `WaitUntil`).
 2. **Phase 1 unit tests** (7.1).
@@ -509,7 +509,7 @@ Each step builds, passes `Leo.xctestplan` on the iPhone 17 (iOS 26.5) simulator,
 Run the default plan and print coverage:
 
 ```bash
-xcodebuild test -project Leo.xcodeproj -scheme Leo -testPlan Leo -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -resultBundlePath build/Leo-tests.xcresult
+xcodebuild test -project Leo.xcodeproj -scheme Leo -testPlan Leo -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' -resultBundlePath build/Leo-tests.xcresult
 ```
 
 ```bash
@@ -525,7 +525,7 @@ When a test fails, `xcodebuild` collects simulator diagnostics, which can stall 
 Run the live model suite (on demand):
 
 ```bash
-xcodebuild test -project Leo.xcodeproj -scheme Leo -testPlan LeoLiveModel -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5'
+xcodebuild test -project Leo.xcodeproj -scheme Leo -testPlan LeoLiveModel -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0'
 ```
 
 Expected coverage once the plan is complete. These are not gates.
@@ -596,9 +596,9 @@ The workflow itself is the next step and isn't part of this plan. This section r
 
 ### 12.1 Environment
 
-- **Xcode 27.0, the iOS 26.5 simulator runtime and the iPhone 17 simulator.** `assertViewSnapshot` fails with a clear message on any other device or iOS version (section 5.3). Select Xcode explicitly (`xcode-select` or `DEVELOPER_DIR`) and record the version in the repo, for example in an `.xcode-version` file.
-- Apple Silicon runner. *Unverified* on Intel. The precision settings (0.99 and 0.98) absorb small rendering differences, but not a different OS version.
-- *Unverified:* whether the hosted runner image already has Xcode 27.0 and the iOS 26.5 runtime. If not, use a self-hosted Mac. Xcode Cloud is another option, but it hasn't been checked that its build and test steps run on the same machine (see 12.2).
+- **Xcode 27.0, the iOS 27.0 simulator runtime and the iPhone 18 Pro simulator.** `assertViewSnapshot` fails with a clear message on any other device or iOS version (section 5.3). Select Xcode explicitly (`xcode-select` or `DEVELOPER_DIR`) and record the version in the repo, for example in an `.xcode-version` file.
+- Apple Silicon runner. *Unverified* on Intel. On the hosted `xcode-27` runner, views with GPU effects (prominent buttons, toggles) render a few pixels 1/255 off from a local recording. `precision: 0.99` (up to 1% of bytes may differ) absorbs that, but not a different OS version. `perceptualPrecision` isn't used: it sends any image that isn't byte-identical to a Metal comparison, which on the runner's virtualized GPU reported about 14% of pixels as different in images that matched.
+- *Unverified:* whether the hosted runner image already has Xcode 27.0 and the iOS 27.0 runtime. If not, use a self-hosted Mac. Xcode Cloud is another option, but it hasn't been checked that its build and test steps run on the same machine (see 12.2).
 - The default plan doesn't use the on-device model, so a runner without Apple Intelligence is fine. `LeoLiveModel` is never run on CI by default: run it by hand (for example `workflow_dispatch`) on a Mac with the model available.
 
 ### 12.2 One job builds and tests
@@ -611,7 +611,7 @@ References are found from `#filePath`, which is fixed at compile time (section 4
 rm -rf build
 xcodebuild test \
   -project Leo.xcodeproj -scheme Leo -testPlan Leo \
-  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' \
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' \
   -resultBundlePath build/Leo-tests.xcresult \
   -collect-test-diagnostics never \
   -disableAutomaticPackageResolution \
@@ -626,8 +626,8 @@ xcodebuild test \
 
 ### 12.4 Failures and artifacts
 
-- Upload `build/Leo-tests.xcresult` when the job fails (`if: failure()`). Under Xcode, swift-snapshot-testing 1.19.6 attaches the new, reference and diff images to the result bundle for Swift Testing failures.
-- `SNAPSHOT_ARTIFACTS` (a folder for the failing images) isn't needed. A shell variable doesn't reach the hosted tests (`SIMCTL_CHILD_…` didn't work for `SNAPSHOT_TESTING_RECORD`), and the images are already in the result bundle. It could be passed through the test plan like the record mode. *Unverified.*
+- Upload `build/Leo-tests.xcresult` when the job fails (`if: failure()`). It holds only the failure messages: on CI, swift-snapshot-testing 1.19.6 didn't attach the images to the result bundle.
+- The failing images are in the simulator app's `tmp` folder, on the runner's disk. The workflow copies each one next to its reference into `build/snapshot-failures/` and uploads it with the result bundle. `SNAPSHOT_ARTIFACTS` isn't needed for that.
 - Coverage: `xcrun xccov view --report --json build/Leo-tests.xcresult`, written to the job summary. No gate (section 9).
 
 ### 12.5 Re-recording references

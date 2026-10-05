@@ -1,5 +1,5 @@
-import Testing
 @testable import Leo
+import Testing
 
 @MainActor
 struct ExerciseTests {
@@ -14,7 +14,10 @@ struct ExerciseTests {
         ["Into a cave", "Up a tree", "Under a bridge"],
     ])
     func validInput(incorrectAnswers: [String]) throws {
-        let exercise = try #require(exercise(.fixture(correctAnswer: "Across a field", incorrectAnswers: incorrectAnswers)))
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Across a field",
+            incorrectAnswers: incorrectAnswers,
+        )))
 
         #expect(exercise.options.count == incorrectAnswers.count + 1)
         #expect(Set(exercise.options) == Set(incorrectAnswers + ["Across a field"]))
@@ -31,7 +34,7 @@ struct ExerciseTests {
             question: "\tWhere did the fox run? ",
             correctAnswer: " Across a field\n",
             incorrectAnswers: ["  Into a cave", "Up a tree\n"],
-            explanation: "\nBecause the passage says so.  "
+            explanation: "\nBecause the passage says so.  ",
         )))
 
         #expect(exercise.title == "The Quiet Field")
@@ -48,13 +51,19 @@ struct ExerciseTests {
     }
 
     @Test func dropsDuplicateDistractorsIgnoringCase() throws {
-        let exercise = try #require(exercise(.fixture(correctAnswer: "Madrid", incorrectAnswers: ["Paris", "paris", "Rome"])))
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Madrid",
+            incorrectAnswers: ["Paris", "paris", "Rome"],
+        )))
         #expect(exercise.options.count == 3)
         #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome"])
     }
 
     @Test func dropsDistractorEqualToCorrectAnswerIgnoringCase() throws {
-        let exercise = try #require(exercise(.fixture(correctAnswer: "Madrid", incorrectAnswers: ["MADRID", "Paris", "Rome"])))
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Madrid",
+            incorrectAnswers: ["MADRID", "Paris", "Rome"],
+        )))
         #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome"])
     }
 
@@ -113,7 +122,7 @@ struct ExerciseTests {
     /// failure is about 4 × (3/4)^200.
     @Test func correctAnswerLandsInEveryPosition() throws {
         var positions: Set<Int> = []
-        for _ in 0..<200 {
+        for _ in 0 ..< 200 {
             let exercise = try #require(exercise(.fixture()))
             positions.insert(exercise.correctIndex)
         }

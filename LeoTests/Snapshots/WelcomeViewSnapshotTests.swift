@@ -1,11 +1,10 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct WelcomeViewSnapshotTests {
         /// Different `displayName` lengths.
         @Test(arguments: [AgeGroup.six, .adult])
@@ -14,7 +13,11 @@ extension ViewSnapshots {
         }
 
         @Test func accessibilitySize() {
-            assertViewSnapshot(of: WelcomeView(ageGroup: .six, onStart: {}), named: "six-ax", sizeCategory: .accessibilityExtraExtraExtraLarge)
+            assertViewSnapshot(
+                of: WelcomeView(ageGroup: .six, onStart: {}),
+                named: "six-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+            )
         }
     }
 }

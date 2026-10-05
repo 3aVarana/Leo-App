@@ -1,0 +1,74 @@
+#!/bin/sh
+#
+# Formats staged Swift files with SwiftFormat, then lints them with SwiftLint.
+# SwiftLint runs with --strict, like the build phase, so any violation blocks the commit.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Skip for a single commit: git commit --no-verify
+
+# GUI clients (Xcode, Fork, etc.) don't load the shell profile, so Homebrew may be missing from PATH.
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+for tool in swiftformat swiftlint; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        echo "pre-commit: $tool not found. Install it with: brew install $tool" >&2
+        exit 1
+    fi
+done
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
+[ -z "$staged" ] && exit 0
+
+failed=""
+formatted=""
+
+# Split on newlines only so paths with spaces survive.
+IFS='
+'
+for file in $staged; do
+    if git diff --quiet -- "$file"; then
+        # Fully staged: format in place and re-stage.
+        before=$(git hash-object "$file")
+        swiftformat --quiet "$file" || { failed="$failed\n  $file"; continue; }
+        if [ "$(git hash-object "$file")" != "$before" ]; then
+            git add -- "$file"
+            formatted="$formatted\n  $file"
+        fi
+    else
+        # Partially staged: formatting would mix in unstaged edits, so only check the staged version.
+        if ! git show ":$file" | swiftformat stdin --stdinpath "$file" --lint --quiet >/dev/null 2>&1; then
+            failed="$failed\n  $file"
+        fi
+    fi
+done
+
+if [ -n "$formatted" ]; then
+    printf "pre-commit: SwiftFormat reformatted and re-staged:%b\n" "$formatted"
+fi
+
+status=0
+
+if [ -n "$failed" ]; then
+    printf "pre-commit: these files need formatting (they also have unstaged changes):%b\n" "$failed" >&2
+    echo "Run 'swiftformat <file>', review, stage, and commit again." >&2
+    status=1
+fi
+
+lint_failed=0
+for file in $staged; do
+    if git diff --quiet -- "$file"; then
+        swiftlint lint --quiet --strict --force-exclude -- "$file" || lint_failed=1
+    else
+        # Partially staged: lint the staged version, labeled with its real path.
+        output=$(git show ":$file" | swiftlint lint --use-stdin --quiet --strict) || lint_failed=1
+        [ -n "$output" ] && printf '%s\n' "$output" | sed "s|^<nopath>|$file|"
+    fi
+done
+
+if [ "$lint_failed" -ne 0 ]; then
+    echo "pre-commit: SwiftLint found violations. Fix them, stage, and commit again." >&2
+    status=1
+fi
+
+exit $status

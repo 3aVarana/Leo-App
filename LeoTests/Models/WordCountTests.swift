@@ -1,5 +1,5 @@
-import Testing
 @testable import Leo
+import Testing
 
 struct WordCountTests {
     @Test(arguments: [

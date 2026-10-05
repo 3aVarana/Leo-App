@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import Leo
+import Testing
 
 @MainActor
 struct PreferencesStoreTests {
@@ -12,7 +12,11 @@ struct PreferencesStoreTests {
     }
 
     @Test func savesAndReloads() {
-        let preferences = ReaderPreferences.fixture(ageGroup: .twelve, disabled: [.twelve: ["mythology"]], custom: [.twelve: ["Chess"]])
+        let preferences = ReaderPreferences.fixture(
+            ageGroup: .twelve,
+            disabled: [.twelve: ["mythology"]],
+            custom: [.twelve: ["Chess"]],
+        )
         PreferencesStore(defaults: testDefaults.defaults).preferences = preferences
 
         #expect(testDefaults.defaults.data(forKey: key) != nil)

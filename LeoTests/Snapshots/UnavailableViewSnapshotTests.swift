@@ -1,12 +1,11 @@
 import FoundationModels
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct UnavailableViewSnapshotTests {
         @Test func deviceNotEligible() {
             assertViewSnapshot(of: UnavailableView(reason: .deviceNotEligible), named: "device-not-eligible")

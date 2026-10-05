@@ -38,7 +38,9 @@ final class QuizModel {
     private var generation: Task<Void, Never>?
     private var isRoundStarted = false
 
-    var isLastExercise: Bool { currentIndex == Self.exerciseCount - 1 }
+    var isLastExercise: Bool {
+        currentIndex == Self.exerciseCount - 1
+    }
 
     /// - Parameter makeGenerator: Makes the generator for each round.
     init(makeGenerator: @escaping (RoundSettings) -> any ExerciseGenerating = {
@@ -58,7 +60,9 @@ final class QuizModel {
     func start() {
         guard settings != nil else { return }
         // A round is used once; "Practice again" generates a new one.
-        if plan.isEmpty || isRoundStarted { prepareRound() }
+        if plan.isEmpty || isRoundStarted {
+            prepareRound()
+        }
         isRoundStarted = true
         currentIndex = 0
         correctCount = 0
@@ -68,7 +72,9 @@ final class QuizModel {
     func select(_ option: Int) {
         guard selectedOption == nil, let exercise = currentExercise else { return }
         selectedOption = option
-        if option == exercise.correctIndex { correctCount += 1 }
+        if option == exercise.correctIndex {
+            correctCount += 1
+        }
     }
 
     func next() {
@@ -97,7 +103,9 @@ final class QuizModel {
         let shuffled = topics.shuffled(using: &rng)
         let count = shuffled.count
         var skills: [ComprehensionSkill] = []
-        while skills.count < exerciseCount { skills += ComprehensionSkill.allCases.shuffled(using: &rng) }
+        while skills.count < exerciseCount {
+            skills += ComprehensionSkill.allCases.shuffled(using: &rng)
+        }
         return skills.prefix(exerciseCount).enumerated().map { i, skill in
             let primary = (i + i / count) % count
             let spares = shuffled.indices.filter { $0 != primary }.shuffled(using: &rng).prefix(2).map { shuffled[$0] }
@@ -133,8 +141,12 @@ final class QuizModel {
                     guard !Task.isCancelled, !(error is CancellationError) else { return }
                     generationError = error.localizedDescription
                 }
-                if phase == .loading { showCurrent() }
-                if generationError != nil { return }
+                if phase == .loading {
+                    showCurrent()
+                }
+                if generationError != nil {
+                    return
+                }
             }
         }
     }

@@ -20,16 +20,26 @@ func assertViewSnapshot(
     filePath: StaticString = #filePath,
     testName: String = #function,
     line: UInt = #line,
-    column: UInt = #column
+    column: UInt = #column,
 ) {
     if let problem = snapshotEnvironmentProblem {
         // One clear failure instead of a pixel difference in every image.
         Issue.record(
             Comment(rawValue: problem),
-            sourceLocation: SourceLocation(fileID: "\(fileID)", filePath: "\(filePath)", line: Int(line), column: Int(column))
+            sourceLocation: SourceLocation(
+                fileID: "\(fileID)",
+                filePath: "\(filePath)",
+                line: Int(line),
+                column: Int(column),
+            ),
         )
         return
     }
+    // With drawHierarchyInKeyWindow, the library shrinks the app's key window on the iPhone 18 Pro
+    // screen (402 x 874) to the config's 390 x 844 and ignores the config's safe area (47 / 34).
+    // Views get the screen's top inset, 62, and a bottom inset of 4: the window ends 30 points
+    // above the screen's bottom, so it overlaps only 4 of the home indicator's 34 points. Not a
+    // real device layout, but the same on every run. Changing it means re-recording every reference.
     let config = ViewImageConfig.iPhone13Pro
     let size = height.map { CGSize(width: config.size!.width, height: $0) }
     for (colorScheme, suffix) in [(UIUserInterfaceStyle.light, ""), (.dark, "-dark")] {
@@ -40,15 +50,23 @@ func assertViewSnapshot(
             $0.preferredContentSizeCategory = sizeCategory
             $0.displayScale = 3
         }
+        // No perceptualPrecision: that comparison runs on Metal, which gives wrong results on the
+        // virtualized GPU of the CI runner. The byte comparison behind `precision` runs on the CPU.
         assertReferenceSnapshot(
             of: controller,
-            as: .image(on: config, drawHierarchyInKeyWindow: true, precision: 0.99, perceptualPrecision: 0.98, size: size, traits: traits),
+            as: .image(
+                on: config,
+                drawHierarchyInKeyWindow: true,
+                precision: 0.99,
+                size: size,
+                traits: traits,
+            ),
             named: "\(name)\(suffix)-\(TestEnvironment.appLanguage)",
             fileID: fileID,
             filePath: filePath,
             testName: testName,
             line: line,
-            column: column
+            column: column,
         )
     }
 }
@@ -57,34 +75,37 @@ func assertViewSnapshot(
 /// root. Every snapshot test calls this (or `assertViewSnapshot`) instead of `assertSnapshot`,
 /// which stores them in `__Snapshots__` next to the test. Inside the `LeoTests` synchronized
 /// folder, Xcode would copy them into the test bundle.
-func assertReferenceSnapshot<Value, Format>(
+func assertReferenceSnapshot<Value>(
     of value: @autoclosure () throws -> Value,
-    as snapshotting: Snapshotting<Value, Format>,
+    as snapshotting: Snapshotting<Value, some Any>,
     named name: String? = nil,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     testName: String = #function,
     line: UInt = #line,
-    column: UInt = #column
+    column: UInt = #column,
 ) {
     let sourceLocation = SourceLocation(
         fileID: "\(fileID)",
         filePath: "\(filePath)",
         line: Int(line),
-        column: Int(column)
+        column: Int(column),
     )
     guard FileManager.default.fileExists(atPath: referencesDirectory.path) else {
         // `#filePath` is fixed when the tests are compiled, so the tests have to run on the
         // machine that built them, from the same checkout.
         Issue.record(
-            "Can't find the snapshot references at \(referencesDirectory.path). Build and run the tests on the same machine, from the same checkout.",
-            sourceLocation: sourceLocation
+            """
+            Can't find the snapshot references at \(referencesDirectory.path). \
+            Build and run the tests on the same machine, from the same checkout.
+            """,
+            sourceLocation: sourceLocation,
         )
         return
     }
     let testFile = URL(fileURLWithPath: "\(filePath)").deletingPathExtension().lastPathComponent
-    let failure = verifySnapshot(
-        of: try value(),
+    let failure = try verifySnapshot(
+        of: value(),
         as: snapshotting,
         named: name,
         snapshotDirectory: referencesDirectory.appendingPathComponent(testFile).path,
@@ -92,7 +113,7 @@ func assertReferenceSnapshot<Value, Format>(
         file: filePath,
         testName: testName,
         line: line,
-        column: column
+        column: column,
     )
     guard let failure else { return }
     Issue.record(Comment(rawValue: failure), sourceLocation: sourceLocation)
@@ -100,15 +121,19 @@ func assertReferenceSnapshot<Value, Format>(
 
 /// The simulator and OS the view references were recorded on. Other combinations render
 /// differently, so view snapshots fail early with a clear message instead.
-private let recordedModelIdentifier = "iPhone18,3" // iPhone 17
-private let recordedSystemVersion = "26.5"
+private let recordedModelIdentifier = "iPhone19,2" // iPhone 18 Pro
+private let recordedSystemVersion = "27.0"
 
 private let snapshotEnvironmentProblem: String? = {
     let model = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "a physical device"
     let os = ProcessInfo.processInfo.operatingSystemVersion
     let version = "\(os.majorVersion).\(os.minorVersion)"
     guard model != recordedModelIdentifier || version != recordedSystemVersion else { return nil }
-    return "View snapshots are recorded on the iPhone 17 simulator (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). This run is on \(model) with iOS \(version)."
+    return """
+    View snapshots are recorded on the iPhone 18 Pro simulator \
+    (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). \
+    This run is on \(model) with iOS \(version).
+    """
 }()
 
 /// `LeoTestsSnapshots/`, found from this file's path: `LeoTests/Support/SnapshotHelpers.swift`.

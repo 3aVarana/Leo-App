@@ -1,7 +1,7 @@
 import Foundation
+@testable import Leo
 import SnapshotTesting
 import Testing
-@testable import Leo
 
 @MainActor
 struct ReaderPreferencesTests {
@@ -24,7 +24,7 @@ struct ReaderPreferencesTests {
         let preferences = ReaderPreferences.fixture(
             ageGroup: .twelve,
             disabled: [.twelve: ["mythology", "inventions"], .six: ["dinosaurs"]],
-            custom: [.twelve: ["Chess", "Origami"], .adult: ["Jazz"]]
+            custom: [.twelve: ["Chess", "Origami"], .adult: ["Jazz"]],
         )
         let decoded = try JSONDecoder().decode(ReaderPreferences.self, from: JSONEncoder().encode(preferences))
         #expect(decoded == preferences)
@@ -33,15 +33,15 @@ struct ReaderPreferencesTests {
 
     /// Any change to the saved format must show up in review. One disabled id per group,
     /// since a `Set` with more encodes in an order that changes between runs.
-    @Test func savedFormat() {
+    @Test func savedFormat() throws {
         var preferences = ReaderPreferences(ageGroup: .nine)
         preferences.disabledDefaultTopics = [.nine: ["volcanoes"], .twelve: ["mythology"]]
-        preferences.customTopics = [
+        preferences.customTopics = try [
             .nine: [
-                CustomTopic(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!, name: "Chess"),
-                CustomTopic(id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!, name: "Origami"),
+                CustomTopic(id: #require(UUID(uuidString: "00000000-0000-0000-0000-000000000001")), name: "Chess"),
+                CustomTopic(id: #require(UUID(uuidString: "00000000-0000-0000-0000-000000000002")), name: "Origami"),
             ],
-            .adult: [CustomTopic(id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!, name: "Jazz")],
+            .adult: [CustomTopic(id: #require(UUID(uuidString: "00000000-0000-0000-0000-000000000003")), name: "Jazz")],
         ]
         assertReferenceSnapshot(of: preferences, as: .json)
     }
@@ -65,7 +65,8 @@ struct ReaderPreferencesTests {
     @Test func enabledTopicPromptsExcludesDisabled() {
         let preferences = ReaderPreferences.fixture(ageGroup: .nine, disabled: [.nine: ["volcanoes", "recycling"]])
         let prompts = preferences.enabledTopicPrompts(for: .nine)
-        let expected = DefaultTopics.topics(for: .nine).filter { !["volcanoes", "recycling"].contains($0.id) }.map(\.prompt)
+        let expected = DefaultTopics.topics(for: .nine).filter { !["volcanoes", "recycling"].contains($0.id) }
+            .map(\.prompt)
         #expect(prompts == expected)
     }
 

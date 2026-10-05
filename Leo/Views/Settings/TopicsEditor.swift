@@ -10,15 +10,25 @@ struct TopicsEditor: View {
     @State private var message: String?
     @State private var review = Review()
 
-    private var defaults: [DefaultTopic] { DefaultTopics.topics(for: group) }
-    private var customTopics: [CustomTopic] { preferences.customTopics[group] ?? [] }
+    private var defaults: [DefaultTopic] {
+        DefaultTopics.topics(for: group)
+    }
+
+    private var customTopics: [CustomTopic] {
+        preferences.customTopics[group] ?? []
+    }
 
     private var enabledCount: Int {
         defaults.filter { preferences.isEnabled($0, in: group) }.count + customTopics.count
     }
 
-    private var isAtMinimum: Bool { enabledCount <= ReaderPreferences.minimumEnabledTopics }
-    private var isReviewing: Bool { review.task != nil }
+    private var isAtMinimum: Bool {
+        enabledCount <= ReaderPreferences.minimumEnabledTopics
+    }
+
+    private var isReviewing: Bool {
+        review.task != nil
+    }
 
     var body: some View {
         Section("Suggested") {
@@ -108,7 +118,7 @@ struct TopicsEditor: View {
         case .enabled:
             message = String(localized: "That topic is already on your list.")
             return false
-        case .disabledDefault(let id):
+        case let .disabledDefault(id):
             preferences.disabledDefaultTopics[group]?.remove(id)
         case nil:
             preferences.customTopics[group, default: []].append(CustomTopic(name: name))
@@ -120,7 +130,7 @@ struct TopicsEditor: View {
         guard !isReviewing else { return }
         let text = newTopic.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        guard (2...60).contains(text.count) else {
+        guard (2 ... 60).contains(text.count) else {
             message = String(localized: "Topics must be between 2 and 60 characters.")
             return
         }
@@ -130,26 +140,38 @@ struct TopicsEditor: View {
             return
         }
         if case .disabledDefault = match(text) {
-            if insert(text) { newTopic = "" }
+            if insert(text) {
+                newTopic = ""
+            }
             return
         }
         guard customTopics.count < ReaderPreferences.maximumCustomTopics else {
             message = String(localized: "You can have up to 20 of your own topics.")
             return
         }
+        startReview(of: text)
+    }
 
+    /// Asks the model whether `text` is a suitable topic, and adds its tidied-up phrase if it is.
+    private func startReview(of text: String) {
         message = nil
         let group = group
         let validator = TopicValidator(language: .current())
         review.task = Task {
-            defer { if !Task.isCancelled { review.task = nil } }
+            defer {
+                if !Task.isCancelled {
+                    review.task = nil
+                }
+            }
             do {
                 let outcome = try await validator.review(text, for: group)
                 guard !Task.isCancelled else { return }
                 switch outcome {
-                case .accepted(let phrase):
-                    if insert(phrase) { newTopic = "" }
-                case .rejected(let reason):
+                case let .accepted(phrase):
+                    if insert(phrase) {
+                        newTopic = ""
+                    }
+                case let .rejected(reason):
                     message = reason
                 }
             } catch {
@@ -158,7 +180,6 @@ struct TopicsEditor: View {
             }
         }
     }
-
 }
 
 /// Holds the review of a topic being added, and cancels it when the editor goes away.

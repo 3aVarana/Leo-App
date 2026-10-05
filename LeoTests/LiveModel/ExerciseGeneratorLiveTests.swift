@@ -1,5 +1,5 @@
-import Testing
 @testable import Leo
+import Testing
 
 /// Results vary between runs: a failure means "look at the prompts", not a broken build.
 extension LiveModel {
@@ -18,7 +18,7 @@ extension LiveModel {
             #expect(group.acceptedWordCount.contains(exercise.passage.wordCount))
             #expect(topics.contains(exercise.topic))
             #expect(!exercise.question.isEmpty)
-            #expect((3...4).contains(exercise.options.count))
+            #expect((3 ... 4).contains(exercise.options.count))
         }
     }
 }

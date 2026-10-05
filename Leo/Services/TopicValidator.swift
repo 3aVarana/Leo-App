@@ -4,14 +4,18 @@ import FoundationModels
 /// The model's review of a topic the reader wants to add.
 @Generable
 nonisolated struct TopicReview {
-    // Filled in declaration order, so the verdict comes before the phrase and the reason.
+    /// Filled in declaration order, so the verdict comes before the phrase and the reason.
     @Guide(description: "Whether the topic is safe and suitable for reading texts for the given reader age")
     var isSuitable: Bool
 
-    @Guide(description: "If suitable, the reader's topic tidied up as a short phrase of at most 6 words: fix spelling and capitalization, keep the reader's own words and meaning, in the same language the reader typed it in; otherwise empty")
+    @Guide(
+        description: "If suitable, the reader's topic tidied up as a short phrase of at most 6 words: fix spelling and capitalization, keep the reader's own words and meaning, in the same language the reader typed it in; otherwise empty",
+    )
     var topic: String
 
-    @Guide(description: "If not suitable, one short friendly sentence for the reader explaining why, in the language the instructions ask for; otherwise empty")
+    @Guide(
+        description: "If not suitable, one short friendly sentence for the reader explaining why, in the language the instructions ask for; otherwise empty",
+    )
     var reason: String
 }
 
@@ -42,27 +46,32 @@ struct TopicValidator {
 
     func review(_ text: String, for group: AgeGroup) async throws -> Outcome {
         let instructions = """
-            You review topics a reader wants to practice reading about. \
-            Each topic becomes short reading texts written for \(group.promptAudience), at their level: \
-            a story, or an explanation of facts. So everyday, school, real-world and imaginative topics \
-            all work, and a topic doesn't need to be realistic. \
-            Accept a topic if it is appropriate reading material for \(group.promptAudience). \
-            Write the topic phrase and the reason in \(language.name).
-            """
+        You review topics a reader wants to practice reading about. \
+        Each topic becomes short reading texts written for \(group.promptAudience), at their level: \
+        a story, or an explanation of facts. So everyday, school, real-world and imaginative topics \
+        all work, and a topic doesn't need to be realistic. \
+        Accept a topic if it is appropriate reading material for \(group.promptAudience). \
+        Write the topic phrase and the reason in \(language.name).
+        """
         let session = LanguageModelSession(instructions: instructions)
         do {
             let response = try await session.respond(
                 to: "Topic: \(text)\nWrite the reason in \(language.name).",
                 generating: TopicReview.self,
-                options: GenerationOptions(temperature: 0.2)
+                options: GenerationOptions(temperature: 0.2),
             )
             return Self.outcome(for: response.content)
         } catch LanguageModelSession.GenerationError.guardrailViolation,
-                LanguageModelSession.GenerationError.refusal {
+            LanguageModelSession.GenerationError.refusal
+        {
             return .rejected(Self.genericRejection)
         } catch {
-            if #available(iOS 27, *), case LanguageModelError.guardrailViolation = error { return .rejected(Self.genericRejection) }
-            if #available(iOS 27, *), case LanguageModelError.refusal = error { return .rejected(Self.genericRejection) }
+            if #available(iOS 27, *), case LanguageModelError.guardrailViolation = error {
+                return .rejected(Self.genericRejection)
+            }
+            if #available(iOS 27, *), case LanguageModelError.refusal = error {
+                return .rejected(Self.genericRejection)
+            }
             throw error
         }
     }

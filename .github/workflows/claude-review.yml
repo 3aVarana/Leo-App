@@ -1,0 +1,90 @@
+# Advisory Claude Code review of every pull request to main, when it's opened and on every push to its branch.
+# Not a required check: it never blocks merging. Claude only reads the code; this workflow keeps one review
+# comment on the pull request and updates it with each new review.
+# Runs on the Claude subscription: the CLAUDE_CODE_OAUTH_TOKEN secret comes from `claude setup-token`.
+name: Claude Review
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# A new push cancels the review of the previous commit.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude Review
+    # Secrets aren't available to pull requests from forks.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Review
+        id: review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} of ${{ github.repository }}.
+
+            The checkout is at the PR head. See the whole change with
+            `git diff ${{ github.event.pull_request.base.sha }}...HEAD` and the commits with
+            `git log ${{ github.event.pull_request.base.sha }}..HEAD`. Read surrounding code as needed.
+
+            Leo is a SwiftUI iOS app (Xcode 27, deployment target iOS 26.5) that generates reading
+            comprehension exercises with Apple's on-device Foundation Models. The app target defaults
+            to MainActor isolation with approachable concurrency; the test target does not. Tests use
+            Swift Testing and swift-snapshot-testing, with references in LeoTestsSnapshots/.
+            UI strings are localized in Leo/Localizable.xcstrings (en, es, pt-BR).
+
+            Focus on, in this order:
+            1. Bugs and wrong behavior, including edge cases and error handling.
+            2. Concurrency: data races, actor isolation, Sendable, work on the main actor that shouldn't be.
+            3. Memory: retain cycles, leaked tasks, unbounded growth.
+            4. SwiftUI: state ownership, view identity, unnecessary re-rendering.
+            5. Tests: missing coverage for new logic, view changes without updated snapshot references,
+               new UI strings missing from Localizable.xcstrings.
+            6. API design and readability, only when it matters.
+
+            Don't comment on formatting or style that SwiftLint and SwiftFormat already check in CI.
+            Only report issues you are confident about, and point to file and line for each.
+
+            Return the review as GitHub-flavored Markdown in the `review` field: a one or two sentence
+            summary, then the findings grouped by severity (Blocking, Should fix, Nit), or
+            "No issues found." Keep it concise.
+          claude_args: |
+            --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*)"
+            --json-schema '{"type":"object","properties":{"review":{"type":"string"}},"required":["review"]}'
+
+      - name: Post review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW: ${{ steps.review.outputs.structured_output }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          marker='<!-- claude-review -->'
+          body=$(printf '%s\n## Claude review\n\n%s\n\n<sub>Reviewed at %s. Advisory: this review never blocks merging.</sub>' \
+            "$marker" "$(jq -r '.review' <<< "$REVIEW")" "$HEAD_SHA")
+
+          comment_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" \
+            | head -n 1)
+
+          if [ -n "$comment_id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" -f body="$body" > /dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
+          fi

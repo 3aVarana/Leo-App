@@ -28,14 +28,18 @@ final class StubGenerator: ExerciseGenerating {
 
     /// Answers every call of a round right away.
     static func ready(count: Int = QuizModel.exerciseCount) -> StubGenerator {
-        StubGenerator(results: (0..<count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
+        StubGenerator(results: (0 ..< count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
     }
 
-    var waitingCount: Int { waiting.count }
+    var waitingCount: Int {
+        waiting.count
+    }
 
     func generate(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
         calls.append(Call(topics: topics, skill: skill))
-        if !results.isEmpty { return try results.removeFirst().get() }
+        if !results.isEmpty {
+            return try results.removeFirst().get()
+        }
 
         let id = nextID
         nextID += 1
@@ -77,7 +81,9 @@ final class GeneratorFactorySpy {
         self.makeStub = makeStub
     }
 
-    var latest: StubGenerator { stubs.last! }
+    var latest: StubGenerator {
+        stubs.last!
+    }
 
     func make(_ settings: RoundSettings) -> any ExerciseGenerating {
         self.settings.append(settings)
