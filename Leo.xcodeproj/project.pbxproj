@@ -6,6 +6,10 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		10285AF130731B5E00EE2ED8 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 10285AF230731B5E00EE2ED8 /* SnapshotTesting */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		10285AE830731B5E00EE2ED8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -43,6 +47,7 @@
 		10285AE130731B5E00EE2ED8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				10285AF130731B5E00EE2ED8 /* SnapshotTesting in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -104,6 +109,9 @@
 				10285AE530731B5E00EE2ED8 /* LeoTests */,
 			);
 			name = LeoTests;
+			packageProductDependencies = (
+				10285AF230731B5E00EE2ED8 /* SnapshotTesting */,
+			);
 			productName = LeoTests;
 			productReference = 10285AE430731B5E00EE2ED8 /* LeoTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -138,6 +146,9 @@
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				10285AF330731B5E00EE2ED8 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
 			projectDirPath = "";
@@ -471,6 +482,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		10285AF330731B5E00EE2ED8 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		10285AF230731B5E00EE2ED8 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 10285AF330731B5E00EE2ED8 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }

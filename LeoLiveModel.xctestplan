@@ -1,0 +1,41 @@
+{
+  "configurations" : [
+    {
+      "id" : "1BCE1EA5-D95B-4D58-AE3C-DAEDDC8E1ABD",
+      "name" : "English",
+      "options" : {
+        "language" : "en",
+        "region" : "US"
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "--leo-running-tests"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Leo.xcodeproj",
+      "identifier" : "000000000000000100000000",
+      "name" : "Leo"
+    },
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "selectedTags" : {
+        "tags" : [
+          "liveModel"
+        ]
+      },
+      "target" : {
+        "containerPath" : "container:Leo.xcodeproj",
+        "identifier" : "10285AE330731B5E00EE2ED8",
+        "name" : "LeoTests"
+      }
+    }
+  ],
+  "version" : 1
+}
