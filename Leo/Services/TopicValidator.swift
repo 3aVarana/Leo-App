@@ -30,6 +30,16 @@ struct TopicValidator {
         String(localized: "That topic isn't a good fit for your reading practice. Try another one.")
     }
 
+    /// Turns the model's review into what the reader sees.
+    static func outcome(for review: TopicReview) -> Outcome {
+        let topic = review.topic.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
+        guard review.isSuitable, !topic.isEmpty else {
+            let reason = review.reason.trimmingCharacters(in: .whitespacesAndNewlines)
+            return .rejected(reason.isEmpty ? genericRejection : reason)
+        }
+        return .accepted(topic)
+    }
+
     func review(_ text: String, for group: AgeGroup) async throws -> Outcome {
         let instructions = """
             You review topics a reader wants to practice reading about. \
@@ -46,13 +56,7 @@ struct TopicValidator {
                 generating: TopicReview.self,
                 options: GenerationOptions(temperature: 0.2)
             )
-            let review = response.content
-            let topic = review.topic.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
-            guard review.isSuitable, !topic.isEmpty else {
-                let reason = review.reason.trimmingCharacters(in: .whitespacesAndNewlines)
-                return .rejected(reason.isEmpty ? Self.genericRejection : reason)
-            }
-            return .accepted(topic)
+            return Self.outcome(for: response.content)
         } catch LanguageModelSession.GenerationError.guardrailViolation,
                 LanguageModelSession.GenerationError.refusal {
             return .rejected(Self.genericRejection)
