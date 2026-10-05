@@ -14,12 +14,8 @@ extension ViewSnapshots {
                 .environment(PreferencesStore(defaults: testDefaults.defaults))
         }
 
-        @Test func light() {
+        @Test func screen() {
             assertViewSnapshot(of: settings, named: "12-14", height: 1300)
-        }
-
-        @Test func dark() {
-            assertViewSnapshot(of: settings, named: "12-14-dark", colorScheme: .dark, height: 1300)
         }
     }
 }

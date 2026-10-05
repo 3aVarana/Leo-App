@@ -196,12 +196,13 @@ Any equivalent works, as long as each test has a unique suite (Swift Testing run
 - Records a failure with `Issue.record` at the caller's source location. Record mode comes from `SNAPSHOT_TESTING_RECORD` (section 4.2).
 - Used directly by the text snapshots (`.lines`, `.json`).
 
-`assertViewSnapshot(of view: some View, named: String, colorScheme: UIUserInterfaceStyle = .light, sizeCategory: UIContentSizeCategory = .large, fileID:filePath:testName:line:column:)`:
+`assertViewSnapshot(of view: some View, named: String, sizeCategory: UIContentSizeCategory = .large, height: CGFloat? = nil, fileID:filePath:testName:line:column:)`:
 
 - Fails with one clear message, without comparing, when it doesn't run on the iPhone 18 Pro simulator (`iPhone19,2`) with iOS 27.0, the environment the references were recorded on.
+- Takes two snapshots of every view, one in light mode and one in dark mode, so no test has to ask for dark mode. The dark one adds `-dark` to the name.
 - Wraps the view in `UIHostingController`. `ImageRenderer` can't be used, because it doesn't draw `List`, `Form`, `NavigationStack` or `ProgressView`.
 - Calls `assertReferenceSnapshot(of:as: .image(on: .iPhone13Pro, precision: 0.99, perceptualPrecision: 0.98, traits: …))`. Any fixed `ViewImageConfig` is fine; keep one for every test.
-- Adds the app language to the snapshot name: `"\(named)-\(TestEnvironment.appLanguage)"` (always `en` for now; see section 4.3).
+- Adds the app language to the snapshot name: `"\(named)-\(TestEnvironment.appLanguage)"` and `"\(named)-dark-\(TestEnvironment.appLanguage)"` (always `en` for now; see section 4.3).
 - Passes through `fileID`/`filePath`/`testName`/`line`/`column`, so references are filed under the calling test's file and failures point at the calling line.
 - Views that read `@Environment(PreferencesStore.self)` get `.environment(PreferencesStore(defaults: testDefaults.defaults))`.
 
@@ -395,16 +396,16 @@ Every suite that touches app types is `@MainActor`. Use parameterized `@Test(arg
 
 ### 7.2 Phase 2 — snapshot tests that need no app code changes
 
-All snapshot suites are tagged `.snapshot`, run in English. "+ dark, + AX" means two extra variants: dark mode, and `.accessibilityExtraExtraExtraLarge`.
+All snapshot suites are tagged `.snapshot`, run in English. Every snapshot below is taken in light and dark mode (section 5.3). "+ AX" means an extra variant at `.accessibilityExtraExtraExtraLarge`, also in both modes.
 
 | Suite | Snapshots |
 |---|---|
-| `ResultViewSnapshotTests` | `correct` 6, 5, 3 and 0 of 6. Together these cover every symbol (star, thumbs up, book) and every message. 5/6 + dark, + AX. |
-| `WelcomeViewSnapshotTests` | `.six` and `.adult` (different `displayName` lengths). `.six` + dark, + AX. |
+| `ResultViewSnapshotTests` | `correct` 6, 5, 3 and 0 of 6. Together these cover every symbol (star, thumbs up, book) and every message. 5/6 + AX. |
+| `WelcomeViewSnapshotTests` | `.six` and `.adult` (different `displayName` lengths). `.six` + AX. |
 | `LoadingViewSnapshotTests` | `index` 0 and 5 of 6. |
-| `OnboardingSnapshotTests` | `AgeGroupPicker` with nothing selected (Continue disabled) and with `.twelve` selected, using a `@State`-backed binding host or `.constant`. `OnboardingView()` first screen, with a store on `TestDefaults`. Picker + dark, + AX. |
-| `TopicsEditorSnapshotTests` | Inside `List`, with `.constant(preferences)`: (1) `.nine` defaults; (2) `.nine` with 2 custom topics and 2 suggested topics disabled ("Reset suggested topics" visible); (3) at the minimum: every suggested topic in `.six` disabled except 3, no custom topics (footer shown, enabled toggles disabled). (1) + dark. |
-| `SettingsViewSnapshotTests` | `SettingsView(preferences:)` for `.twelve` with a custom topic, with a store on `TestDefaults`. + dark. |
+| `OnboardingSnapshotTests` | `AgeGroupPicker` with nothing selected (Continue disabled) and with `.twelve` selected, using a `@State`-backed binding host or `.constant`. `OnboardingView()` first screen, with a store on `TestDefaults`. Picker + AX. |
+| `TopicsEditorSnapshotTests` | Inside `List`, with `.constant(preferences)`: (1) `.nine` defaults; (2) `.nine` with 2 custom topics and 2 suggested topics disabled ("Reset suggested topics" visible); (3) at the minimum: every suggested topic in `.six` disabled except 3, no custom topics (footer shown, enabled toggles disabled). |
+| `SettingsViewSnapshotTests` | `SettingsView(preferences:)` for `.twelve` with a custom topic, with a store on `TestDefaults`. |
 
 Not covered by snapshots: `RootView` (depends on the device's model availability), the failed state inside `RootView`, and `TopicsEditor`'s error message and "checking topic" states (private `@State`, only reachable by typing).
 
@@ -470,7 +471,7 @@ Not covered by snapshots: `RootView` (depends on the device's model availability
   - `start()` from `.finished` → the factory is called again (a new round), with `currentIndex == 0` and `correctCount == 0`.
 
 **`ExerciseViewSnapshotTests`** (A + F; `Exercise.fixture` with fixed options; the quiz is driven to the state with `StubGenerator`)
-- Before answering (exercise 1 of 6) + dark, + AX.
+- Before answering (exercise 1 of 6) + AX.
 - Correct answer selected.
 - Wrong answer selected, with an explanation.
 - Wrong answer selected, with an empty explanation.
@@ -578,7 +579,7 @@ Use the Application Language setting, not `.environment(\.locale, …)` alone. `
 
 **Localized snapshots.**
 - Record the section 7.2–7.4 snapshots in each language. Snapshot names already include the language (section 4.3).
-- Limit the dark-mode and accessibility-size variants to English with `.enabled(if: TestEnvironment.appLanguage == "en")`, so they aren't tripled.
+- Limit the dark-mode and accessibility-size variants to English, so they aren't tripled: `assertViewSnapshot` skips dark mode when `TestEnvironment.appLanguage != "en"`, and the AX tests use `.enabled(if: TestEnvironment.appLanguage == "en")`.
 
 **`LocalizationTests`** (translation completeness)
 - For each language in `["es", "pt-BR"]`, open `Bundle(path: Bundle.main.path(forResource: lang, ofType: "lproj")!)`. Every key below must be present, checked with `localizedString(forKey: key, value: "__missing__", table: nil) != "__missing__"`:

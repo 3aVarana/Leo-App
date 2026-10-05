@@ -13,10 +13,6 @@ extension ViewSnapshots {
             assertViewSnapshot(of: ResultView(correct: correct, total: 6, onRestart: {}), named: "\(correct)-of-6")
         }
 
-        @Test func dark() {
-            assertViewSnapshot(of: ResultView(correct: 5, total: 6, onRestart: {}), named: "5-of-6-dark", colorScheme: .dark)
-        }
-
         @Test func accessibilitySize() {
             assertViewSnapshot(of: ResultView(correct: 5, total: 6, onRestart: {}), named: "5-of-6-ax", sizeCategory: .accessibilityExtraExtraExtraLarge)
         }

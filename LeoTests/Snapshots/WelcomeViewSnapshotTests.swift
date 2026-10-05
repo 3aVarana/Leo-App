@@ -13,10 +13,6 @@ extension ViewSnapshots {
             assertViewSnapshot(of: WelcomeView(ageGroup: group, onStart: {}), named: "\(group)")
         }
 
-        @Test func dark() {
-            assertViewSnapshot(of: WelcomeView(ageGroup: .six, onStart: {}), named: "six-dark", colorScheme: .dark)
-        }
-
         @Test func accessibilitySize() {
             assertViewSnapshot(of: WelcomeView(ageGroup: .six, onStart: {}), named: "six-ax", sizeCategory: .accessibilityExtraExtraExtraLarge)
         }

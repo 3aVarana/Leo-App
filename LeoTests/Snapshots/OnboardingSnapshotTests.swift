@@ -18,10 +18,6 @@ extension ViewSnapshots {
             assertViewSnapshot(of: AgeGroupPicker(selection: .constant(.twelve), onContinue: {}), named: "12-14")
         }
 
-        @Test func pickerDark() {
-            assertViewSnapshot(of: AgeGroupPicker(selection: .constant(.twelve), onContinue: {}), named: "12-14-dark", colorScheme: .dark)
-        }
-
         @Test func pickerAccessibilitySize() {
             assertViewSnapshot(
                 of: AgeGroupPicker(selection: .constant(.twelve), onContinue: {}),

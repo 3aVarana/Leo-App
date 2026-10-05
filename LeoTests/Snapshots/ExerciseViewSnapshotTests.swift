@@ -30,11 +30,6 @@ extension ViewSnapshots {
             assertViewSnapshot(of: screen(quiz), named: "unanswered")
         }
 
-        @Test func beforeAnsweringDark() async {
-            let quiz = await startedQuiz()
-            assertViewSnapshot(of: screen(quiz), named: "unanswered-dark", colorScheme: .dark)
-        }
-
         @Test func beforeAnsweringAccessibilitySize() async {
             let quiz = await startedQuiz()
             assertViewSnapshot(of: screen(quiz), named: "unanswered-ax", sizeCategory: .accessibilityExtraExtraExtraLarge, height: 2700)

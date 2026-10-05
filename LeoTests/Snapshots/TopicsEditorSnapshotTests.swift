@@ -27,10 +27,6 @@ extension ViewSnapshots {
             assertViewSnapshot(of: editor(ReaderPreferences(ageGroup: .nine)), named: "9-11-defaults", height: 1250)
         }
 
-        @Test func defaultsDark() {
-            assertViewSnapshot(of: editor(ReaderPreferences(ageGroup: .nine)), named: "9-11-defaults-dark", colorScheme: .dark, height: 1250)
-        }
-
         /// "Reset suggested topics" shows once a suggested topic is off.
         @Test func customized() {
             assertViewSnapshot(of: editor(customizedPreferences), named: "9-11-customized", height: 1250)
