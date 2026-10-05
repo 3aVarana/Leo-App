@@ -102,6 +102,13 @@ struct ExerciseTests {
         #expect(exercise.title == "")
     }
 
+    @Test func nonRandomInitKeepsValues() {
+        let exercise = Exercise.fixture(options: ["A", "B", "C"], correctIndex: 2)
+        #expect(exercise.options == ["A", "B", "C"])
+        #expect(exercise.correctIndex == 2)
+        #expect(exercise.title == "The Sleeping Mountain")
+    }
+
     /// The app, not the model, decides where the correct answer lands. The chance of a false
     /// failure is about 4 × (3/4)^200.
     @Test func correctAnswerLandsInEveryPosition() throws {

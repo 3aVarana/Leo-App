@@ -43,3 +43,32 @@ extension ReaderPreferences {
         return preferences
     }
 }
+
+extension Exercise {
+    /// An exercise with fixed options, built without validation or shuffling.
+    static func fixture(
+        topic: String = "volcanoes",
+        skill: ComprehensionSkill = .detail,
+        title: String = "The Sleeping Mountain",
+        passage: String = """
+            Mount Rainier looks calm, but it is an active volcano. Deep under the snow, hot rock \
+            called magma still moves. Scientists place sensors on its slopes to feel tiny shakes in \
+            the ground. If the shakes grow stronger, they can warn the towns nearby long before \
+            anything happens.
+            """,
+        question: String = "Why do scientists place sensors on the volcano?",
+        options: [String] = [
+            "To measure how much snow falls",
+            "To feel small shakes that could warn of danger",
+            "To find the best path to the top",
+            "To keep the magma from moving",
+        ],
+        correctIndex: Int = 1,
+        explanation: String = "The passage says the sensors feel tiny shakes so scientists can warn nearby towns."
+    ) -> Exercise {
+        Exercise(
+            topic: topic, skill: skill, title: title, passage: passage, question: question,
+            options: options, correctIndex: correctIndex, explanation: explanation
+        )
+    }
+}

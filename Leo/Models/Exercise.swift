@@ -55,14 +55,31 @@ nonisolated struct Exercise: Identifiable, Sendable {
         else { return nil }
 
         let options = (distractors + [correct]).shuffled()
+        self.init(
+            topic: topic,
+            skill: skill,
+            title: clean(generated.title),
+            passage: passage,
+            question: question,
+            options: options,
+            correctIndex: options.firstIndex(of: correct)!,
+            explanation: clean(generated.explanation)
+        )
+    }
+
+    /// Builds an exercise as given, without validation or shuffling. For tests and previews;
+    /// model output goes through `init?(generated:topic:skill:acceptedWordCount:)`.
+    init(topic: String, skill: ComprehensionSkill, title: String, passage: String,
+         question: String, options: [String], correctIndex: Int, explanation: String) {
+        precondition(options.indices.contains(correctIndex))
         self.topic = topic
         self.skill = skill
-        self.title = clean(generated.title)
+        self.title = title
         self.passage = passage
         self.question = question
         self.options = options
-        self.correctIndex = options.firstIndex(of: correct)!
-        self.explanation = clean(generated.explanation)
+        self.correctIndex = correctIndex
+        self.explanation = explanation
     }
 }
 
