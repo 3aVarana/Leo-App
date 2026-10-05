@@ -149,7 +149,11 @@ struct TopicsEditor: View {
             message = String(localized: "You can have up to 20 of your own topics.")
             return
         }
+        startReview(of: text)
+    }
 
+    /// Asks the model whether `text` is a suitable topic, and adds its tidied-up phrase if it is.
+    private func startReview(of text: String) {
         message = nil
         let group = group
         let validator = TopicValidator(language: .current())
