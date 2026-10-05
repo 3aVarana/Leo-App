@@ -30,6 +30,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Models/__Snapshots__,
+				Snapshots/__Snapshots__,
 			);
 			target = 10285AE330731B5E00EE2ED8 /* LeoTests */;
 		};
@@ -48,6 +49,7 @@
 			);
 			explicitFolders = (
 				Models/__Snapshots__,
+				Snapshots/__Snapshots__,
 			);
 			path = LeoTests;
 			sourceTree = "<group>";
