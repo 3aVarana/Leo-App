@@ -1,11 +1,10 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct OnboardingSnapshotTests {
         private let testDefaults = TestDefaults()
 
@@ -22,7 +21,7 @@ extension ViewSnapshots {
             assertViewSnapshot(
                 of: AgeGroupPicker(selection: .constant(.twelve), onContinue: {}),
                 named: "12-14-ax",
-                sizeCategory: .accessibilityExtraExtraExtraLarge
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
             )
         }
 

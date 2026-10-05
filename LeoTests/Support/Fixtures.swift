@@ -5,7 +5,7 @@ extension String {
     /// A passage of exactly `n` words.
     static func words(_ n: Int) -> String {
         let vocabulary = ["the", "small", "fox", "ran", "across", "a", "quiet", "green", "field", "today"]
-        return (0..<n).map { vocabulary[$0 % vocabulary.count] }.joined(separator: " ")
+        return (0 ..< n).map { vocabulary[$0 % vocabulary.count] }.joined(separator: " ")
     }
 }
 
@@ -17,7 +17,7 @@ extension GeneratedExercise {
         question: String = "Where did the fox run?",
         correctAnswer: String = "Across a field",
         incorrectAnswers: [String] = ["Into a cave", "Up a tree", "Under a bridge"],
-        explanation: String = "The passage says the fox ran across a quiet green field."
+        explanation: String = "The passage says the fox ran across a quiet green field.",
     ) -> GeneratedExercise {
         GeneratedExercise(
             title: title,
@@ -25,7 +25,7 @@ extension GeneratedExercise {
             question: question,
             correctAnswer: correctAnswer,
             incorrectAnswers: incorrectAnswers,
-            explanation: explanation
+            explanation: explanation,
         )
     }
 }
@@ -35,7 +35,7 @@ extension ReaderPreferences {
     static func fixture(
         ageGroup: AgeGroup,
         disabled: [AgeGroup: Set<String>] = [:],
-        custom: [AgeGroup: [String]] = [:]
+        custom: [AgeGroup: [String]] = [:],
     ) -> ReaderPreferences {
         var preferences = ReaderPreferences(ageGroup: ageGroup)
         preferences.disabledDefaultTopics = disabled
@@ -51,11 +51,11 @@ extension Exercise {
         skill: ComprehensionSkill = .detail,
         title: String = "The Sleeping Mountain",
         passage: String = """
-            Mount Rainier looks calm, but it is an active volcano. Deep under the snow, hot rock \
-            called magma still moves. Scientists place sensors on its slopes to feel tiny shakes in \
-            the ground. If the shakes grow stronger, they can warn the towns nearby long before \
-            anything happens.
-            """,
+        Mount Rainier looks calm, but it is an active volcano. Deep under the snow, hot rock \
+        called magma still moves. Scientists place sensors on its slopes to feel tiny shakes in \
+        the ground. If the shakes grow stronger, they can warn the towns nearby long before \
+        anything happens.
+        """,
         question: String = "Why do scientists place sensors on the volcano?",
         options: [String] = [
             "To measure how much snow falls",
@@ -64,11 +64,11 @@ extension Exercise {
             "To keep the magma from moving",
         ],
         correctIndex: Int = 1,
-        explanation: String = "The passage says the sensors feel tiny shakes so scientists can warn nearby towns."
+        explanation: String = "The passage says the sensors feel tiny shakes so scientists can warn nearby towns.",
     ) -> Exercise {
         Exercise(
             topic: topic, skill: skill, title: title, passage: passage, question: question,
-            options: options, correctIndex: correctIndex, explanation: explanation
+            options: options, correctIndex: correctIndex, explanation: explanation,
         )
     }
 }

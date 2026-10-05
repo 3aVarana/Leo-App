@@ -8,46 +8,46 @@ struct ExerciseView: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    header
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(exercise.title)
-                        .font(.title2.bold())
-                    Text(exercise.passage)
-                        .font(.body)
-                        .lineSpacing(4)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.fill.quaternary, in: .rect(cornerRadius: 16))
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(exercise.title)
+                            .font(.title2.bold())
+                        Text(exercise.passage)
+                            .font(.body)
+                            .lineSpacing(4)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.fill.quaternary, in: .rect(cornerRadius: 16))
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(exercise.skill.displayName.uppercased())
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Text(exercise.question)
-                        .font(.headline)
-                    ForEach(exercise.options.indices, id: \.self) { index in
-                        OptionButton(
-                            text: exercise.options[index],
-                            state: state(for: index),
-                            action: { quiz.select(index) }
-                        )
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(exercise.skill.displayName.uppercased())
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        Text(exercise.question)
+                            .font(.headline)
+                        ForEach(exercise.options.indices, id: \.self) { index in
+                            OptionButton(
+                                text: exercise.options[index],
+                                state: state(for: index),
+                                action: { quiz.select(index) },
+                            )
+                        }
+                    }
+
+                    if quiz.selectedOption != nil {
+                        feedback
+                            .id(Self.feedbackID)
                     }
                 }
-
-                if quiz.selectedOption != nil {
-                    feedback
-                        .id(Self.feedbackID)
-                }
+                .padding()
             }
-            .padding()
-        }
-        .onChange(of: quiz.selectedOption) {
-            withAnimation { proxy.scrollTo(Self.feedbackID, anchor: .bottom) }
-        }
+            .onChange(of: quiz.selectedOption) {
+                withAnimation { proxy.scrollTo(Self.feedbackID, anchor: .bottom) }
+            }
         }
         .sensoryFeedback(trigger: quiz.selectedOption) { _, selected in
             guard let selected else { return nil }
@@ -91,8 +91,12 @@ struct ExerciseView: View {
 
     private func state(for index: Int) -> OptionButton.State {
         guard let selected = quiz.selectedOption else { return .idle }
-        if index == exercise.correctIndex { return .correct }
-        if index == selected { return .incorrect }
+        if index == exercise.correctIndex {
+            return .correct
+        }
+        if index == selected {
+            return .incorrect
+        }
         return .dimmed
     }
 }
@@ -183,7 +187,7 @@ private struct ShakeEffect: GeometryEffect {
         set { shakes = newValue }
     }
 
-    func effectValue(size: CGSize) -> ProjectionTransform {
+    func effectValue(size _: CGSize) -> ProjectionTransform {
         ProjectionTransform(CGAffineTransform(translationX: 8 * sin(shakes * .pi * 6), y: 0))
     }
 }

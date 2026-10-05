@@ -5,7 +5,9 @@ import Foundation
 final class TestDefaults {
     let suiteName = "LeoTests.\(UUID().uuidString)"
 
-    var defaults: UserDefaults { UserDefaults(suiteName: suiteName)! }
+    var defaults: UserDefaults {
+        UserDefaults(suiteName: suiteName)!
+    }
 
     deinit {
         UserDefaults().removePersistentDomain(forName: suiteName)

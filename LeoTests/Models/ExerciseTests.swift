@@ -1,5 +1,5 @@
-import Testing
 @testable import Leo
+import Testing
 
 @MainActor
 struct ExerciseTests {
@@ -31,7 +31,7 @@ struct ExerciseTests {
             question: "\tWhere did the fox run? ",
             correctAnswer: " Across a field\n",
             incorrectAnswers: ["  Into a cave", "Up a tree\n"],
-            explanation: "\nBecause the passage says so.  "
+            explanation: "\nBecause the passage says so.  ",
         )))
 
         #expect(exercise.title == "The Quiet Field")
@@ -113,7 +113,7 @@ struct ExerciseTests {
     /// failure is about 4 × (3/4)^200.
     @Test func correctAnswerLandsInEveryPosition() throws {
         var positions: Set<Int> = []
-        for _ in 0..<200 {
+        for _ in 0 ..< 200 {
             let exercise = try #require(exercise(.fixture()))
             positions.insert(exercise.correctIndex)
         }

@@ -30,16 +30,24 @@ struct ResultView: View {
         .padding(24)
     }
 
-    private var ratio: Double { Double(correct) / Double(total) }
+    private var ratio: Double {
+        Double(correct) / Double(total)
+    }
 
     private var symbol: String {
         ratio >= 0.8 ? "star.fill" : ratio >= 0.5 ? "hand.thumbsup.fill" : "book.fill"
     }
 
     private var message: String {
-        if ratio == 1 { return String(localized: "Perfect score! You understood every text.") }
-        if ratio >= 0.8 { return String(localized: "Great reading! You're paying close attention.") }
-        if ratio >= 0.5 { return String(localized: "Good work. Keep practicing to sharpen your understanding.") }
+        if ratio == 1 {
+            return String(localized: "Perfect score! You understood every text.")
+        }
+        if ratio >= 0.8 {
+            return String(localized: "Great reading! You're paying close attention.")
+        }
+        if ratio >= 0.5 {
+            return String(localized: "Good work. Keep practicing to sharpen your understanding.")
+        }
         return String(localized: "Keep going! Try reading each text slowly and look for key ideas.")
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
+@testable import Leo
 import SnapshotTesting
 import Testing
-@testable import Leo
 
 @MainActor
 struct DefaultTopicsTests {

@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import Leo
+import Testing
 
 @MainActor
 struct PreferencesStoreTests {

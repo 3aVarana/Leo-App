@@ -1,6 +1,5 @@
 import Foundation
 
-
 /// The reader's age group. Controls how long the passages are and how complex their language is.
 nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
     case six = "6-8"
@@ -32,11 +31,11 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
 
     var passageWordRange: ClosedRange<Int> {
         switch self {
-        case .six: 50...80
-        case .nine: 80...120
-        case .twelve: 100...150
-        case .fifteen: 120...180
-        case .adult: 160...230
+        case .six: 50 ... 80
+        case .nine: 80 ... 120
+        case .twelve: 100 ... 150
+        case .fifteen: 120 ... 180
+        case .adult: 160 ... 230
         }
     }
 
@@ -45,7 +44,7 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
     /// groups reach the range without one, and asking them for sentences makes passages run on.
     var passageSentenceRange: ClosedRange<Int>? {
         switch self {
-        case .six, .nine, .twelve: 10...13
+        case .six, .nine, .twelve: 10 ... 13
         case .fifteen, .adult: nil
         }
     }
@@ -53,7 +52,7 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
     /// The passage lengths accepted from the model: wider than the requested range, since the
     /// model doesn't count words precisely, but excluding passages it never finished or that ran on.
     var acceptedWordCount: ClosedRange<Int> {
-        passageWordRange.lowerBound * 6 / 10...passageWordRange.upperBound * 3 / 2
+        passageWordRange.lowerBound * 6 / 10 ... passageWordRange.upperBound * 3 / 2
     }
 
     /// How the passages and questions should read, for use in English prompts.

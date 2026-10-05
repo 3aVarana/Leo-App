@@ -1,11 +1,10 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct ResultViewSnapshotTests {
         /// Together these cover every symbol and every message.
         @Test(arguments: [6, 5, 3, 0])

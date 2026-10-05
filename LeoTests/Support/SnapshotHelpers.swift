@@ -20,13 +20,13 @@ func assertViewSnapshot(
     filePath: StaticString = #filePath,
     testName: String = #function,
     line: UInt = #line,
-    column: UInt = #column
+    column: UInt = #column,
 ) {
     if let problem = snapshotEnvironmentProblem {
         // One clear failure instead of a pixel difference in every image.
         Issue.record(
             Comment(rawValue: problem),
-            sourceLocation: SourceLocation(fileID: "\(fileID)", filePath: "\(filePath)", line: Int(line), column: Int(column))
+            sourceLocation: SourceLocation(fileID: "\(fileID)", filePath: "\(filePath)", line: Int(line), column: Int(column)),
         )
         return
     }
@@ -48,7 +48,7 @@ func assertViewSnapshot(
             filePath: filePath,
             testName: testName,
             line: line,
-            column: column
+            column: column,
         )
     }
 }
@@ -57,34 +57,34 @@ func assertViewSnapshot(
 /// root. Every snapshot test calls this (or `assertViewSnapshot`) instead of `assertSnapshot`,
 /// which stores them in `__Snapshots__` next to the test. Inside the `LeoTests` synchronized
 /// folder, Xcode would copy them into the test bundle.
-func assertReferenceSnapshot<Value, Format>(
+func assertReferenceSnapshot<Value>(
     of value: @autoclosure () throws -> Value,
-    as snapshotting: Snapshotting<Value, Format>,
+    as snapshotting: Snapshotting<Value, some Any>,
     named name: String? = nil,
     fileID: StaticString = #fileID,
     filePath: StaticString = #filePath,
     testName: String = #function,
     line: UInt = #line,
-    column: UInt = #column
+    column: UInt = #column,
 ) {
     let sourceLocation = SourceLocation(
         fileID: "\(fileID)",
         filePath: "\(filePath)",
         line: Int(line),
-        column: Int(column)
+        column: Int(column),
     )
     guard FileManager.default.fileExists(atPath: referencesDirectory.path) else {
         // `#filePath` is fixed when the tests are compiled, so the tests have to run on the
         // machine that built them, from the same checkout.
         Issue.record(
             "Can't find the snapshot references at \(referencesDirectory.path). Build and run the tests on the same machine, from the same checkout.",
-            sourceLocation: sourceLocation
+            sourceLocation: sourceLocation,
         )
         return
     }
     let testFile = URL(fileURLWithPath: "\(filePath)").deletingPathExtension().lastPathComponent
-    let failure = verifySnapshot(
-        of: try value(),
+    let failure = try verifySnapshot(
+        of: value(),
         as: snapshotting,
         named: name,
         snapshotDirectory: referencesDirectory.appendingPathComponent(testFile).path,
@@ -92,7 +92,7 @@ func assertReferenceSnapshot<Value, Format>(
         file: filePath,
         testName: testName,
         line: line,
-        column: column
+        column: column,
     )
     guard let failure else { return }
     Issue.record(Comment(rawValue: failure), sourceLocation: sourceLocation)

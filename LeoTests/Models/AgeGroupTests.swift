@@ -1,5 +1,5 @@
-import Testing
 @testable import Leo
+import Testing
 
 @MainActor
 struct AgeGroupTests {
@@ -15,11 +15,11 @@ struct AgeGroupTests {
     }
 
     @Test(arguments: [
-        (AgeGroup.six, 30...120),
-        (.nine, 48...180),
-        (.twelve, 60...225),
-        (.fifteen, 72...270),
-        (.adult, 96...345),
+        (AgeGroup.six, 30 ... 120),
+        (.nine, 48 ... 180),
+        (.twelve, 60 ... 225),
+        (.fifteen, 72 ... 270),
+        (.adult, 96 ... 345),
     ])
     func acceptedWordCount(_ group: AgeGroup, expected: ClosedRange<Int>) {
         #expect(group.acceptedWordCount == expected)
@@ -33,9 +33,9 @@ struct AgeGroupTests {
     }
 
     @Test(arguments: [
-        (AgeGroup.six, 10...13),
-        (.nine, 10...13),
-        (.twelve, 10...13),
+        (AgeGroup.six, 10 ... 13),
+        (.nine, 10 ... 13),
+        (.twelve, 10 ... 13),
         (.fifteen, nil),
         (.adult, nil),
     ] as [(AgeGroup, ClosedRange<Int>?)])

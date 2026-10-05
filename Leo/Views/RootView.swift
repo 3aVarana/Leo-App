@@ -1,5 +1,5 @@
-import SwiftUI
 import FoundationModels
+import SwiftUI
 
 struct RootView: View {
     @Environment(PreferencesStore.self) private var store
@@ -36,7 +36,7 @@ struct RootView: View {
                 } else {
                     OnboardingView()
                 }
-            case .unavailable(let reason):
+            case let .unavailable(reason):
                 UnavailableView(reason: reason)
             }
         }
@@ -57,7 +57,7 @@ struct RootView: View {
             }
         case .finished:
             ResultView(correct: quiz.correctCount, total: QuizModel.exerciseCount, onRestart: quiz.start)
-        case .failed(let message):
+        case let .failed(message):
             ContentUnavailableView {
                 Label("Something went wrong", systemImage: "exclamationmark.triangle")
             } description: {

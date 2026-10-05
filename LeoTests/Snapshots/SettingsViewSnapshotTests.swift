@@ -1,11 +1,10 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
-@testable import Leo
 
 extension ViewSnapshots {
     @MainActor
-    @Suite
     struct SettingsViewSnapshotTests {
         private let testDefaults = TestDefaults()
 

@@ -95,7 +95,7 @@ struct ExerciseGenerator {
         let stream = session.streamResponse(
             to: prompt,
             generating: GeneratedExercise.self,
-            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens)
+            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens),
         )
         var content: GeneratedContent?
         for try await snapshot in stream {
