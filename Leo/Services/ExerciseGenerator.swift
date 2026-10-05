@@ -15,14 +15,14 @@ struct ExerciseGenerator {
     let language: ContentLanguage
     let ageGroup: AgeGroup
 
-    private var wordRange: String {
+    var wordRange: String {
         let range = ageGroup.passageWordRange
         let words = "between \(range.lowerBound) and \(range.upperBound) words long, about \((range.lowerBound + range.upperBound) / 2) words"
         guard let sentences = ageGroup.passageSentenceRange else { return words }
         return "\(words) in \(sentences.lowerBound) to \(sentences.upperBound) sentences"
     }
 
-    private var instructions: String {
+    var instructions: String {
         """
         You create reading comprehension exercises for \(ageGroup.promptAudience).
         The passage must be \(wordRange). \(ageGroup.styleGuidance)
@@ -36,6 +36,14 @@ struct ExerciseGenerator {
         The passage must not state the answer word for word; the reader should have to understand it.
         Write every answer as a direct, natural option without phrases like "The main idea is".
         All answers must have a similar length and style, so the correct one doesn't stand out.
+        """
+    }
+
+    func prompt(topic: String, skill: ComprehensionSkill) -> String {
+        """
+        Create a reading comprehension exercise in \(language.name) about \(topic).
+        The passage must be \(wordRange).
+        \(skill.promptHint)
         """
     }
 
@@ -56,11 +64,7 @@ struct ExerciseGenerator {
     func generate(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
         for topic in topics.prefix(Self.maxAttempts) {
             try Task.checkCancellation()
-            let prompt = """
-                Create a reading comprehension exercise in \(language.name) about \(topic).
-                The passage must be \(wordRange).
-                \(skill.promptHint)
-                """
+            let prompt = prompt(topic: topic, skill: skill)
             // A fresh session per exercise keeps each request well inside the context window.
             let session = LanguageModelSession(instructions: instructions)
             do {
