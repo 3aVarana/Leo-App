@@ -100,15 +100,15 @@ func assertReferenceSnapshot<Value, Format>(
 
 /// The simulator and OS the view references were recorded on. Other combinations render
 /// differently, so view snapshots fail early with a clear message instead.
-private let recordedModelIdentifier = "iPhone19,2" // iPhone 18 Pro
-private let recordedSystemVersion = "27.0"
+private let recordedModelIdentifier = "iPhone18,3" // iPhone 17
+private let recordedSystemVersion = "26.5"
 
 private let snapshotEnvironmentProblem: String? = {
     let model = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] ?? "a physical device"
     let os = ProcessInfo.processInfo.operatingSystemVersion
     let version = "\(os.majorVersion).\(os.minorVersion)"
     guard model != recordedModelIdentifier || version != recordedSystemVersion else { return nil }
-    return "View snapshots are recorded on the iPhone 18 Pro simulator (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). This run is on \(model) with iOS \(version)."
+    return "View snapshots are recorded on the iPhone 17 simulator (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). This run is on \(model) with iOS \(version)."
 }()
 
 /// `LeoTestsSnapshots/`, found from this file's path: `LeoTests/Support/SnapshotHelpers.swift`.
