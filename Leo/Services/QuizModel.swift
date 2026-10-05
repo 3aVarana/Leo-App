@@ -13,6 +13,12 @@ final class QuizModel {
         case failed(String)
     }
 
+    /// The topics to try for one exercise, main topic first, and the skill its question targets.
+    struct PlanItem: Equatable {
+        var topics: [String]
+        var skill: ComprehensionSkill
+    }
+
     static let exerciseCount = 6
 
     private(set) var phase: Phase = .welcome
@@ -22,7 +28,7 @@ final class QuizModel {
     private(set) var correctCount = 0
 
     private var settings: RoundSettings?
-    private var plan: [(topics: [String], skill: ComprehensionSkill)] = []
+    private var plan: [PlanItem] = []
     private var generator = ExerciseGenerator(language: .english, ageGroup: .fifteen)
     /// Generated exercises, in order. The next one to generate is at `exercises.count`.
     private var exercises: [Exercise] = []
@@ -71,24 +77,30 @@ final class QuizModel {
         guard let settings else { return }
         let index = exercises.count
         guard index < Self.exerciseCount else { return }
-        plan[index] = (topics: Array(settings.topics.shuffled().prefix(3)), skill: plan[index].skill)
+        plan[index] = PlanItem(topics: Array(settings.topics.shuffled().prefix(3)), skill: plan[index].skill)
         phase = .loading
         generateRemaining()
     }
 
-    private func prepareRound() {
-        guard let settings else { return }
-        let shuffled = settings.topics.shuffled()
+    /// The topics and skill for each exercise of a round. Each exercise gets its own topic while
+    /// there are enough, cycling through them otherwise without repeating a topic back to back,
+    /// plus two other topics to fall back on if generation fails. Every skill is used at least once.
+    static func makePlan(topics: [String], using rng: inout some RandomNumberGenerator) -> [PlanItem] {
+        let shuffled = topics.shuffled(using: &rng)
         let count = shuffled.count
         var skills: [ComprehensionSkill] = []
-        while skills.count < Self.exerciseCount { skills += ComprehensionSkill.allCases.shuffled() }
-        // Each exercise gets its own topic while there are enough, cycling through them otherwise
-        // without repeating a topic back to back, plus two other topics to fall back on if generation fails.
-        plan = skills.prefix(Self.exerciseCount).enumerated().map { i, skill in
+        while skills.count < exerciseCount { skills += ComprehensionSkill.allCases.shuffled(using: &rng) }
+        return skills.prefix(exerciseCount).enumerated().map { i, skill in
             let primary = (i + i / count) % count
-            let spares = shuffled.indices.filter { $0 != primary }.shuffled().prefix(2).map { shuffled[$0] }
-            return (topics: [shuffled[primary]] + spares, skill: skill)
+            let spares = shuffled.indices.filter { $0 != primary }.shuffled(using: &rng).prefix(2).map { shuffled[$0] }
+            return PlanItem(topics: [shuffled[primary]] + spares, skill: skill)
         }
+    }
+
+    private func prepareRound() {
+        guard let settings else { return }
+        var rng = SystemRandomNumberGenerator()
+        plan = Self.makePlan(topics: settings.topics, using: &rng)
         // Picked per round, so a change to the device language applies to the next round.
         generator = ExerciseGenerator(language: .current(), ageGroup: settings.ageGroup)
         exercises = []
