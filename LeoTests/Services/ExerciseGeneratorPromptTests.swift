@@ -5,7 +5,8 @@ import Testing
 
 @MainActor
 struct ExerciseGeneratorPromptTests {
-    private static let spanish = ContentLanguage(locale: Locale(identifier: "es_ES"))
+    // nonisolated: `@Test(arguments:)` reads it outside the main actor.
+    private nonisolated static let spanish = ContentLanguage(locale: Locale(identifier: "es_ES"))
 
     @Test(arguments: [AgeGroup.six, .nine, .twelve])
     func wordRangeWithSentences(_ group: AgeGroup) {

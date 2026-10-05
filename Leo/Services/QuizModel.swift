@@ -19,7 +19,7 @@ final class QuizModel {
         var skill: ComprehensionSkill
     }
 
-    static let exerciseCount = 6
+    nonisolated static let exerciseCount = 6
 
     private(set) var phase: Phase = .welcome
     private(set) var currentIndex = 0
