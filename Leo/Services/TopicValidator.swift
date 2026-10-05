@@ -61,8 +61,11 @@ struct TopicValidator {
                 LanguageModelSession.GenerationError.refusal {
             return .rejected(Self.genericRejection)
         } catch {
+            // `LanguageModelError` is only in the iOS 27 SDK (Xcode 27, Swift 6.4). CI builds with Xcode 26.
+            #if compiler(>=6.4)
             if #available(iOS 27, *), case LanguageModelError.guardrailViolation = error { return .rejected(Self.genericRejection) }
             if #available(iOS 27, *), case LanguageModelError.refusal = error { return .rejected(Self.genericRejection) }
+            #endif
             throw error
         }
     }
