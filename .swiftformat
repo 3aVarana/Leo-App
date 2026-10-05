@@ -1,0 +1,7 @@
+# SwiftFormat configuration. Run from the repo root: swiftformat .
+# Matches the lowest toolchain we build with (Xcode 26 on CI).
+--swiftversion 6.2
+--exclude build
+
+# Snapshot references are named after the test function, so renaming tests orphans them.
+--disable swiftTestingTestCaseNames
