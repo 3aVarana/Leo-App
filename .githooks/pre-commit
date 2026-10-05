@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Formats staged Swift files with SwiftFormat, then lints them with SwiftLint.
-# SwiftLint warnings are shown; errors block the commit.
+# SwiftLint runs with --strict, like the build phase, so any violation blocks the commit.
 # Enable once per clone:  git config core.hooksPath .githooks
 # Skip for a single commit: git commit --no-verify
 
@@ -58,16 +58,16 @@ fi
 lint_failed=0
 for file in $staged; do
     if git diff --quiet -- "$file"; then
-        swiftlint lint --quiet --force-exclude -- "$file" || lint_failed=1
+        swiftlint lint --quiet --strict --force-exclude -- "$file" || lint_failed=1
     else
         # Partially staged: lint the staged version, labeled with its real path.
-        output=$(git show ":$file" | swiftlint lint --use-stdin --quiet) || lint_failed=1
+        output=$(git show ":$file" | swiftlint lint --use-stdin --quiet --strict) || lint_failed=1
         [ -n "$output" ] && printf '%s\n' "$output" | sed "s|^<nopath>|$file|"
     fi
 done
 
 if [ "$lint_failed" -ne 0 ]; then
-    echo "pre-commit: SwiftLint found errors. Fix them, stage, and commit again." >&2
+    echo "pre-commit: SwiftLint found violations. Fix them, stage, and commit again." >&2
     status=1
 fi
 

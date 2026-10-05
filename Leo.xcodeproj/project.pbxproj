@@ -180,7 +180,7 @@
 			alwaysOutOfDate = 1;
 			name = SwiftLint;
 			shellPath = /bin/sh;
-			shellScript = "# Lints Swift sources and reports violations in the Issue navigator. Config: .swiftlint.yml\n# Xcode doesn't load the shell profile, so Homebrew may be missing from PATH.\nexport PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n\nif command -v swiftlint >/dev/null 2>&1; then\n    cd \"$SRCROOT\" && swiftlint lint --quiet\nelse\n    echo \"warning: SwiftLint not installed. Install it with: brew install swiftlint\"\nfi\n";
+			shellScript = "# Lints Swift sources and reports violations in the Issue navigator. --strict makes any violation fail the build. Config: .swiftlint.yml\n# Xcode doesn't load the shell profile, so Homebrew may be missing from PATH.\nexport PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n\nif command -v swiftlint >/dev/null 2>&1; then\n    cd \"$SRCROOT\" && swiftlint lint --quiet --strict\nelse\n    echo \"warning: SwiftLint not installed. Install it with: brew install swiftlint\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
