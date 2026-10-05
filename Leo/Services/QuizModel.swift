@@ -29,7 +29,8 @@ final class QuizModel {
 
     private var settings: RoundSettings?
     private var plan: [PlanItem] = []
-    private var generator = ExerciseGenerator(language: .english, ageGroup: .fifteen)
+    private let makeGenerator: (RoundSettings) -> any ExerciseGenerating
+    private var generator: (any ExerciseGenerating)?
     /// Generated exercises, in order. The next one to generate is at `exercises.count`.
     private var exercises: [Exercise] = []
     /// Set when generating the exercise at `exercises.count` failed.
@@ -38,6 +39,13 @@ final class QuizModel {
     private var isRoundStarted = false
 
     var isLastExercise: Bool { currentIndex == Self.exerciseCount - 1 }
+
+    /// - Parameter makeGenerator: Makes the generator for each round.
+    init(makeGenerator: @escaping (RoundSettings) -> any ExerciseGenerating = {
+        ExerciseGenerator(language: .current(), ageGroup: $0.ageGroup)
+    }) {
+        self.makeGenerator = makeGenerator
+    }
 
     /// Starts generating a round ahead of time with these settings. Does nothing if a round
     /// with the same settings is already prepared.
@@ -102,7 +110,7 @@ final class QuizModel {
         var rng = SystemRandomNumberGenerator()
         plan = Self.makePlan(topics: settings.topics, using: &rng)
         // Picked per round, so a change to the device language applies to the next round.
-        generator = ExerciseGenerator(language: .current(), ageGroup: settings.ageGroup)
+        generator = makeGenerator(settings)
         exercises = []
         isRoundStarted = false
         generateRemaining()
@@ -112,7 +120,7 @@ final class QuizModel {
     private func generateRemaining() {
         generation?.cancel()
         generationError = nil
-        let generator = generator
+        guard let generator else { return }
         generation = Task {
             while exercises.count < Self.exerciseCount {
                 let item = plan[exercises.count]

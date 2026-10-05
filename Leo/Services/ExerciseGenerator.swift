@@ -10,6 +10,13 @@ enum ExerciseGenerationError: LocalizedError {
     }
 }
 
+/// Generates one exercise. `ExerciseGenerator` is the real implementation.
+protocol ExerciseGenerating {
+    func generate(topics: [String], skill: ComprehensionSkill) async throws -> Exercise
+}
+
+extension ExerciseGenerator: ExerciseGenerating {}
+
 /// Generates reading comprehension exercises with the on-device model.
 struct ExerciseGenerator {
     let language: ContentLanguage

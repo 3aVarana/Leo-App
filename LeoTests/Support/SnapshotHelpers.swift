@@ -5,7 +5,7 @@ import UIKit
 
 /// Snapshots `view` on a fixed iPhone configuration. The app language is added to `name`,
 /// so references recorded in other languages later don't overwrite these. Pass `height` to
-/// capture a list taller than the screen.
+/// capture a list taller than the screen; above about 2700 points the image comes out blank.
 ///
 /// Uses `UIHostingController` rather than `ImageRenderer`, which doesn't draw `List`, `Form`,
 /// `NavigationStack` or `ProgressView`.
