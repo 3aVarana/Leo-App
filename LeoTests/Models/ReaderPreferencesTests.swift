@@ -65,7 +65,8 @@ struct ReaderPreferencesTests {
     @Test func enabledTopicPromptsExcludesDisabled() {
         let preferences = ReaderPreferences.fixture(ageGroup: .nine, disabled: [.nine: ["volcanoes", "recycling"]])
         let prompts = preferences.enabledTopicPrompts(for: .nine)
-        let expected = DefaultTopics.topics(for: .nine).filter { !["volcanoes", "recycling"].contains($0.id) }.map(\.prompt)
+        let expected = DefaultTopics.topics(for: .nine).filter { !["volcanoes", "recycling"].contains($0.id) }
+            .map(\.prompt)
         #expect(prompts == expected)
     }
 

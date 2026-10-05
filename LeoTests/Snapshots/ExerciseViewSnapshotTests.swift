@@ -31,7 +31,12 @@ extension ViewSnapshots {
 
         @Test func beforeAnsweringAccessibilitySize() async {
             let quiz = await startedQuiz()
-            assertViewSnapshot(of: screen(quiz), named: "unanswered-ax", sizeCategory: .accessibilityExtraExtraExtraLarge, height: 2700)
+            assertViewSnapshot(
+                of: screen(quiz),
+                named: "unanswered-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+                height: 2700,
+            )
         }
 
         @Test func correctAnswer() async throws {

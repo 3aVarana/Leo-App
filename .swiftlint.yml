@@ -16,4 +16,5 @@ identifier_name:
 
 line_length:
   # @Guide descriptions are prompt prose for the on-device model; wrapping them doesn't help.
-  excluded_lines_patterns: ['^\s*@Guide\(']
+  # SwiftFormat moves long ones onto their own `description:` line.
+  excluded_lines_patterns: ['^\s*(@Guide\()?description: "']

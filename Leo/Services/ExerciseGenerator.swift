@@ -24,7 +24,8 @@ struct ExerciseGenerator {
 
     var wordRange: String {
         let range = ageGroup.passageWordRange
-        let words = "between \(range.lowerBound) and \(range.upperBound) words long, about \((range.lowerBound + range.upperBound) / 2) words"
+        let midpoint = (range.lowerBound + range.upperBound) / 2
+        let words = "between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words"
         guard let sentences = ageGroup.passageSentenceRange else { return words }
         return "\(words) in \(sentences.lowerBound) to \(sentences.upperBound) sentences"
     }
@@ -76,7 +77,12 @@ struct ExerciseGenerator {
             let session = LanguageModelSession(instructions: instructions)
             do {
                 let generated = try await respond(to: prompt, in: session)
-                if let exercise = Exercise(generated: generated, topic: topic, skill: skill, acceptedWordCount: ageGroup.acceptedWordCount) {
+                if let exercise = Exercise(
+                    generated: generated,
+                    topic: topic,
+                    skill: skill,
+                    acceptedWordCount: ageGroup.acceptedWordCount,
+                ) {
                     return exercise
                 }
                 logger.error("Invalid content for topic '\(topic)'")

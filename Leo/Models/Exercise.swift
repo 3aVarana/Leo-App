@@ -9,7 +9,9 @@ nonisolated struct GeneratedExercise {
     @Guide(description: "A short, engaging title for the text, at most 6 words")
     var title: String
 
-    @Guide(description: "An original, self-contained reading passage, with the length and reading level requested in the instructions")
+    @Guide(
+        description: "An original, self-contained reading passage, with the length and reading level requested in the instructions",
+    )
     var passage: String
 
     @Guide(description: "One question about the passage that can only be answered by understanding it")
@@ -18,10 +20,15 @@ nonisolated struct GeneratedExercise {
     @Guide(description: "The single correct answer to the question, clearly supported by the passage, at most 15 words")
     var correctAnswer: String
 
-    @Guide(description: "Plausible but clearly incorrect answers, each different from the correct answer and from each other, about as long as the correct answer", .count(2 ... 3))
+    @Guide(
+        description: "Plausible but clearly incorrect answers, each different from the correct answer and from each other, about as long as the correct answer",
+        .count(2 ... 3),
+    )
     var incorrectAnswers: [String]
 
-    @Guide(description: "One or two short sentences explaining why the correct answer is right, pointing to what the passage says")
+    @Guide(
+        description: "One or two short sentences explaining why the correct answer is right, pointing to what the passage says",
+    )
     var explanation: String
 }
 
@@ -116,7 +123,11 @@ nonisolated enum ComprehensionSkill: String, CaseIterable, Sendable {
         case .mainIdea: "Ask about the main idea or central message of the passage."
         case .detail: "Ask about a specific, important detail stated in the passage."
         case .inference: "Ask something that is not stated directly but can be logically inferred from the passage."
-        case .vocabulary: "Ask what a specific word or phrase used in the passage means in that context. Quote the word in the question."
+        case .vocabulary:
+            """
+            Ask what a specific word or phrase used in the passage means in that context. \
+            Quote the word in the question.
+            """
         case .purpose: "Ask why the author wrote the passage or why they included a specific part of it."
         }
     }

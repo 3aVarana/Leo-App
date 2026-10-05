@@ -69,9 +69,12 @@ struct ExerciseView: View {
     private var feedback: some View {
         let isCorrect = quiz.selectedOption == exercise.correctIndex
         return VStack(spacing: 16) {
-            Label(isCorrect ? "Correct!" : "Not quite", systemImage: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.headline)
-                .foregroundStyle(isCorrect ? .green : .red)
+            Label(
+                isCorrect ? "Correct!" : "Not quite",
+                systemImage: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill",
+            )
+            .font(.headline)
+            .foregroundStyle(isCorrect ? .green : .red)
             if !isCorrect, !exercise.explanation.isEmpty {
                 Text(exercise.explanation)
                     .font(.callout)

@@ -59,15 +59,24 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
     var styleGuidance: String {
         switch self {
         case .six:
-            "Use short sentences and familiar, everyday words, with a warm and friendly tone. Keep the question and every answer simple and concrete."
+            """
+            Use short sentences and familiar, everyday words, with a warm and friendly tone. \
+            Keep the question and every answer simple and concrete.
+            """
         case .nine:
             "Use simple sentences and everyday vocabulary, and focus on concrete ideas."
         case .twelve:
-            "Write clear paragraphs that may introduce a few new words, explained by context. Questions may ask for light inference."
+            """
+            Write clear paragraphs that may introduce a few new words, explained by context. \
+            Questions may ask for light inference.
+            """
         case .fifteen:
             "Write engaging, age-appropriate texts with clear structure and moderately rich vocabulary."
         case .adult:
-            "Use varied sentence structure and precise vocabulary. Questions may require careful reading and an understanding of nuance."
+            """
+            Use varied sentence structure and precise vocabulary. \
+            Questions may require careful reading and an understanding of nuance.
+            """
         }
     }
 }

@@ -74,7 +74,11 @@ struct UnavailableView: View {
     let reason: SystemLanguageModel.Availability.UnavailableReason
 
     var body: some View {
-        ContentUnavailableView("Apple Intelligence needed", systemImage: "apple.intelligence", description: Text(message))
+        ContentUnavailableView(
+            "Apple Intelligence needed",
+            systemImage: "apple.intelligence",
+            description: Text(message),
+        )
     }
 
     private var message: String {

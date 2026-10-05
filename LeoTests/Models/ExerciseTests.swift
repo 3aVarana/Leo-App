@@ -14,7 +14,10 @@ struct ExerciseTests {
         ["Into a cave", "Up a tree", "Under a bridge"],
     ])
     func validInput(incorrectAnswers: [String]) throws {
-        let exercise = try #require(exercise(.fixture(correctAnswer: "Across a field", incorrectAnswers: incorrectAnswers)))
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Across a field",
+            incorrectAnswers: incorrectAnswers,
+        )))
 
         #expect(exercise.options.count == incorrectAnswers.count + 1)
         #expect(Set(exercise.options) == Set(incorrectAnswers + ["Across a field"]))
@@ -48,13 +51,19 @@ struct ExerciseTests {
     }
 
     @Test func dropsDuplicateDistractorsIgnoringCase() throws {
-        let exercise = try #require(exercise(.fixture(correctAnswer: "Madrid", incorrectAnswers: ["Paris", "paris", "Rome"])))
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Madrid",
+            incorrectAnswers: ["Paris", "paris", "Rome"],
+        )))
         #expect(exercise.options.count == 3)
         #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome"])
     }
 
     @Test func dropsDistractorEqualToCorrectAnswerIgnoringCase() throws {
-        let exercise = try #require(exercise(.fixture(correctAnswer: "Madrid", incorrectAnswers: ["MADRID", "Paris", "Rome"])))
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Madrid",
+            incorrectAnswers: ["MADRID", "Paris", "Rome"],
+        )))
         #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome"])
     }
 

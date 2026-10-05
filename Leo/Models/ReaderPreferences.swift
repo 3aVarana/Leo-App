@@ -16,7 +16,10 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         ageGroup = try container.decode(AgeGroup.self, forKey: .ageGroup)
-        disabledDefaultTopics = try container.decodeIfPresent([AgeGroup: Set<String>].self, forKey: .disabledDefaultTopics) ?? [:]
+        disabledDefaultTopics = try container.decodeIfPresent(
+            [AgeGroup: Set<String>].self,
+            forKey: .disabledDefaultTopics,
+        ) ?? [:]
         customTopics = try container.decodeIfPresent([AgeGroup: [CustomTopic]].self, forKey: .customTopics) ?? [:]
     }
 

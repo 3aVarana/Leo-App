@@ -8,10 +8,14 @@ nonisolated struct TopicReview {
     @Guide(description: "Whether the topic is safe and suitable for reading texts for the given reader age")
     var isSuitable: Bool
 
-    @Guide(description: "If suitable, the reader's topic tidied up as a short phrase of at most 6 words: fix spelling and capitalization, keep the reader's own words and meaning, in the same language the reader typed it in; otherwise empty")
+    @Guide(
+        description: "If suitable, the reader's topic tidied up as a short phrase of at most 6 words: fix spelling and capitalization, keep the reader's own words and meaning, in the same language the reader typed it in; otherwise empty",
+    )
     var topic: String
 
-    @Guide(description: "If not suitable, one short friendly sentence for the reader explaining why, in the language the instructions ask for; otherwise empty")
+    @Guide(
+        description: "If not suitable, one short friendly sentence for the reader explaining why, in the language the instructions ask for; otherwise empty",
+    )
     var reason: String
 }
 

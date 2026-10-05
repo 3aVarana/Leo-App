@@ -13,7 +13,11 @@ extension ViewSnapshots {
         }
 
         private var customizedPreferences: ReaderPreferences {
-            .fixture(ageGroup: .nine, disabled: [.nine: ["volcanoes", "pirates-treasure"]], custom: [.nine: ["Chess", "Origami"]])
+            .fixture(
+                ageGroup: .nine,
+                disabled: [.nine: ["volcanoes", "pirates-treasure"]],
+                custom: [.nine: ["Chess", "Origami"]],
+            )
         }
 
         /// Every suggested topic in `.six` turned off except the last 3.

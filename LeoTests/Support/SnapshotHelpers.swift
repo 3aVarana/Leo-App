@@ -26,7 +26,12 @@ func assertViewSnapshot(
         // One clear failure instead of a pixel difference in every image.
         Issue.record(
             Comment(rawValue: problem),
-            sourceLocation: SourceLocation(fileID: "\(fileID)", filePath: "\(filePath)", line: Int(line), column: Int(column)),
+            sourceLocation: SourceLocation(
+                fileID: "\(fileID)",
+                filePath: "\(filePath)",
+                line: Int(line),
+                column: Int(column),
+            ),
         )
         return
     }
@@ -42,7 +47,14 @@ func assertViewSnapshot(
         }
         assertReferenceSnapshot(
             of: controller,
-            as: .image(on: config, drawHierarchyInKeyWindow: true, precision: 0.99, perceptualPrecision: 0.98, size: size, traits: traits),
+            as: .image(
+                on: config,
+                drawHierarchyInKeyWindow: true,
+                precision: 0.99,
+                perceptualPrecision: 0.98,
+                size: size,
+                traits: traits,
+            ),
             named: "\(name)\(suffix)-\(TestEnvironment.appLanguage)",
             fileID: fileID,
             filePath: filePath,
@@ -77,7 +89,10 @@ func assertReferenceSnapshot<Value>(
         // `#filePath` is fixed when the tests are compiled, so the tests have to run on the
         // machine that built them, from the same checkout.
         Issue.record(
-            "Can't find the snapshot references at \(referencesDirectory.path). Build and run the tests on the same machine, from the same checkout.",
+            """
+            Can't find the snapshot references at \(referencesDirectory.path). \
+            Build and run the tests on the same machine, from the same checkout.
+            """,
             sourceLocation: sourceLocation,
         )
         return
@@ -108,7 +123,11 @@ private let snapshotEnvironmentProblem: String? = {
     let os = ProcessInfo.processInfo.operatingSystemVersion
     let version = "\(os.majorVersion).\(os.minorVersion)"
     guard model != recordedModelIdentifier || version != recordedSystemVersion else { return nil }
-    return "View snapshots are recorded on the iPhone 17 simulator (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). This run is on \(model) with iOS \(version)."
+    return """
+    View snapshots are recorded on the iPhone 17 simulator \
+    (\(recordedModelIdentifier)) with iOS \(recordedSystemVersion). \
+    This run is on \(model) with iOS \(version).
+    """
 }()
 
 /// `LeoTestsSnapshots/`, found from this file's path: `LeoTests/Support/SnapshotHelpers.swift`.

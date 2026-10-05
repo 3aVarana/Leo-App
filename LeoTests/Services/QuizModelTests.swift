@@ -43,7 +43,10 @@ struct QuizModelTests {
 
     // MARK: - With a stub generator
 
-    private let settings = RoundSettings(ageGroup: .nine, topics: ["owls", "rivers", "kites", "bread", "comets", "drums"])
+    private let settings = RoundSettings(
+        ageGroup: .nine,
+        topics: ["owls", "rivers", "kites", "bread", "comets", "drums"],
+    )
     private let otherSettings = RoundSettings(ageGroup: .twelve, topics: ["chess", "glaciers", "radios"])
     private let failure = Result<Exercise, any Error>.failure(ExerciseGenerationError.failed)
 

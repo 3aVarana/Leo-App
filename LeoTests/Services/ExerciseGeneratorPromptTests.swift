@@ -22,11 +22,13 @@ struct ExerciseGeneratorPromptTests {
         let range = group.passageWordRange
         let midpoint = (range.lowerBound + range.upperBound) / 2
         let wordRange = ExerciseGenerator(language: .english, ageGroup: group).wordRange
-        #expect(wordRange.contains("between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words"))
+        #expect(wordRange
+            .contains("between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words"))
     }
 
     @Test func wordRangeExample() {
-        #expect(ExerciseGenerator(language: .english, ageGroup: .six).wordRange.hasPrefix("between 50 and 80 words long, about 65 words"))
+        #expect(ExerciseGenerator(language: .english, ageGroup: .six).wordRange
+            .hasPrefix("between 50 and 80 words long, about 65 words"))
     }
 
     @Test(arguments: AgeGroup.allCases, [ContentLanguage.english, spanish])

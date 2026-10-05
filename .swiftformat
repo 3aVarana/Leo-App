@@ -2,6 +2,7 @@
 # Matches the lowest toolchain we build with (Xcode 26 on CI).
 --swiftversion 6.2
 --exclude build
+--maxwidth 120
 
 # Snapshot references are named after the test function, so renaming tests orphans them.
 --disable swiftTestingTestCaseNames

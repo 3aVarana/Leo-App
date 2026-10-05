@@ -5,7 +5,8 @@ import Testing
 @MainActor
 struct TopicValidatorTests {
     /// Looked up rather than written in English, so the test keeps passing in other languages.
-    private let genericRejection = String(localized: "That topic isn't a good fit for your reading practice. Try another one.")
+    private let genericRejection =
+        String(localized: "That topic isn't a good fit for your reading practice. Try another one.")
 
     private func outcome(isSuitable: Bool, topic: String = "", reason: String = "") -> TopicValidator.Outcome {
         TopicValidator.outcome(for: TopicReview(isSuitable: isSuitable, topic: topic, reason: reason))
@@ -27,7 +28,11 @@ struct TopicValidatorTests {
     }
 
     @Test func rejectedWithReason() {
-        let outcome = outcome(isSuitable: false, topic: "Something", reason: "  That's not suitable for young readers.\n")
+        let outcome = outcome(
+            isSuitable: false,
+            topic: "Something",
+            reason: "  That's not suitable for young readers.\n",
+        )
         #expect(outcome == .rejected("That's not suitable for young readers."))
     }
 

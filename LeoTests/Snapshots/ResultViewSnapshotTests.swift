@@ -13,7 +13,11 @@ extension ViewSnapshots {
         }
 
         @Test func accessibilitySize() {
-            assertViewSnapshot(of: ResultView(correct: 5, total: 6, onRestart: {}), named: "5-of-6-ax", sizeCategory: .accessibilityExtraExtraExtraLarge)
+            assertViewSnapshot(
+                of: ResultView(correct: 5, total: 6, onRestart: {}),
+                named: "5-of-6-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+            )
         }
     }
 }
