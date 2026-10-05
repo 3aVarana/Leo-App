@@ -70,7 +70,7 @@ struct RootView: View {
     }
 }
 
-private struct UnavailableView: View {
+struct UnavailableView: View {
     let reason: SystemLanguageModel.Availability.UnavailableReason
 
     var body: some View {

@@ -6,14 +6,34 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		10285AF130731B5E00EE2ED8 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 10285AF230731B5E00EE2ED8 /* SnapshotTesting */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		10285AE830731B5E00EE2ED8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000100000000;
+			remoteInfo = Leo;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Leo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Leo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		10285AE430731B5E00EE2ED8 /* LeoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* Leo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Leo;
+			sourceTree = "<group>";
+		};
+		10285AE530731B5E00EE2ED8 /* LeoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LeoTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -24,6 +44,12 @@
 			files = (
 			);
 		};
+		10285AE130731B5E00EE2ED8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				10285AF130731B5E00EE2ED8 /* SnapshotTesting in Frameworks */,
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -31,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000010 /* Leo */,
+				10285AE530731B5E00EE2ED8 /* LeoTests */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -39,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* Leo.app */,
+				10285AE430731B5E00EE2ED8 /* LeoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -64,6 +92,30 @@
 			productReference = 000000000000000000000120 /* Leo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		10285AE330731B5E00EE2ED8 /* LeoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 10285AEA30731B5E00EE2ED8 /* Build configuration list for PBXNativeTarget "LeoTests" */;
+			buildPhases = (
+				10285AE030731B5E00EE2ED8 /* Sources */,
+				10285AE130731B5E00EE2ED8 /* Frameworks */,
+				10285AE230731B5E00EE2ED8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				10285AE930731B5E00EE2ED8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				10285AE530731B5E00EE2ED8 /* LeoTests */,
+			);
+			name = LeoTests;
+			packageProductDependencies = (
+				10285AF230731B5E00EE2ED8 /* SnapshotTesting */,
+			);
+			productName = LeoTests;
+			productReference = 10285AE430731B5E00EE2ED8 /* LeoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -71,11 +123,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2630;
+				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					000000000000000100000000 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					10285AE330731B5E00EE2ED8 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 000000000000000100000000;
 					};
 				};
 			};
@@ -90,18 +146,27 @@
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				10285AF330731B5E00EE2ED8 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				000000000000000100000000 /* Leo */,
+				10285AE330731B5E00EE2ED8 /* LeoTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000140000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		10285AE230731B5E00EE2ED8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -114,7 +179,20 @@
 			files = (
 			);
 		};
+		10285AE030731B5E00EE2ED8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		10285AE930731B5E00EE2ED8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000100000000 /* Leo */;
+			targetProxy = 10285AE830731B5E00EE2ED8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		000000000000000011000000 /* Debug configuration for PBXProject "Leo" */ = {
@@ -331,6 +409,51 @@
 			};
 			name = Release;
 		};
+		10285AEB30731B5E00EE2ED8 /* Debug configuration for PBXNativeTarget "LeoTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2V3D2X879V;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aranasoft.LeoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Leo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Leo";
+			};
+			name = Debug;
+		};
+		10285AEC30731B5E00EE2ED8 /* Release configuration for PBXNativeTarget "LeoTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2V3D2X879V;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aranasoft.LeoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Leo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Leo";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -350,7 +473,34 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		10285AEA30731B5E00EE2ED8 /* Build configuration list for PBXNativeTarget "LeoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				10285AEB30731B5E00EE2ED8 /* Debug configuration for PBXNativeTarget "LeoTests" */,
+				10285AEC30731B5E00EE2ED8 /* Release configuration for PBXNativeTarget "LeoTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		10285AF330731B5E00EE2ED8 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		10285AF230731B5E00EE2ED8 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 10285AF330731B5E00EE2ED8 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }
