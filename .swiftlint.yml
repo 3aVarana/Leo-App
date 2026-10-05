@@ -1,0 +1,19 @@
+# SwiftLint configuration. Runs as a build phase on the Leo target; from the repo root: swiftlint
+included:
+  - Leo
+  - LeoTests
+excluded:
+  - build
+
+disabled_rules:
+  # SwiftFormat owns these and formats the opposite way.
+  - trailing_comma
+  - opening_brace
+
+identifier_name:
+  # Conventional short names (loop indices, math, seeds).
+  excluded: [i, n, x, y, z, id, os]
+
+line_length:
+  # @Guide descriptions are prompt prose for the on-device model; wrapping them doesn't help.
+  excluded_lines_patterns: ['^\s*@Guide\(']
