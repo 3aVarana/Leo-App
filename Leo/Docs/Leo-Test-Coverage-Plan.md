@@ -79,7 +79,7 @@ Add `https://github.com/pointfreeco/swift-snapshot-testing`, "Up to Next Major" 
 ### 4.2 Snapshot reference images
 
 - swift-snapshot-testing writes references to `LeoTests/<Subfolder>/__Snapshots__/<TestFile>/`. Commit them to git.
-- Because `LeoTests/` is a synchronized group, Xcode would copy those PNGs into the test bundle. Files with the same name in different folders then cause "Multiple commands produce" build errors. **Add a target-membership exception for every `__Snapshots__` folder** (in Xcode: select the folder, File inspector → uncheck `LeoTests`). Confirm the first time the build runs with recorded images.
+- Because `LeoTests/` is a synchronized group, Xcode would copy those PNGs into the test bundle. Files with the same name in different folders then cause "Multiple commands produce" build errors. **Exclude every `__Snapshots__` folder from `LeoTests`.** In Xcode 27 a membership exception on a plain folder doesn't apply to the files inside it, so each folder (`Models/`, `Services/` and `Snapshots/__Snapshots__`) is listed both in the group's `explicitFolders` (Xcode treats it as one item) and in the `LeoTests` membership exceptions. A new `__Snapshots__` folder needs both entries, added once the folder exists (Xcode drops entries for missing folders).
 - Record with `@Suite(.snapshots(record: .missing))`: missing images are recorded and the test fails once, then passes. Re-record intentionally with `.all` on the suite, or set `SNAPSHOT_TESTING_RECORD=all` in the test plan's environment, then switch back.
 
 ### 4.3 Test plans and coverage
@@ -504,6 +504,8 @@ xcrun xccov view --report --only-targets build/Leo-tests.xcresult
 xcrun xccov view --report --files-for-target Leo.app build/Leo-tests.xcresult
 ```
 
+When a test fails, `xcodebuild` collects simulator diagnostics, which can stall for 10 minutes. Add `-collect-test-diagnostics never` to skip it.
+
 Run the live model suite (on demand):
 
 ```bash
@@ -533,10 +535,18 @@ Done when:
 
 ## 10. Open items to confirm during implementation
 
-- Test-plan tag include/exclude for Swift Testing in Xcode 27 (section 4.3). Fallback: `-only-testing`/`-skip-testing`.
-- That "Arguments Passed On Launch" in the test plans reaches the test host app (checked by the `RootView` coverage in section 9).
-- The `__Snapshots__` target-membership exception needed with synchronized groups (section 4.2).
-- The unsuitable topic to use in `TopicValidatorLiveTests`.
+All confirmed during implementation:
+
+- Test-plan tag include/exclude for Swift Testing works in Xcode 27 (`skippedTags` / `selectedTags` on the test target). No fallback needed.
+- "Arguments Passed On Launch" reaches the test host app: `RootView`'s body shows 0% coverage.
+- The `__Snapshots__` exclusion needs `explicitFolders` plus a membership exception (section 4.2).
+- The unsuitable topic in `TopicValidatorLiveTests` is "gory horror movies" for `.six`.
+
+Also found:
+
+- Snapshots are drawn in the key window (`drawHierarchyInKeyWindow: true`). Drawing only the layer leaves the navigation bar's glass buttons unstyled, black on black in dark mode. Because tests share that window, the view snapshot suites are nested in one `.serialized` suite, `ViewSnapshots`.
+- `assertViewSnapshot` takes an optional `height` to capture lists taller than the screen. Above about 2700 points the image comes out blank.
+- At `.accessibilityExtraExtraExtraLarge`, `WelcomeView` truncates its description ("…about the topics you ch…"). Recorded as is; not fixed.
 
 ## 11. Deferred: Spanish and Brazilian Portuguese
 
