@@ -1,6 +1,6 @@
 # SwiftFormat configuration. Run from the repo root: swiftformat .
-# Matches the lowest toolchain we build with (Xcode 26 on CI).
---swiftversion 6.2
+# Matches the toolchain we build with, locally and on CI: Xcode 27 (see .xcode-version).
+--swiftversion 6.4
 --exclude build
 --maxwidth 120
 
