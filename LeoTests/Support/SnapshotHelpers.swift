@@ -35,6 +35,11 @@ func assertViewSnapshot(
         )
         return
     }
+    // With drawHierarchyInKeyWindow, the library shrinks the app's key window on the iPhone 18 Pro
+    // screen (402 x 874) to the config's 390 x 844 and ignores the config's safe area (47 / 34).
+    // Views get the screen's top inset, 62, and a bottom inset of 4: the window ends 30 points
+    // above the screen's bottom, so it overlaps only 4 of the home indicator's 34 points. Not a
+    // real device layout, but the same on every run. Changing it means re-recording every reference.
     let config = ViewImageConfig.iPhone13Pro
     let size = height.map { CGSize(width: config.size!.width, height: $0) }
     for (colorScheme, suffix) in [(UIUserInterfaceStyle.light, ""), (.dark, "-dark")] {
