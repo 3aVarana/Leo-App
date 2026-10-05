@@ -9,7 +9,7 @@ Leo has zero test coverage. Before adding features, this plan adds:
 3. An opt-in suite that exercises the real on-device model, for prompt tuning.
 4. A small set of approved code changes that make the round logic and the remaining views testable, and keep the test host app from running its UI.
 
-Out of scope: UI tests (XCUITest), `RootView` snapshots, CI setup, coverage gates. Testing the app's Spanish and Brazilian Portuguese localizations is deferred (section 11).
+Out of scope: UI tests (XCUITest), `RootView` snapshots, the CI workflow itself (its requirements are in section 12), coverage gates. Testing the app's Spanish and Brazilian Portuguese localizations is deferred (section 11).
 
 ## 2. Agreed decisions
 
@@ -588,3 +588,59 @@ Use the Application Language setting, not `.environment(\.locale, …)` alone. `
 - Verify that the compiled string catalog answers in this way. If it doesn't, compare `String(localized:)` of the resource with `locale` set (verified to work, section 3.1) against the English value, with an allowlist for translations spelled the same as English.
 
 **Live generation in Spanish.** Add to `ExerciseGeneratorLiveTests`: `ExerciseGenerator(language: ContentLanguage(locale: Locale(identifier: "es_ES")), ageGroup: .nine)` generates successfully.
+
+## 12. CI requirements
+
+The workflow itself is the next step and isn't part of this plan. This section records what the tests need from it. Items marked *unverified* haven't been tried.
+
+### 12.1 Environment
+
+- **Xcode 27.0, the iOS 27.0 simulator runtime and the iPhone 18 Pro simulator.** `assertViewSnapshot` fails with a clear message on any other device or iOS version (section 5.3). Select Xcode explicitly (`xcode-select` or `DEVELOPER_DIR`) and record the version in the repo, for example in an `.xcode-version` file.
+- Apple Silicon runner. *Unverified* on Intel. The precision settings (0.99 and 0.98) absorb small rendering differences, but not a different OS version.
+- *Unverified:* whether the hosted runner image already has Xcode 27.0 and the iOS 27.0 runtime. If not, use a self-hosted Mac. Xcode Cloud is another option, but it hasn't been checked that its build and test steps run on the same machine (see 12.2).
+- The default plan doesn't use the on-device model, so a runner without Apple Intelligence is fine. `LeoLiveModel` is never run on CI by default: run it by hand (for example `workflow_dispatch`) on a Mac with the model available.
+
+### 12.2 One job builds and tests
+
+References are found from `#filePath`, which is fixed at compile time (section 4.2). Run `xcodebuild test` in one job, from one checkout. Don't split `build-for-testing` and `test-without-building` across machines or checkouts.
+
+### 12.3 Command
+
+```bash
+rm -rf build
+xcodebuild test \
+  -project Leo.xcodeproj -scheme Leo -testPlan Leo \
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' \
+  -resultBundlePath build/Leo-tests.xcresult \
+  -collect-test-diagnostics never \
+  -disableAutomaticPackageResolution \
+  SNAPSHOT_TESTING_RECORD=never
+```
+
+- `rm -rf build`: `-resultBundlePath` fails when the path already exists.
+- `SNAPSHOT_TESTING_RECORD=never`: a missing reference fails the run and writes nothing. Without it a missing image is recorded in the CI checkout, and thrown away.
+- `-disableAutomaticPackageResolution`: uses the committed `Leo.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`, so CI builds the pinned versions.
+- `-collect-test-diagnostics never`: skips the diagnostics collection that can stall for 10 minutes after a failure.
+- No `-skipMacroValidation` is needed: swift-snapshot-testing has no macro targets.
+
+### 12.4 Failures and artifacts
+
+- Upload `build/Leo-tests.xcresult` when the job fails (`if: failure()`). Under Xcode, swift-snapshot-testing 1.19.6 attaches the new, reference and diff images to the result bundle for Swift Testing failures.
+- `SNAPSHOT_ARTIFACTS` (a folder for the failing images) isn't needed. A shell variable doesn't reach the hosted tests (`SIMCTL_CHILD_…` didn't work for `SNAPSHOT_TESTING_RECORD`), and the images are already in the result bundle. It could be passed through the test plan like the record mode. *Unverified.*
+- Coverage: `xcrun xccov view --report --json build/Leo-tests.xcresult`, written to the job summary. No gate (section 9).
+
+### 12.5 Re-recording references
+
+A separate manual job (`workflow_dispatch`) runs the same command with `SNAPSHOT_TESTING_RECORD=all`, then uploads `LeoTestsSnapshots/` as an artifact or opens a pull request with it. Review every image before merging. Images recorded locally must come from the same Xcode and simulator, so a local re-record is fine.
+
+### 12.6 Speed and size
+
+- Cache the `SourcePackages` folder (`-clonedSourcePackagesDirPath`), keyed on `Package.resolved`. swift-syntax 604 is slow to build from cold.
+- Use a shallow checkout (`fetch-depth: 1`). `LeoTestsSnapshots/` is about 9.5 MB in 40 files and will grow when Spanish and Portuguese are added (section 11).
+- Run the workflow on pull requests that change `Leo/**`, `LeoTests/**`, `LeoTestsSnapshots/**`, the test plans or the project file.
+- Git LFS isn't used. Revisit it if the folder passes about 50 MB: a checkout without LFS gives pointer files and confusing failures.
+
+### 12.7 Open items
+
+- Set `displayScale` to 2 in `assertViewSnapshot` (currently 3) to roughly halve the image size (an estimate: 44% of the pixels). It means re-recording every image, so do it before CI starts keeping history.
+- Confirm the runner has the Xcode and runtime in 12.1.
