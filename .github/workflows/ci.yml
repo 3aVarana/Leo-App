@@ -99,13 +99,30 @@ jobs:
             SNAPSHOT_TESTING_RECORD=never \
             | xcbeautify --renderer github-actions
 
-      # The result bundle holds the new, reference and diff images of failing snapshot tests.
+      # swift-snapshot-testing writes failing images to the simulator app's tmp folder, not to the
+      # result bundle. Copy each one next to the reference it was compared with.
+      - name: Collect failing snapshots
+        if: failure()
+        run: |
+          find ~/Library/Developer/CoreSimulator/Devices -path '*/tmp/*SnapshotTests/*.png' -print0 |
+            while IFS= read -r -d '' image; do
+              suite=$(basename "$(dirname "$image")")
+              name=$(basename "$image" .png)
+              mkdir -p "build/snapshot-failures/$suite"
+              cp "$image" "build/snapshot-failures/$suite/$name.failed.png"
+              cp "LeoTestsSnapshots/$suite/$name.png" "build/snapshot-failures/$suite/$name.reference.png" || true
+            done
+
+      # Two paths keep the Leo-tests.xcresult folder name in the zip, so Xcode can open it.
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: Leo-tests-xcresult
-          path: build/Leo-tests.xcresult
+          name: Leo-test-results
+          path: |
+            build/Leo-tests.xcresult
+            build/snapshot-failures
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: Coverage summary
