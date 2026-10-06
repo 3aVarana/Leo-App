@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Shown on first launch: the reader picks their age group, then their topics.
 struct OnboardingView: View {
-    @Environment(PreferencesStore.self) private var store
+    let onSave: (ReaderPreferences) -> Void
 
     @State private var selection: AgeGroup?
     @State private var draft = ReaderPreferences(ageGroup: .fifteen)
@@ -31,7 +31,7 @@ struct OnboardingView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") { store.preferences = draft }
+                Button("Done") { onSave(draft) }
             }
         }
     }
@@ -100,6 +100,5 @@ private struct OnboardingTitle: View {
 }
 
 #Preview {
-    OnboardingView()
-        .environment(PreferencesStore(defaults: UserDefaults(suiteName: "preview")!))
+    OnboardingView { _ in }
 }

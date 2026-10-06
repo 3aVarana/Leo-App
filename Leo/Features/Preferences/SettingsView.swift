@@ -2,13 +2,14 @@ import SwiftUI
 
 /// Changes the age group and topics. Nothing is saved until Done.
 struct SettingsView: View {
-    @Environment(PreferencesStore.self) private var store
     @Environment(\.dismiss) private var dismiss
 
     @State private var draft: ReaderPreferences
+    private let onSave: (ReaderPreferences) -> Void
 
-    init(preferences: ReaderPreferences) {
+    init(preferences: ReaderPreferences, onSave: @escaping (ReaderPreferences) -> Void) {
         _draft = State(initialValue: preferences)
+        self.onSave = onSave
     }
 
     var body: some View {
@@ -33,7 +34,7 @@ struct SettingsView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        store.preferences = draft
+                        onSave(draft)
                         dismiss()
                     }
                 }
@@ -43,6 +44,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(preferences: ReaderPreferences(ageGroup: .twelve))
-        .environment(PreferencesStore(defaults: UserDefaults(suiteName: "preview")!))
+    SettingsView(preferences: ReaderPreferences(ageGroup: .twelve)) { _ in }
 }

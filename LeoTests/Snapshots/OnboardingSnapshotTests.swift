@@ -6,8 +6,6 @@ import Testing
 extension ViewSnapshots {
     @MainActor
     struct OnboardingSnapshotTests {
-        private let testDefaults = TestDefaults()
-
         /// Continue is disabled until an age group is picked.
         @Test func pickerWithoutSelection() {
             assertViewSnapshot(of: AgeGroupPicker(selection: .constant(nil), onContinue: {}), named: "none")
@@ -26,9 +24,7 @@ extension ViewSnapshots {
         }
 
         @Test func firstScreen() {
-            let view = OnboardingView()
-                .environment(PreferencesStore(defaults: testDefaults.defaults))
-            assertViewSnapshot(of: view, named: "first-screen")
+            assertViewSnapshot(of: OnboardingView { _ in }, named: "first-screen")
         }
     }
 }
