@@ -7,7 +7,7 @@ extension ViewSnapshots {
     @MainActor
     struct SettingsViewSnapshotTests {
         private var settings: some View {
-            SettingsView(preferences: .fixture(ageGroup: .twelve, custom: [.twelve: ["Chess"]])) { _ in }
+            SettingsView(viewModel: .fixture(draft: .fixture(ageGroup: .twelve, custom: [.twelve: ["Chess"]])))
         }
 
         @Test func screen() {

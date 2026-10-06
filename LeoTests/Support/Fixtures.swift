@@ -44,6 +44,18 @@ extension ReaderPreferences {
     }
 }
 
+extension PreferencesEditorViewModel {
+    /// An editor over `draft` whose reviews go to `reviews` and whose saves go to `onSave`.
+    @MainActor
+    static func fixture(
+        draft: ReaderPreferences,
+        reviews: StubTopicReviewRepository = StubTopicReviewRepository(),
+        onSave: @escaping (ReaderPreferences) -> Void = { _ in },
+    ) -> PreferencesEditorViewModel {
+        PreferencesEditorViewModel(draft: draft, topicReviews: reviews, onSave: onSave)
+    }
+}
+
 extension Exercise {
     /// An exercise with fixed options, built without validation or shuffling.
     static func fixture(

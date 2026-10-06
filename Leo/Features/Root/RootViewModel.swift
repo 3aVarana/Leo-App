@@ -11,14 +11,17 @@ final class RootViewModel {
 
     private let preferencesRepository: any PreferencesRepository
     private let availabilityProvider: any ModelAvailabilityProvider
+    private let topicReviews: any TopicReviewRepository
 
     init(
         preferences: any PreferencesRepository,
         availability: any ModelAvailabilityProvider,
+        topicReviews: any TopicReviewRepository,
         quiz: QuizViewModel,
     ) {
         preferencesRepository = preferences
         availabilityProvider = availability
+        self.topicReviews = topicReviews
         self.quiz = quiz
         self.preferences = preferences.load()
     }
@@ -46,5 +49,21 @@ final class RootViewModel {
     func preferencesDidChange() {
         guard let preferences else { return }
         quiz.configure(preferences.roundSettings)
+    }
+
+    /// An editor for the first launch. Saving it ends onboarding.
+    func makeOnboardingEditor() -> PreferencesEditorViewModel {
+        makeEditor(draft: ReaderPreferences(ageGroup: .fifteen))
+    }
+
+    /// An editor over the current preferences. `nil` before onboarding is done.
+    func makeSettingsEditor() -> PreferencesEditorViewModel? {
+        preferences.map(makeEditor)
+    }
+
+    private func makeEditor(draft: ReaderPreferences) -> PreferencesEditorViewModel {
+        PreferencesEditorViewModel(draft: draft, topicReviews: topicReviews) { [weak self] in
+            self?.save($0)
+        }
     }
 }

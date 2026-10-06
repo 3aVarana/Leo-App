@@ -2,17 +2,19 @@ import SwiftUI
 
 /// Shown on first launch: the reader picks their age group, then their topics.
 struct OnboardingView: View {
-    let onSave: (ReaderPreferences) -> Void
-
+    @State private var viewModel: PreferencesEditorViewModel
     @State private var selection: AgeGroup?
-    @State private var draft = ReaderPreferences(ageGroup: .fifteen)
     @State private var isShowingTopics = false
+
+    init(viewModel: PreferencesEditorViewModel) {
+        _viewModel = State(initialValue: viewModel)
+    }
 
     var body: some View {
         NavigationStack {
             AgeGroupPicker(selection: $selection) {
                 guard let selection else { return }
-                draft.ageGroup = selection
+                viewModel.draft.ageGroup = selection
                 isShowingTopics = true
             }
             .navigationDestination(isPresented: $isShowingTopics) {
@@ -26,12 +28,12 @@ struct OnboardingView: View {
             Section {} header: {
                 OnboardingTitle("What do you like reading about?")
             }
-            TopicsEditor(preferences: $draft, group: draft.ageGroup)
+            TopicsEditor(viewModel: viewModel)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") { onSave(draft) }
+                Button("Done", action: viewModel.save)
             }
         }
     }
@@ -100,5 +102,9 @@ private struct OnboardingTitle: View {
 }
 
 #Preview {
-    OnboardingView { _ in }
+    OnboardingView(viewModel: PreferencesEditorViewModel(
+        draft: ReaderPreferences(ageGroup: .fifteen),
+        topicReviews: FoundationModelsTopicReviewRepository(),
+        onSave: { _ in },
+    ))
 }

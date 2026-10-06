@@ -21,13 +21,6 @@ nonisolated struct TopicReview {
 
 /// Checks with the on-device model that a custom topic suits the reader, and tidies up its wording.
 struct TopicValidator {
-    enum Outcome: Equatable {
-        /// The cleaned-up phrase to store and show.
-        case accepted(String)
-        /// Why the topic can't be added, for the reader.
-        case rejected(String)
-    }
-
     let language: ContentLanguage
 
     private static var genericRejection: String {
@@ -35,7 +28,7 @@ struct TopicValidator {
     }
 
     /// Turns the model's review into what the reader sees.
-    static func outcome(for review: TopicReview) -> Outcome {
+    static func outcome(for review: TopicReview) -> TopicReviewOutcome {
         let topic = review.topic.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
         guard review.isSuitable, !topic.isEmpty else {
             let reason = review.reason.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -44,7 +37,7 @@ struct TopicValidator {
         return .accepted(topic)
     }
 
-    func review(_ text: String, for group: AgeGroup) async throws -> Outcome {
+    func review(_ text: String, for group: AgeGroup) async throws -> TopicReviewOutcome {
         let instructions = """
         You review topics a reader wants to practice reading about. \
         Each topic becomes short reading texts written for \(group.promptAudience), at their level: \

@@ -29,12 +29,14 @@ struct RootView: View {
                                 }
                             }
                             .sheet(isPresented: $viewModel.isShowingSettings) {
-                                SettingsView(preferences: preferences) { viewModel.save($0) }
+                                if let editor = viewModel.makeSettingsEditor() {
+                                    SettingsView(viewModel: editor)
+                                }
                             }
                     }
                     .animation(.default, value: quiz.phase)
                 } else {
-                    OnboardingView { viewModel.save($0) }
+                    OnboardingView(viewModel: viewModel.makeOnboardingEditor())
                 }
             case let .unavailable(reason):
                 UnavailableView(reason: reason)
@@ -74,6 +76,7 @@ struct RootView: View {
     RootView(viewModel: RootViewModel(
         preferences: UserDefaultsPreferencesRepository(defaults: UserDefaults(suiteName: "preview")!),
         availability: SystemModelAvailabilityProvider(),
+        topicReviews: FoundationModelsTopicReviewRepository(),
         quiz: QuizViewModel { FoundationModelsExerciseRepository(ageGroup: $0.ageGroup) },
     ))
 }

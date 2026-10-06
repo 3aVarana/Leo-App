@@ -8,7 +8,7 @@ struct TopicValidatorTests {
     private let genericRejection =
         String(localized: "That topic isn't a good fit for your reading practice. Try another one.")
 
-    private func outcome(isSuitable: Bool, topic: String = "", reason: String = "") -> TopicValidator.Outcome {
+    private func outcome(isSuitable: Bool, topic: String = "", reason: String = "") -> TopicReviewOutcome {
         TopicValidator.outcome(for: TopicReview(isSuitable: isSuitable, topic: topic, reason: reason))
     }
 
