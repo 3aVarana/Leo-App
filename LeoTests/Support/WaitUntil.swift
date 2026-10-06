@@ -1,6 +1,6 @@
 import Testing
 
-/// Yields until `condition` holds, recording an issue if `timeout` passes first. `QuizModel`
+/// Yields until `condition` holds, recording an issue if `timeout` passes first. `QuizViewModel`
 /// generates in an unstructured task, so its state changes only after the test yields.
 @MainActor
 func waitUntil(

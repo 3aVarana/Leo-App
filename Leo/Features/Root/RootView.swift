@@ -3,7 +3,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(PreferencesStore.self) private var store
-    @State private var quiz = QuizModel()
+    @State private var quiz = QuizViewModel()
     @State private var isShowingSettings = false
     private let model = SystemLanguageModel.default
 
@@ -49,14 +49,14 @@ struct RootView: View {
         case .welcome:
             WelcomeView(ageGroup: ageGroup, onStart: quiz.start)
         case .loading:
-            LoadingView(index: quiz.currentIndex, total: QuizModel.exerciseCount)
+            LoadingView(index: quiz.currentIndex, total: QuizViewModel.exerciseCount)
         case .answering:
             if let exercise = quiz.currentExercise {
                 ExerciseView(quiz: quiz, exercise: exercise)
                     .id(exercise.id)
             }
         case .finished:
-            ResultView(correct: quiz.correctCount, total: QuizModel.exerciseCount, onRestart: quiz.start)
+            ResultView(correct: quiz.correctCount, total: QuizViewModel.exerciseCount, onRestart: quiz.start)
         case let .failed(message):
             ContentUnavailableView {
                 Label("Something went wrong", systemImage: "exclamationmark.triangle")
