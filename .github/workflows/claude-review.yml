@@ -45,7 +45,8 @@ jobs:
 
             Leo is a SwiftUI iOS app (Xcode 27, deployment target iOS 26.5) that generates reading
             comprehension exercises with Apple's on-device Foundation Models. The app target defaults
-            to MainActor isolation with approachable concurrency; the test target does not. Tests use
+            to MainActor isolation with approachable concurrency; the test target does not. Both targets
+            build in Swift 6 language mode, so the compiler already rejects data races. Tests use
             Swift Testing and swift-snapshot-testing, with references in LeoTestsSnapshots/.
             UI strings are localized in Leo/Localizable.xcstrings (en, es, pt-BR).
 

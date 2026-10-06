@@ -28,8 +28,8 @@ Out of scope: UI tests (XCUITest), `RootView` snapshots, the CI workflow itself 
 ## 3. Project facts relevant to implementation
 
 - Xcode 27.0. App deployment target 26.5, project default 27.0 (the test target inherits 27.0).
-- App target: `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, `SWIFT_APPROACHABLE_CONCURRENCY = YES`, `SWIFT_VERSION = 5.0`.
-- Test target `LeoTests` (bundle id `com.aranasoft.LeoTests`): hosted by `Leo.app` (`TEST_HOST` / `BUNDLE_LOADER`), no default actor isolation, `ENABLE_TESTABILITY = YES` in Debug. Import the app with `@testable import Leo`.
+- App target: `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, `SWIFT_APPROACHABLE_CONCURRENCY = YES`, `SWIFT_VERSION = 6.0`.
+- Test target `LeoTests` (bundle id `com.aranasoft.LeoTests`): hosted by `Leo.app` (`TEST_HOST` / `BUNDLE_LOADER`), no default actor isolation, `SWIFT_VERSION = 6.0`, `ENABLE_TESTABILITY = YES` in Debug. Import the app with `@testable import Leo`.
 - Both `Leo/` and `LeoTests/` are **file-system synchronized groups**: any file added to `LeoTests/` is compiled or bundled automatically.
 - The `Leo` scheme has no test plan (`shouldAutocreateTestPlan = YES`) and **code coverage is off**.
 - Only one test file exists: the `LeoTests/LeoTests.swift` placeholder (to be deleted).
