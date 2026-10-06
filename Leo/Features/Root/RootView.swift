@@ -1,46 +1,46 @@
-import FoundationModels
 import SwiftUI
 
 struct RootView: View {
-    @Environment(PreferencesStore.self) private var store
-    @State private var quiz = QuizViewModel { FoundationModelsExerciseRepository(ageGroup: $0.ageGroup) }
-    @State private var isShowingSettings = false
-    private let model = SystemLanguageModel.default
+    @Bindable var viewModel: RootViewModel
+
+    private var quiz: QuizViewModel {
+        viewModel.quiz
+    }
 
     var body: some View {
         Group {
-            switch model.availability {
+            switch viewModel.availability {
             case .available:
-                if let preferences = store.preferences {
+                if let preferences = viewModel.preferences {
                     NavigationStack {
                         content(ageGroup: preferences.ageGroup)
                             // Runs after onboarding, on launch and whenever settings are saved.
                             // Unchanged settings keep the round already prepared.
                             .task(id: preferences.roundSettings) {
-                                quiz.configure(preferences.roundSettings)
+                                viewModel.preferencesDidChange()
                             }
                             .toolbar {
-                                if quiz.phase == .welcome || quiz.phase == .finished {
+                                if viewModel.canShowSettings {
                                     ToolbarItem(placement: .topBarTrailing) {
                                         Button("Settings", systemImage: "gearshape") {
-                                            isShowingSettings = true
+                                            viewModel.isShowingSettings = true
                                         }
                                     }
                                 }
                             }
-                            .sheet(isPresented: $isShowingSettings) {
-                                SettingsView(preferences: preferences)
+                            .sheet(isPresented: $viewModel.isShowingSettings) {
+                                SettingsView(preferences: preferences) { viewModel.save($0) }
                             }
                     }
                     .animation(.default, value: quiz.phase)
                 } else {
-                    OnboardingView()
+                    OnboardingView { viewModel.save($0) }
                 }
             case let .unavailable(reason):
                 UnavailableView(reason: reason)
             }
         }
-        .animation(.default, value: store.preferences == nil)
+        .animation(.default, value: viewModel.preferences == nil)
     }
 
     @ViewBuilder
@@ -70,32 +70,10 @@ struct RootView: View {
     }
 }
 
-struct UnavailableView: View {
-    let reason: SystemLanguageModel.Availability.UnavailableReason
-
-    var body: some View {
-        ContentUnavailableView(
-            "Apple Intelligence needed",
-            systemImage: "apple.intelligence",
-            description: Text(message),
-        )
-    }
-
-    private var message: String {
-        switch reason {
-        case .deviceNotEligible:
-            String(localized: "This device doesn't support Apple Intelligence, which Leo uses to create exercises.")
-        case .appleIntelligenceNotEnabled:
-            String(localized: "Turn on Apple Intelligence in Settings to start practicing.")
-        case .modelNotReady:
-            String(localized: "Apple Intelligence is still getting ready. Please try again in a few minutes.")
-        @unknown default:
-            String(localized: "Apple Intelligence isn't available right now.")
-        }
-    }
-}
-
 #Preview {
-    RootView()
-        .environment(PreferencesStore(defaults: UserDefaults(suiteName: "preview")!))
+    RootView(viewModel: RootViewModel(
+        preferences: UserDefaultsPreferencesRepository(defaults: UserDefaults(suiteName: "preview")!),
+        availability: SystemModelAvailabilityProvider(),
+        quiz: QuizViewModel { FoundationModelsExerciseRepository(ageGroup: $0.ageGroup) },
+    ))
 }

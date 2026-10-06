@@ -1,4 +1,3 @@
-import FoundationModels
 @testable import Leo
 import SnapshotTesting
 import SwiftUI
