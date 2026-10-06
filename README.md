@@ -6,7 +6,7 @@ Leo helps people of all ages build their reading comprehension. Each round has v
   <tr>
     <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/OnboardingSnapshotTests/pickerWithSelection.12-14-dark-en.png"><img src="LeoTestsSnapshots/OnboardingSnapshotTests/pickerWithSelection.12-14-en.png" width="200" alt="Onboarding: choosing an age group"></picture></td>
     <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ExerciseViewSnapshotTests/wrongAnswer.wrong-dark-en.png"><img src="LeoTestsSnapshots/ExerciseViewSnapshotTests/wrongAnswer.wrong-en.png" width="200" alt="An exercise after a wrong answer, with the explanation"></picture></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_.5-of-6-dark-en.png"><img src="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_.5-of-6-en.png" width="200" alt="Results at the end of a round"></picture></td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_-_.5-of-6-dark-en.png"><img src="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_-_.5-of-6-en.png" width="200" alt="Results at the end of a round"></picture></td>
     <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/TopicsEditorSnapshotTests/customized.9-11-customized-dark-en.png"><img src="LeoTestsSnapshots/TopicsEditorSnapshotTests/customized.9-11-customized-en.png" width="200" alt="Choosing topics and adding your own"></picture></td>
   </tr>
 </table>
