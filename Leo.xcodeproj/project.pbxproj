@@ -180,7 +180,18 @@
 			alwaysOutOfDate = 1;
 			name = SwiftLint;
 			shellPath = /bin/sh;
-			shellScript = "# Lints Swift sources and reports violations in the Issue navigator. --strict makes any violation fail the build. Config: .swiftlint.yml\n# Xcode doesn't load the shell profile, so Homebrew may be missing from PATH.\nexport PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"\n\nif command -v swiftlint >/dev/null 2>&1; then\n    cd \"$SRCROOT\" && swiftlint lint --quiet --strict\nelse\n    echo \"warning: SwiftLint not installed. Install it with: brew install swiftlint\"\nfi\n";
+			shellScript = (
+				"# Lints Swift sources and reports violations in the Issue navigator. --strict makes any violation fail the build. Config: .swiftlint.yml",
+				"# Xcode doesn't load the shell profile, so Homebrew may be missing from PATH.",
+				"export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\"",
+				"",
+				"if command -v swiftlint >/dev/null 2>&1; then",
+				"    cd \"$SRCROOT\" && swiftlint lint --quiet --strict",
+				"else",
+				"    echo \"warning: SwiftLint not installed. Install it with: brew install swiftlint\"",
+				"fi",
+				"",
+			);
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -342,6 +353,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -385,6 +397,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

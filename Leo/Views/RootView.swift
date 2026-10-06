@@ -14,6 +14,7 @@ struct RootView: View {
                 if let preferences = store.preferences {
                     NavigationStack {
                         content(ageGroup: preferences.ageGroup)
+                            .containerBackground(.paper, for: .navigation)
                             // Runs after onboarding, on launch and whenever settings are saved.
                             // Unchanged settings keep the round already prepared.
                             .task(id: preferences.roundSettings) {
@@ -41,6 +42,7 @@ struct RootView: View {
             }
         }
         .animation(.default, value: store.preferences == nil)
+        .leoTheme()
     }
 
     @ViewBuilder
