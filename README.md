@@ -61,17 +61,27 @@ Leo has no accounts, no analytics and no network code. Exercises and topic revie
 
 ## Project structure
 
+Leo is organized as MVVM with repositories, one layer per folder:
+
 ```
 Leo/
-├── App/           MyApp
-├── Domain/        AgeGroup, Exercise, ComprehensionSkill, ReaderPreferences, RoundSettings, Topic
-├── Data/          PreferencesStore, plus FoundationModels/ with ExerciseGenerator, GeneratedExercise,
-│                  PromptVocabulary, TopicValidator and ContentLanguage
-└── Features/      Root, Quiz (QuizViewModel and its views) and Preferences (Onboarding, Settings, Topics editor)
-LeoTests/          Unit, snapshot and live-model tests
+├── App/           The composition root: MyApp builds the repositories and ViewModels
+├── Domain/        Plain value types and rules, with no SwiftUI or FoundationModels imports: AgeGroup,
+│                  Exercise, ComprehensionSkill, ReaderPreferences (with the topic editing rules),
+│                  RoundSettings, Topic, ModelAvailability and TopicReviewOutcome
+├── Data/          Repositories/ holds the protocols the ViewModels depend on and their implementations
+│                  (preferences in UserDefaults, exercises, topic reviews, model availability), and
+│                  FoundationModels/ holds the on-device model code behind them: ExerciseGenerator,
+│                  GeneratedExercise, PromptVocabulary, TopicValidator and ContentLanguage
+└── Features/      One folder per feature, each with its ViewModel and views: Root (RootViewModel),
+                   Quiz (QuizViewModel) and Preferences (PreferencesEditorViewModel, shared by
+                   onboarding and settings)
+LeoTests/          Unit, snapshot and live-model tests, mirroring the folders above
 LeoTestsSnapshots/ Reference images and text snapshots
-docs/              Feature specifications and the test plan
+docs/              Feature specifications, the test plan and the architecture plan
 ```
+
+Dependencies point inward: views read their ViewModel and Domain types, ViewModels depend on the repository protocols, and only the repository implementations touch `FoundationModels` and `UserDefaults`. `MyApp` wires the real implementations together, and tests inject hand-written fakes from `LeoTests/Support/`. Two SwiftLint rules keep the boundaries: nothing in `Leo/Domain/` imports SwiftUI, UIKit or FoundationModels, and nothing in `Leo/Features/` imports FoundationModels. The plan behind this layout is in [docs/Leo-MVVM-Repository-Plan.md](docs/Leo-MVVM-Repository-Plan.md).
 
 ## Testing
 
