@@ -1,58 +1,43 @@
 import SwiftUI
 
-/// The topic sections shared by onboarding and settings, for use inside a `List` or `Form`.
-/// Lays out the ViewModel's draft; the caller saves it when the reader is done.
+/// The topic chips, the reader's own topics and the field to add one, shared by onboarding
+/// and settings. The caller puts its own heading above the suggested topics, and saves the
+/// ViewModel's draft when the reader is done.
 struct TopicsEditor: View {
     @Bindable var viewModel: PreferencesEditorViewModel
 
     var body: some View {
-        Section("Suggested") {
-            ForEach(viewModel.suggestedTopics) { topic in
-                Toggle(isOn: binding(for: topic)) {
-                    Text(topic.name)
+        VStack(alignment: .leading, spacing: 0) {
+            FlowLayout {
+                ForEach(viewModel.suggestedTopics) { topic in
+                    TopicChip(name: String(localized: topic.name), isOn: binding(for: topic))
+                        .accessibilityHint(viewModel.isToggleDisabled(topic) ? Text(Self.minimumHint) : Text(""))
                 }
-                .disabled(viewModel.isToggleDisabled(topic))
             }
-            if viewModel.canResetSuggestedTopics {
-                Button("Reset suggested topics", action: viewModel.resetSuggestedTopics)
-            }
-        }
 
-        Section {
-            ForEach(viewModel.customTopics) { topic in
-                Text(topic.name)
-                    .deleteDisabled(viewModel.isAtMinimum)
-            }
-            .onDelete { offsets in
-                offsets.map { viewModel.customTopics[$0] }.forEach(viewModel.removeCustomTopic)
-            }
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    TextField("Add a topic", text: $viewModel.newTopic)
-                        .submitLabel(.done)
-                        .onSubmit(viewModel.add)
-                        .disabled(viewModel.isReviewing)
-                    if viewModel.isReviewing {
-                        ProgressView()
-                    } else {
-                        Button("Add", action: viewModel.add)
-                            .disabled(!viewModel.canAdd)
+            Kicker("Your topics")
+                .padding(.top, 22)
+                .padding(.bottom, 10)
+                .accessibilityAddTraits(.isHeader)
+
+            if !viewModel.customTopics.isEmpty {
+                FlowLayout {
+                    ForEach(viewModel.customTopics) { topic in
+                        CustomTopicChip(
+                            name: topic.name,
+                            onRemove: viewModel.isAtMinimum ? nil : { viewModel.removeCustomTopic(topic) },
+                        )
                     }
                 }
-                if let message = viewModel.message {
-                    Text(message)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                }
+                .padding(.bottom, 10)
             }
-        } header: {
-            Text("Your topics")
-        } footer: {
-            if viewModel.isAtMinimum {
-                Text("Keep at least 3 topics on.")
-            }
+
+            AddTopicField(viewModel: viewModel)
         }
+        .sensoryFeedback(.impact(weight: .light), trigger: viewModel.minimumWarningCount)
     }
+
+    private static let minimumHint: LocalizedStringResource = "At least 3 topics must stay on."
 
     private func binding(for topic: DefaultTopic) -> Binding<Bool> {
         Binding {
@@ -63,12 +48,66 @@ struct TopicsEditor: View {
     }
 }
 
+/// "Keep at least 3 topics on.", shown after the reader tried to turn off a topic at the minimum.
+struct MinimumTopicsWarning: View {
+    let viewModel: PreferencesEditorViewModel
+
+    var body: some View {
+        if viewModel.isShowingMinimumWarning {
+            Text("Keep at least 3 topics on.")
+                .leoTextStyle(.note)
+                .foregroundStyle(Color.leoMagenta700)
+        }
+    }
+}
+
+private struct AddTopicField: View {
+    @Bindable var viewModel: PreferencesEditorViewModel
+
+    @ScaledMetric(relativeTo: .callout) private var height = 44
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                TextField(text: $viewModel.newTopic) {
+                    Text("Add a topic")
+                        .foregroundStyle(Color.leoInk.opacity(0.65))
+                }
+                .leoTextStyle(LeoTextStyle(size: 16, relativeTo: .callout))
+                .foregroundStyle(Color.leoInk)
+                .submitLabel(.done)
+                .onSubmit(viewModel.add)
+                .disabled(viewModel.isReviewing)
+                .padding(.horizontal, 10)
+                .frame(minHeight: height)
+                .background(Color.leoSurface, in: .rect(cornerRadius: 2))
+                .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
+                if viewModel.isReviewing {
+                    ProgressView()
+                        .frame(minWidth: height, minHeight: height)
+                } else {
+                    Button("Add", action: viewModel.add)
+                        .buttonStyle(.leo(.secondary))
+                        .disabled(!viewModel.canAdd)
+                }
+            }
+            if let message = viewModel.message {
+                Text(message)
+                    .leoTextStyle(.note)
+                    .foregroundStyle(Color.leoMagenta700)
+            }
+        }
+    }
+}
+
 #Preview {
-    List {
+    ScrollView {
         TopicsEditor(viewModel: PreferencesEditorViewModel(
             draft: ReaderPreferences(ageGroup: .nine),
             topicReviews: FoundationModelsTopicReviewRepository(),
             onSave: { _ in },
         ))
+        .padding(24)
     }
+    .leoScreenBackground()
 }

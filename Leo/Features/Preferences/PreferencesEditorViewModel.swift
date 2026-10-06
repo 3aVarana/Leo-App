@@ -11,6 +11,9 @@ final class PreferencesEditorViewModel {
             if draft.ageGroup != oldValue.ageGroup {
                 cancelReview()
             }
+            if !isAtMinimum {
+                isShowingMinimumWarning = false
+            }
         }
     }
 
@@ -25,6 +28,11 @@ final class PreferencesEditorViewModel {
 
     /// Why the last topic wasn't added, for the reader.
     private(set) var message: String?
+
+    /// Set when the reader tried to turn off a topic at the minimum, until a topic is added.
+    private(set) var isShowingMinimumWarning = false
+    /// Counts refused attempts, so the view can play a haptic for each.
+    private(set) var minimumWarningCount = 0
 
     private var review: Task<Void, Never>?
     private let topicReviews: any TopicReviewRepository
@@ -91,7 +99,13 @@ final class PreferencesEditorViewModel {
         isEnabled(topic) && isAtMinimum
     }
 
+    /// Turning off a topic at the minimum is refused, and shows the minimum warning instead.
     func setEnabled(_ isOn: Bool, _ topic: DefaultTopic) {
+        guard isOn || !isToggleDisabled(topic) else {
+            isShowingMinimumWarning = true
+            minimumWarningCount += 1
+            return
+        }
         draft.setEnabled(isOn, topic, in: group)
     }
 

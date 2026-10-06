@@ -329,4 +329,42 @@ extension PreferencesEditorViewModelTests {
         #expect(saved == [editor.draft])
         #expect(saved[0].ageGroup == .adult)
     }
+
+    /// Every suggested topic in `.six` turned off except the last 3.
+    private var minimumDraft: ReaderPreferences {
+        let ids = DefaultTopics.topics(for: .six).map(\.id)
+        return .fixture(ageGroup: .six, disabled: [.six: Set(ids.dropLast(3))])
+    }
+
+    @Test func turningOffAtMinimumShowsWarning() throws {
+        let editor = makeEditor(minimumDraft)
+        let topic = try #require(DefaultTopics.topics(for: .six).last)
+        #expect(!editor.isShowingMinimumWarning)
+
+        editor.setEnabled(false, topic)
+        #expect(editor.isEnabled(topic))
+        #expect(editor.isShowingMinimumWarning)
+        #expect(editor.minimumWarningCount == 1)
+
+        editor.setEnabled(false, topic)
+        #expect(editor.minimumWarningCount == 2)
+    }
+
+    @Test func warningHidesAboveMinimum() throws {
+        let editor = makeEditor(minimumDraft)
+        let topics = DefaultTopics.topics(for: .six)
+        try editor.setEnabled(false, #require(topics.last))
+        #expect(editor.isShowingMinimumWarning)
+
+        try editor.setEnabled(true, #require(topics.first))
+        #expect(!editor.isShowingMinimumWarning)
+    }
+
+    @Test func turningOnAtMinimumIsAllowed() throws {
+        let editor = makeEditor(minimumDraft)
+        let topic = try #require(DefaultTopics.topics(for: .six).first)
+        editor.setEnabled(true, topic)
+        #expect(editor.isEnabled(topic))
+        #expect(!editor.isShowingMinimumWarning)
+    }
 }
