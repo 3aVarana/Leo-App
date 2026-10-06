@@ -18,6 +18,31 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
         }
     }
 
+    /// The label of a segment in the settings age picker.
+    var shortName: String {
+        switch self {
+        case .six: String(localized: "6–8")
+        case .nine: String(localized: "9–11")
+        case .twelve: String(localized: "12–14")
+        case .fifteen: String(localized: "15–17")
+        case .adult: String(localized: "18+")
+        }
+    }
+
+    /// What the texts are like, for example "Everyday words · 80–120 words". The figures come
+    /// from `passageWordRange`, so they always match what the model is asked for.
+    var summary: String {
+        let lower = passageWordRange.lowerBound
+        let upper = passageWordRange.upperBound
+        return switch self {
+        case .six: String(localized: "Short stories · \(lower)–\(upper) words")
+        case .nine: String(localized: "Everyday words · \(lower)–\(upper) words")
+        case .twelve: String(localized: "Some new vocabulary · \(lower)–\(upper) words")
+        case .fifteen: String(localized: "Richer vocabulary · \(lower)–\(upper) words")
+        case .adult: String(localized: "Nuance and inference · \(lower)–\(upper) words")
+        }
+    }
+
     var passageWordRange: ClosedRange<Int> {
         switch self {
         case .six: 50 ... 80

@@ -24,7 +24,11 @@ nonisolated extension ReaderPreferences {
     }
 
     func enabledTopicCount(in group: AgeGroup) -> Int {
-        DefaultTopics.topics(for: group).filter { isEnabled($0, in: group) }.count + (customTopics[group] ?? []).count
+        enabledSuggestedTopicCount(in: group) + (customTopics[group] ?? []).count
+    }
+
+    func enabledSuggestedTopicCount(in group: AgeGroup) -> Int {
+        DefaultTopics.topics(for: group).filter { isEnabled($0, in: group) }.count
     }
 
     /// Whether no more topics can be turned off or removed.
@@ -71,10 +75,9 @@ nonisolated extension ReaderPreferences {
         disabledDefaultTopics[group] = nil
     }
 
-    /// Takes the offsets a `List`'s `onDelete` gives, so the ViewModel can pass them straight through.
-    mutating func removeCustomTopics(atOffsets offsets: IndexSet, in group: AgeGroup) {
-        guard let topics = customTopics[group] else { return }
-        customTopics[group] = topics.enumerated().filter { !offsets.contains($0.offset) }.map(\.element)
+    /// Doesn't enforce the minimum: the editor hides the remove control instead.
+    mutating func removeCustomTopic(id: CustomTopic.ID, in group: AgeGroup) {
+        customTopics[group]?.removeAll { $0.id == id }
     }
 
     /// Adds a reviewed phrase, re-enabling the suggested topic it names if there is one.

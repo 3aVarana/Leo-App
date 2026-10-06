@@ -34,7 +34,12 @@ nonisolated struct GeneratedExercise {
 
 nonisolated extension Exercise {
     /// Validates and normalizes model output. Returns `nil` when the content is unusable.
-    init?(generated: GeneratedExercise, topic: String, skill: ComprehensionSkill, acceptedWordCount: ClosedRange<Int>) {
+    init?(
+        generated: GeneratedExercise,
+        topic: RoundTopic,
+        skill: ComprehensionSkill,
+        acceptedWordCount: ClosedRange<Int>,
+    ) {
         func clean(_ text: String) -> String {
             text.trimmingCharacters(in: .whitespacesAndNewlines)
         }

@@ -3,7 +3,12 @@ import Foundation
 /// Supplies the exercises of one round. A new one is made for each round, so a change
 /// to the device language applies to the next round.
 protocol ExerciseRepository {
-    func exercise(topics: [String], skill: ComprehensionSkill) async throws -> Exercise
+    /// Tries `topics` in order until one gives a usable exercise, calling `onAttempt` before each.
+    func exercise(
+        topics: [RoundTopic],
+        skill: ComprehensionSkill,
+        onAttempt: @escaping (RoundTopic) -> Void,
+    ) async throws -> Exercise
 }
 
 enum ExerciseGenerationError: LocalizedError {
@@ -24,7 +29,11 @@ struct FoundationModelsExerciseRepository: ExerciseRepository {
         generator = ExerciseGenerator(language: language, ageGroup: ageGroup)
     }
 
-    func exercise(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
-        try await generator.generate(topics: topics, skill: skill)
+    func exercise(
+        topics: [RoundTopic],
+        skill: ComprehensionSkill,
+        onAttempt: @escaping (RoundTopic) -> Void,
+    ) async throws -> Exercise {
+        try await generator.generate(topics: topics, skill: skill, onAttempt: onAttempt)
     }
 }

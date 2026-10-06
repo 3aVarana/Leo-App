@@ -59,11 +59,11 @@ struct RootView: View {
             }
         case .finished:
             ResultView(correct: quiz.correctCount, total: QuizViewModel.exerciseCount, onRestart: quiz.start)
-        case let .failed(message):
+        case .failed:
             ContentUnavailableView {
                 Label("Something went wrong", systemImage: "exclamationmark.triangle")
             } description: {
-                Text(message)
+                Text(ExerciseGenerationError.failed.localizedDescription)
             } actions: {
                 Button("Try again", action: quiz.retry)
                     .buttonStyle(.borderedProminent)

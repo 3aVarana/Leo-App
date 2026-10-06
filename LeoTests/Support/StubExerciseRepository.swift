@@ -6,7 +6,7 @@
 @MainActor
 final class StubExerciseRepository: ExerciseRepository {
     struct Call: Equatable {
-        let topics: [String]
+        let topics: [RoundTopic]
         let skill: ComprehensionSkill
     }
 
@@ -17,6 +17,8 @@ final class StubExerciseRepository: ExerciseRepository {
     private var results: [Result<Exercise, any Error>]
     private var waiting: [(id: Int, continuation: CheckedContinuation<Exercise, any Error>)] = []
     private var nextID = 0
+    /// The `onAttempt` of every call, in order, so tests can report a fallback.
+    private(set) var attemptHandlers: [(RoundTopic) -> Void] = []
     /// Keeps waiting calls waiting when their task is cancelled, like a repository that
     /// doesn't check for cancellation, so a late result can be delivered.
     private let ignoresCancellation: Bool
@@ -35,8 +37,17 @@ final class StubExerciseRepository: ExerciseRepository {
         waiting.count
     }
 
-    func exercise(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
+    /// Reports the first topic as tried. Tests report a fallback through `attemptHandlers`.
+    func exercise(
+        topics: [RoundTopic],
+        skill: ComprehensionSkill,
+        onAttempt: @escaping (RoundTopic) -> Void,
+    ) async throws -> Exercise {
         calls.append(Call(topics: topics, skill: skill))
+        if let first = topics.first {
+            onAttempt(first)
+        }
+        attemptHandlers.append(onAttempt)
         if !results.isEmpty {
             return try results.removeFirst().get()
         }

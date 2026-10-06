@@ -10,6 +10,12 @@ nonisolated struct DefaultTopic: Identifiable, Sendable {
     let prompt: String
 }
 
+nonisolated extension DefaultTopic {
+    var roundTopic: RoundTopic {
+        RoundTopic(prompt: prompt, name: String(localized: name))
+    }
+}
+
 /// A topic the reader added, after the model reviewed it.
 nonisolated struct CustomTopic: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
@@ -19,6 +25,13 @@ nonisolated struct CustomTopic: Identifiable, Codable, Hashable, Sendable {
     init(id: UUID = UUID(), name: String) {
         self.id = id
         self.name = name
+    }
+}
+
+nonisolated extension CustomTopic {
+    /// The reader's phrase is both what the model writes about and what the reader sees.
+    var roundTopic: RoundTopic {
+        RoundTopic(prompt: name, name: name)
     }
 }
 

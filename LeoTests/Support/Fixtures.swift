@@ -9,6 +9,13 @@ extension String {
     }
 }
 
+/// Lets tests write a topic as its prompt. The reader-facing name is the prompt, capitalized.
+extension RoundTopic: ExpressibleByStringLiteral {
+    public init(stringLiteral prompt: String) {
+        self.init(prompt: prompt, name: prompt.prefix(1).uppercased() + prompt.dropFirst())
+    }
+}
+
 extension GeneratedExercise {
     /// Valid model output. The default passage is 60 words, inside `AgeGroup.six.acceptedWordCount`.
     static func fixture(
@@ -59,7 +66,7 @@ extension PreferencesEditorViewModel {
 extension Exercise {
     /// An exercise with fixed options, built without validation or shuffling.
     static func fixture(
-        topic: String = "volcanoes",
+        topic: RoundTopic = "volcanoes",
         skill: ComprehensionSkill = .detail,
         title: String = "The Sleeping Mountain",
         passage: String = """

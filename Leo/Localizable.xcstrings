@@ -49,6 +49,22 @@
         }
       }
     },
+    "12–14": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12–14"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "12–14"
+          }
+        }
+      }
+    },
     "15 to 17": {
       "localizations": {
         "es": {
@@ -61,6 +77,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "15 a 17"
+          }
+        }
+      }
+    },
+    "15–17": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15–17"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15–17"
           }
         }
       }
@@ -81,6 +113,22 @@
         }
       }
     },
+    "18+": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "18+"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "18+"
+          }
+        }
+      }
+    },
     "6 to 8": {
       "localizations": {
         "es": {
@@ -97,6 +145,22 @@
         }
       }
     },
+    "6–8": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6–8"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6–8"
+          }
+        }
+      }
+    },
     "9 to 11": {
       "localizations": {
         "es": {
@@ -109,6 +173,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "9 a 11"
+          }
+        }
+      }
+    },
+    "9–11": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "9–11"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "9–11"
           }
         }
       }
@@ -625,6 +705,22 @@
         }
       }
     },
+    "Everyday words · %lld–%lld words": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palabras cotidianas · %1$lld–%2$lld palabras"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Palavras do dia a dia · %1$lld–%2$lld palavras"
+          }
+        }
+      }
+    },
     "Exercise %lld": {
       "localizations": {
         "es": {
@@ -1044,6 +1140,22 @@
         }
       }
     },
+    "Nuance and inference · %lld–%lld words": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matices e inferencias · %1$lld–%2$lld palabras"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuances e inferências · %1$lld–%2$lld palavras"
+          }
+        }
+      }
+    },
     "Nutrition and health": {
       "localizations": {
         "es": {
@@ -1300,6 +1412,22 @@
         }
       }
     },
+    "Richer vocabulary · %lld–%lld words": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vocabulario más rico · %1$lld–%2$lld palabras"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vocabulário mais rico · %1$lld–%2$lld palavras"
+          }
+        }
+      }
+    },
     "Robots and artificial intelligence": {
       "localizations": {
         "es": {
@@ -1380,6 +1508,22 @@
         }
       }
     },
+    "Short stories · %lld–%lld words": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuentos cortos · %1$lld–%2$lld palabras"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Histórias curtas · %1$lld–%2$lld palavras"
+          }
+        }
+      }
+    },
     "Six short texts for readers aged %@, about the topics you chose.": {
       "localizations": {
         "es": {
@@ -1408,6 +1552,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Redes sociais e amizade"
+          }
+        }
+      }
+    },
+    "Some new vocabulary · %lld–%lld words": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo de vocabulario nuevo · %1$lld–%2$lld palabras"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algum vocabulário novo · %1$lld–%2$lld palavras"
           }
         }
       }

@@ -54,11 +54,17 @@ struct ExerciseGenerator {
     private let logger = Logger(subsystem: "Leo", category: "ExerciseGenerator")
 
     /// Tries each topic in order, so a topic that trips the model's guardrails
-    /// or produces unusable content is replaced by the next one.
-    func generate(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
+    /// or produces unusable content is replaced by the next one. `onAttempt` is called
+    /// before each topic is tried, so the reader sees the one being written.
+    func generate(
+        topics: [RoundTopic],
+        skill: ComprehensionSkill,
+        onAttempt: (RoundTopic) -> Void = { _ in },
+    ) async throws -> Exercise {
         for topic in topics.prefix(Self.maxAttempts) {
             try Task.checkCancellation()
-            let prompt = prompt(topic: topic, skill: skill)
+            onAttempt(topic)
+            let prompt = prompt(topic: topic.prompt, skill: skill)
             // A fresh session per exercise keeps each request well inside the context window.
             let session = LanguageModelSession(instructions: instructions)
             do {
@@ -71,11 +77,11 @@ struct ExerciseGenerator {
                 ) {
                     return exercise
                 }
-                logger.error("Invalid content for topic '\(topic)'")
+                logger.error("Invalid content for topic '\(topic.prompt)'")
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
-                logger.error("Generation failed for topic '\(topic)': \(error)")
+                logger.error("Generation failed for topic '\(topic.prompt)': \(error)")
             }
         }
         throw ExerciseGenerationError.failed

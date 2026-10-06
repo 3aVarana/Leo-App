@@ -128,14 +128,34 @@ struct ReaderPreferencesTopicEditingTests {
         #expect(preferences.disabledDefaultTopics == [.nine: ["volcanoes"]])
     }
 
-    @Test func removeCustomTopicsAtOffsets() {
+    @Test func removeCustomTopicById() throws {
         var preferences = ReaderPreferences.fixture(
             ageGroup: .six,
             custom: [.six: ["Chess", "Origami", "Jazz"], .nine: ["Chess"]],
         )
-        preferences.removeCustomTopics(atOffsets: [0, 2], in: .six)
-        #expect(preferences.customTopics[.six]?.map(\.name) == ["Origami"])
+        let chess = try #require(preferences.customTopics[.six]?.first)
+        preferences.removeCustomTopic(id: chess.id, in: .six)
+        #expect(preferences.customTopics[.six]?.map(\.name) == ["Origami", "Jazz"])
         #expect(preferences.customTopics[.nine]?.map(\.name) == ["Chess"])
+    }
+
+    @Test func removeCustomTopicFromOtherGroupDoesNothing() throws {
+        var preferences = ReaderPreferences.fixture(ageGroup: .six, custom: [.six: ["Chess"], .nine: ["Jazz"]])
+        let jazz = try #require(preferences.customTopics[.nine]?.first)
+        preferences.removeCustomTopic(id: jazz.id, in: .six)
+        #expect(preferences.customTopics[.six]?.map(\.name) == ["Chess"])
+        #expect(preferences.customTopics[.nine]?.map(\.name) == ["Jazz"])
+    }
+
+    @Test func enabledSuggestedTopicCount() {
+        let preferences = ReaderPreferences.fixture(
+            ageGroup: .nine,
+            disabled: [.nine: ["volcanoes", "recycling"]],
+            custom: [.nine: ["Chess"]],
+        )
+        let suggested = DefaultTopics.topics(for: .nine).count
+        #expect(preferences.enabledSuggestedTopicCount(in: .nine) == suggested - 2)
+        #expect(preferences.enabledTopicCount(in: .nine) == suggested - 1)
     }
 
     @Test func setEnabled() {

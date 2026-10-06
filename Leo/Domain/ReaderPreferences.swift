@@ -29,15 +29,15 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
 
     /// The topics to write about, in a stable order (suggested topics, then the reader's own),
     /// so equal preferences always produce equal round settings.
-    func enabledTopicPrompts(for group: AgeGroup) -> [String] {
+    func enabledTopics(for group: AgeGroup) -> [RoundTopic] {
         let defaults = DefaultTopics.topics(for: group)
-        let prompts = defaults.filter { isEnabled($0, in: group) }.map(\.prompt)
-            + (customTopics[group] ?? []).map(\.name)
+        let topics = defaults.filter { isEnabled($0, in: group) }.map(\.roundTopic)
+            + (customTopics[group] ?? []).map(\.roundTopic)
         // Only possible with stale data, since the editor keeps a minimum enabled.
-        return prompts.isEmpty ? defaults.map(\.prompt) : prompts
+        return topics.isEmpty ? defaults.map(\.roundTopic) : topics
     }
 
     var roundSettings: RoundSettings {
-        RoundSettings(ageGroup: ageGroup, topics: enabledTopicPrompts(for: ageGroup))
+        RoundSettings(ageGroup: ageGroup, topics: enabledTopics(for: ageGroup))
     }
 }
