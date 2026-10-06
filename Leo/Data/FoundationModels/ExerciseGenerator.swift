@@ -2,22 +2,8 @@ import Foundation
 import FoundationModels
 import OSLog
 
-enum ExerciseGenerationError: LocalizedError {
-    case failed
-
-    var errorDescription: String? {
-        String(localized: "We couldn't create this exercise. Please try again.")
-    }
-}
-
-/// Generates one exercise. `ExerciseGenerator` is the real implementation.
-protocol ExerciseGenerating {
-    func generate(topics: [String], skill: ComprehensionSkill) async throws -> Exercise
-}
-
-extension ExerciseGenerator: ExerciseGenerating {}
-
 /// Generates reading comprehension exercises with the on-device model.
+/// `FoundationModelsExerciseRepository` wraps it for the rest of the app.
 struct ExerciseGenerator {
     let language: ContentLanguage
     let ageGroup: AgeGroup

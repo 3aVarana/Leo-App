@@ -3,7 +3,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(PreferencesStore.self) private var store
-    @State private var quiz = QuizViewModel()
+    @State private var quiz = QuizViewModel { FoundationModelsExerciseRepository(ageGroup: $0.ageGroup) }
     @State private var isShowingSettings = false
     private let model = SystemLanguageModel.default
 
