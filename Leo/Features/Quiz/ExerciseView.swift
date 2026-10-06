@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ExerciseView: View {
-    let quiz: QuizModel
+    let quiz: QuizViewModel
     let exercise: Exercise
 
     private static let feedbackID = "feedback"
@@ -59,8 +59,8 @@ struct ExerciseView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ProgressView(value: Double(quiz.currentIndex + 1), total: Double(QuizModel.exerciseCount))
-            Text("\(quiz.currentIndex + 1) of \(QuizModel.exerciseCount)")
+            ProgressView(value: Double(quiz.currentIndex + 1), total: Double(QuizViewModel.exerciseCount))
+            Text("\(quiz.currentIndex + 1) of \(QuizViewModel.exerciseCount)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

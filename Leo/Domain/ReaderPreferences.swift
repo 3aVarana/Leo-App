@@ -41,9 +41,3 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
         RoundSettings(ageGroup: ageGroup, topics: enabledTopicPrompts(for: ageGroup))
     }
 }
-
-/// What a round of exercises is generated from.
-nonisolated struct RoundSettings: Equatable, Hashable, Sendable {
-    let ageGroup: AgeGroup
-    let topics: [String]
-}

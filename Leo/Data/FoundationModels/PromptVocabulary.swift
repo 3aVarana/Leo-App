@@ -1,23 +1,8 @@
 import Foundation
 
-/// The reader's age group. Controls how long the passages are and how complex their language is.
-nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
-    case six = "6-8"
-    case nine = "9-11"
-    case twelve = "12-14"
-    case fifteen = "15-17"
-    case adult = "18+"
+// English prose that goes into the model prompts, kept out of the domain layer.
 
-    var displayName: String {
-        switch self {
-        case .six: String(localized: "6 to 8")
-        case .nine: String(localized: "9 to 11")
-        case .twelve: String(localized: "12 to 14")
-        case .fifteen: String(localized: "15 to 17")
-        case .adult: String(localized: "18 or older")
-        }
-    }
-
+nonisolated extension AgeGroup {
     /// Who the texts are written for, for use in English prompts.
     var promptAudience: String {
         switch self {
@@ -29,16 +14,6 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
         }
     }
 
-    var passageWordRange: ClosedRange<Int> {
-        switch self {
-        case .six: 50 ... 80
-        case .nine: 80 ... 120
-        case .twelve: 100 ... 150
-        case .fifteen: 120 ... 180
-        case .adult: 160 ... 230
-        }
-    }
-
     /// How many sentences to ask for alongside the word range, if any. With short, simple sentences
     /// the model stops well under the word range unless it's also given a sentence count. Older
     /// groups reach the range without one, and asking them for sentences makes passages run on.
@@ -47,12 +22,6 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
         case .six, .nine, .twelve: 10 ... 13
         case .fifteen, .adult: nil
         }
-    }
-
-    /// The passage lengths accepted from the model: wider than the requested range, since the
-    /// model doesn't count words precisely, but excluding passages it never finished or that ran on.
-    var acceptedWordCount: ClosedRange<Int> {
-        passageWordRange.lowerBound * 6 / 10 ... passageWordRange.upperBound * 3 / 2
     }
 
     /// How the passages and questions should read, for use in English prompts.
@@ -77,6 +46,22 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
             Use varied sentence structure and precise vocabulary. \
             Questions may require careful reading and an understanding of nuance.
             """
+        }
+    }
+}
+
+nonisolated extension ComprehensionSkill {
+    var promptHint: String {
+        switch self {
+        case .mainIdea: "Ask about the main idea or central message of the passage."
+        case .detail: "Ask about a specific, important detail stated in the passage."
+        case .inference: "Ask something that is not stated directly but can be logically inferred from the passage."
+        case .vocabulary:
+            """
+            Ask what a specific word or phrase used in the passage means in that context. \
+            Quote the word in the question.
+            """
+        case .purpose: "Ask why the author wrote the passage or why they included a specific part of it."
         }
     }
 }

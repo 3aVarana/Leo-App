@@ -4,7 +4,7 @@ import Observation
 /// Drives a round of exercises. A round's exercises are generated one after another in the
 /// background, starting before the student taps Start, so they are ready when needed.
 @Observable
-final class QuizModel {
+final class QuizViewModel {
     enum Phase: Equatable {
         case welcome
         case loading

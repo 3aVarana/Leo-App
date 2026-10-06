@@ -33,17 +33,17 @@ Leo uses Apple's on-device language model for two jobs: writing exercises and re
 
 ### Writing exercises
 
-[`ExerciseGenerator`](Leo/Services/ExerciseGenerator.swift) asks the model for a `@Generable` [`GeneratedExercise`](Leo/Models/Exercise.swift): a title, a passage, a question, the correct answer, two or three incorrect answers and an explanation. Guided generation means the output always has this structure, with no JSON parsing.
+[`ExerciseGenerator`](Leo/Data/FoundationModels/ExerciseGenerator.swift) asks the model for a `@Generable` [`GeneratedExercise`](Leo/Data/FoundationModels/GeneratedExercise.swift): a title, a passage, a question, the correct answer, two or three incorrect answers and an explanation. Guided generation means the output always has this structure, with no JSON parsing.
 
 - **The app places the correct answer.** The model writes the correct answer and the distractors as separate fields, and the app shuffles them, so the app, not the model, decides where the correct answer appears.
 - **The app checks every exercise.** Exercises with a missing answer, duplicate options or a passage of the wrong length are discarded, and Leo tries the next topic instead (up to three).
 - **Runaway passages are stopped early.** The response is streamed, and a passage that keeps going past the accepted length is abandoned after a few seconds instead of running until the token limit.
 - **A fresh session per exercise** keeps every request well inside the model's context window.
-- **Prompts are in English, content is in the reader's language.** The instructions tell the model which language to write in, using [`ContentLanguage`](Leo/Services/ContentLanguage.swift), which picks the device's preferred language if the model supports it.
+- **Prompts are in English, content is in the reader's language.** The instructions tell the model which language to write in, using [`ContentLanguage`](Leo/Data/FoundationModels/ContentLanguage.swift), which picks the device's preferred language if the model supports it.
 
 ### Reviewing custom topics
 
-When a reader adds a topic, [`TopicValidator`](Leo/Services/TopicValidator.swift) asks the model for a `@Generable` `TopicReview`: whether the topic is suitable for the reader's age, the topic tidied up (spelling, capitalization), and if it's rejected, a short, friendly reason in the reader's language. Guardrail violations and refusals become a generic rejection message instead of an error.
+When a reader adds a topic, [`TopicValidator`](Leo/Data/FoundationModels/TopicValidator.swift) asks the model for a `@Generable` `TopicReview`: whether the topic is suitable for the reader's age, the topic tidied up (spelling, capitalization), and if it's rejected, a short, friendly reason in the reader's language. Guardrail violations and refusals become a generic rejection message instead of an error.
 
 ### When the model isn't available
 
@@ -63,9 +63,11 @@ Leo has no accounts, no analytics and no network code. Exercises and topic revie
 
 ```
 Leo/
-├── Models/        AgeGroup, Exercise and ComprehensionSkill, ReaderPreferences, Topic
-├── Services/      ExerciseGenerator, TopicValidator, ContentLanguage, QuizModel, PreferencesStore
-└── Views/         Onboarding, Welcome, Loading, Exercise, Result, Settings and Topics editor
+├── App/           MyApp
+├── Domain/        AgeGroup, Exercise, ComprehensionSkill, ReaderPreferences, RoundSettings, Topic
+├── Data/          PreferencesStore, plus FoundationModels/ with ExerciseGenerator, GeneratedExercise,
+│                  PromptVocabulary, TopicValidator and ContentLanguage
+└── Features/      Root, Quiz (QuizViewModel and its views) and Preferences (Onboarding, Settings, Topics editor)
 LeoTests/          Unit, snapshot and live-model tests
 LeoTestsSnapshots/ Reference images and text snapshots
 docs/              Feature specifications and the test plan

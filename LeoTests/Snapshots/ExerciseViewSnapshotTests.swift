@@ -7,18 +7,18 @@ extension ViewSnapshots {
     @MainActor
     struct ExerciseViewSnapshotTests {
         /// A started round whose exercises are all ready, the first one being `first`.
-        private func startedQuiz(first: Exercise = .fixture()) async -> QuizModel {
-            let results = [first] + (1 ..< QuizModel.exerciseCount).map { _ in Exercise.fixture() }
+        private func startedQuiz(first: Exercise = .fixture()) async -> QuizViewModel {
+            let results = [first] + (1 ..< QuizViewModel.exerciseCount).map { _ in Exercise.fixture() }
             let stub = StubGenerator(results: results.map { .success($0) })
-            let quiz = QuizModel { _ in stub }
+            let quiz = QuizViewModel { _ in stub }
             quiz.configure(RoundSettings(ageGroup: .nine, topics: ["volcanoes", "rivers", "comets"]))
-            await waitUntil { stub.calls.count == QuizModel.exerciseCount }
+            await waitUntil { stub.calls.count == QuizViewModel.exerciseCount }
             quiz.start()
             return quiz
         }
 
         /// The exercise screen as `RootView` shows it, in a navigation stack.
-        private func screen(_ quiz: QuizModel) -> some View {
+        private func screen(_ quiz: QuizViewModel) -> some View {
             NavigationStack {
                 ExerciseView(quiz: quiz, exercise: quiz.currentExercise!)
             }
@@ -60,7 +60,7 @@ extension ViewSnapshots {
         /// The button reads "See results".
         @Test func lastExerciseAnswered() async throws {
             let quiz = await startedQuiz()
-            for _ in 0 ..< QuizModel.exerciseCount - 1 {
+            for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
                 quiz.select(0)
                 quiz.next()
             }

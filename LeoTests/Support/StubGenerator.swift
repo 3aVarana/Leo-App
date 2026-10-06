@@ -27,7 +27,7 @@ final class StubGenerator: ExerciseGenerating {
     }
 
     /// Answers every call of a round right away.
-    static func ready(count: Int = QuizModel.exerciseCount) -> StubGenerator {
+    static func ready(count: Int = QuizViewModel.exerciseCount) -> StubGenerator {
         StubGenerator(results: (0 ..< count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
     }
 
@@ -69,7 +69,7 @@ final class StubGenerator: ExerciseGenerating {
     }
 }
 
-/// Stands in for `QuizModel`'s generator factory: records the settings of every round and
+/// Stands in for `QuizViewModel`'s generator factory: records the settings of every round and
 /// hands out a new stub for each.
 @MainActor
 final class GeneratorFactorySpy {

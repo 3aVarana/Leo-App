@@ -88,7 +88,7 @@ struct ReaderPreferencesTests {
         #expect(preferences.enabledTopicPrompts(for: .six) == all.map(\.prompt))
     }
 
-    /// `QuizModel.configure` relies on equal preferences giving equal settings to skip work.
+    /// `QuizViewModel.configure` relies on equal preferences giving equal settings to skip work.
     @Test func roundSettings() {
         let preferences = ReaderPreferences.fixture(ageGroup: .twelve, custom: [.twelve: ["Chess"]])
         #expect(preferences.roundSettings.ageGroup == .twelve)
