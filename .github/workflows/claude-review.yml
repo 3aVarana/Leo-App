@@ -50,6 +50,13 @@ jobs:
             Swift Testing and swift-snapshot-testing, with references in LeoTestsSnapshots/.
             UI strings are localized in Leo/Localizable.xcstrings (en, es, pt-BR).
 
+            The code is MVVM with repositories (docs/Leo-MVVM-Repository-Plan.md): Leo/Domain holds
+            plain value types and rules, Leo/Data holds the repository protocols and their
+            implementations, and Leo/Features holds the ViewModels and views. Views only lay out
+            their ViewModel's state, and ViewModels depend on repository protocols; flag a view
+            that calls a repository, a data source or FoundationModels directly, and logic in a
+            view that belongs in a ViewModel or in Domain.
+
             Focus on, in this order:
             1. Bugs and wrong behavior, including edge cases and error handling.
             2. Concurrency: data races, actor isolation, Sendable, work on the main actor that shouldn't be.

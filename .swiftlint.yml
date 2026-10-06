@@ -18,3 +18,19 @@ line_length:
   # @Guide descriptions are prompt prose for the on-device model; wrapping them doesn't help.
   # SwiftFormat moves long ones onto their own `description:` line.
   excluded_lines_patterns: ['^\s*(@Guide\()?description: "']
+
+custom_rules:
+  # The layer boundaries of docs/Leo-MVVM-Repository-Plan.md. Domain depends on Foundation only;
+  # views and ViewModels reach the on-device model through the repositories in Leo/Data.
+  domain_imports:
+    name: "Domain imports"
+    included: "Leo/Domain/.*\\.swift"
+    regex: '^import (SwiftUI|UIKit|FoundationModels)$'
+    message: "Leo/Domain depends on Foundation only. Keep SwiftUI, UIKit and FoundationModels out of it."
+    severity: error
+  features_foundation_models_import:
+    name: "FoundationModels in Features"
+    included: "Leo/Features/.*\\.swift"
+    regex: '^import FoundationModels$'
+    message: "Views and ViewModels use the repository protocols in Leo/Data. Only the Data layer imports FoundationModels."
+    severity: error
