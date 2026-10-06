@@ -19,6 +19,12 @@ final class QuizViewModel {
         var skill: ComprehensionSkill
     }
 
+    /// How an answer option is shown: `idle` before answering, then `correct` for the right
+    /// answer, `incorrect` for a wrong pick and `dimmed` for the rest.
+    enum OptionState {
+        case idle, correct, incorrect, dimmed
+    }
+
     nonisolated static let exerciseCount = 6
 
     private(set) var phase: Phase = .welcome
@@ -29,8 +35,8 @@ final class QuizViewModel {
 
     private var settings: RoundSettings?
     private var plan: [PlanItem] = []
-    private let makeGenerator: (RoundSettings) -> any ExerciseGenerating
-    private var generator: (any ExerciseGenerating)?
+    private let makeRepository: (RoundSettings) -> any ExerciseRepository
+    private var repository: (any ExerciseRepository)?
     /// Generated exercises, in order. The next one to generate is at `exercises.count`.
     private var exercises: [Exercise] = []
     /// Set when generating the exercise at `exercises.count` failed.
@@ -42,11 +48,27 @@ final class QuizViewModel {
         currentIndex == Self.exerciseCount - 1
     }
 
-    /// - Parameter makeGenerator: Makes the generator for each round.
-    init(makeGenerator: @escaping (RoundSettings) -> any ExerciseGenerating = {
-        ExerciseGenerator(language: .current(), ageGroup: $0.ageGroup)
-    }) {
-        self.makeGenerator = makeGenerator
+    /// Whether the picked answer is right. `nil` before answering.
+    var isAnswerCorrect: Bool? {
+        guard let selectedOption, let currentExercise else { return nil }
+        return selectedOption == currentExercise.correctIndex
+    }
+
+    /// - Parameter makeRepository: Makes the repository for each round.
+    init(makeRepository: @escaping (RoundSettings) -> any ExerciseRepository) {
+        self.makeRepository = makeRepository
+    }
+
+    /// How the option at `index` of the current exercise is shown.
+    func optionState(at index: Int) -> OptionState {
+        guard let selectedOption, let currentExercise else { return .idle }
+        if index == currentExercise.correctIndex {
+            return .correct
+        }
+        if index == selectedOption {
+            return .incorrect
+        }
+        return .dimmed
     }
 
     /// Starts generating a round ahead of time with these settings. Does nothing if a round
@@ -117,8 +139,8 @@ final class QuizViewModel {
         guard let settings else { return }
         var rng = SystemRandomNumberGenerator()
         plan = Self.makePlan(topics: settings.topics, using: &rng)
-        // Picked per round, so a change to the device language applies to the next round.
-        generator = makeGenerator(settings)
+        // Made per round, so a change to the device language applies to the next round.
+        repository = makeRepository(settings)
         exercises = []
         isRoundStarted = false
         generateRemaining()
@@ -128,12 +150,12 @@ final class QuizViewModel {
     private func generateRemaining() {
         generation?.cancel()
         generationError = nil
-        guard let generator else { return }
+        guard let repository else { return }
         generation = Task {
             while exercises.count < Self.exerciseCount {
                 let item = plan[exercises.count]
                 do {
-                    let exercise = try await generator.generate(topics: item.topics, skill: item.skill)
+                    let exercise = try await repository.exercise(topics: item.topics, skill: item.skill)
                     // A newer round or a retry replaced this generation.
                     guard !Task.isCancelled else { return }
                     exercises.append(exercise)

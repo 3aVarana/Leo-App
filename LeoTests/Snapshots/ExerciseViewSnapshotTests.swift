@@ -9,7 +9,7 @@ extension ViewSnapshots {
         /// A started round whose exercises are all ready, the first one being `first`.
         private func startedQuiz(first: Exercise = .fixture()) async -> QuizViewModel {
             let results = [first] + (1 ..< QuizViewModel.exerciseCount).map { _ in Exercise.fixture() }
-            let stub = StubGenerator(results: results.map { .success($0) })
+            let stub = StubExerciseRepository(results: results.map { .success($0) })
             let quiz = QuizViewModel { _ in stub }
             quiz.configure(RoundSettings(ageGroup: .nine, topics: ["volcanoes", "rivers", "comets"]))
             await waitUntil { stub.calls.count == QuizViewModel.exerciseCount }

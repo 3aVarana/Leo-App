@@ -32,26 +32,26 @@ struct ExerciseView: View {
                         ForEach(exercise.options.indices, id: \.self) { index in
                             OptionButton(
                                 text: exercise.options[index],
-                                state: state(for: index),
+                                state: quiz.optionState(at: index),
                                 action: { quiz.select(index) },
                             )
                         }
                     }
 
-                    if quiz.selectedOption != nil {
-                        feedback
+                    if let isCorrect = quiz.isAnswerCorrect {
+                        feedback(isCorrect: isCorrect)
                             .id(Self.feedbackID)
                     }
                 }
                 .padding()
             }
-            .onChange(of: quiz.selectedOption) {
+            .onChange(of: quiz.isAnswerCorrect) {
                 withAnimation { proxy.scrollTo(Self.feedbackID, anchor: .bottom) }
             }
         }
-        .sensoryFeedback(trigger: quiz.selectedOption) { _, selected in
-            guard let selected else { return nil }
-            return selected == exercise.correctIndex ? .success : .error
+        .sensoryFeedback(trigger: quiz.isAnswerCorrect) { _, isCorrect in
+            guard let isCorrect else { return nil }
+            return isCorrect ? .success : .error
         }
         .navigationTitle("Exercise \(quiz.currentIndex + 1)")
         .navigationBarTitleDisplayMode(.inline)
@@ -66,9 +66,8 @@ struct ExerciseView: View {
         }
     }
 
-    private var feedback: some View {
-        let isCorrect = quiz.selectedOption == exercise.correctIndex
-        return VStack(spacing: 16) {
+    private func feedback(isCorrect: Bool) -> some View {
+        VStack(spacing: 16) {
             Label(
                 isCorrect ? "Correct!" : "Not quite",
                 systemImage: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill",
@@ -91,28 +90,15 @@ struct ExerciseView: View {
         }
         .frame(maxWidth: .infinity)
     }
-
-    private func state(for index: Int) -> OptionButton.State {
-        guard let selected = quiz.selectedOption else { return .idle }
-        if index == exercise.correctIndex {
-            return .correct
-        }
-        if index == selected {
-            return .incorrect
-        }
-        return .dimmed
-    }
 }
 
 private struct OptionButton: View {
-    enum State { case idle, correct, incorrect, dimmed }
-
     let text: String
-    let state: State
+    let state: QuizViewModel.OptionState
     let action: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @SwiftUI.State private var shakes: CGFloat = 0
+    @State private var shakes: CGFloat = 0
 
     var body: some View {
         Button(action: action) {

@@ -1,10 +1,10 @@
 @testable import Leo
 
-/// A fake `ExerciseGenerating` that records each call. Calls are answered from `results` in
+/// A fake `ExerciseRepository` that records each call. Calls are answered from `results` in
 /// order while there are any; after that, each call waits until the test resumes it, so tests
 /// control when an exercise is ready.
 @MainActor
-final class StubGenerator: ExerciseGenerating {
+final class StubExerciseRepository: ExerciseRepository {
     struct Call: Equatable {
         let topics: [String]
         let skill: ComprehensionSkill
@@ -17,7 +17,7 @@ final class StubGenerator: ExerciseGenerating {
     private var results: [Result<Exercise, any Error>]
     private var waiting: [(id: Int, continuation: CheckedContinuation<Exercise, any Error>)] = []
     private var nextID = 0
-    /// Keeps waiting calls waiting when their task is cancelled, like a generator that
+    /// Keeps waiting calls waiting when their task is cancelled, like a repository that
     /// doesn't check for cancellation, so a late result can be delivered.
     private let ignoresCancellation: Bool
 
@@ -27,15 +27,15 @@ final class StubGenerator: ExerciseGenerating {
     }
 
     /// Answers every call of a round right away.
-    static func ready(count: Int = QuizViewModel.exerciseCount) -> StubGenerator {
-        StubGenerator(results: (0 ..< count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
+    static func ready(count: Int = QuizViewModel.exerciseCount) -> StubExerciseRepository {
+        StubExerciseRepository(results: (0 ..< count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
     }
 
     var waitingCount: Int {
         waiting.count
     }
 
-    func generate(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
+    func exercise(topics: [String], skill: ComprehensionSkill) async throws -> Exercise {
         calls.append(Call(topics: topics, skill: skill))
         if !results.isEmpty {
             return try results.removeFirst().get()
@@ -69,23 +69,23 @@ final class StubGenerator: ExerciseGenerating {
     }
 }
 
-/// Stands in for `QuizViewModel`'s generator factory: records the settings of every round and
+/// Stands in for `QuizViewModel`'s repository factory: records the settings of every round and
 /// hands out a new stub for each.
 @MainActor
-final class GeneratorFactorySpy {
+final class ExerciseRepositoryFactorySpy {
     private(set) var settings: [RoundSettings] = []
-    private(set) var stubs: [StubGenerator] = []
-    private let makeStub: @MainActor () -> StubGenerator
+    private(set) var stubs: [StubExerciseRepository] = []
+    private let makeStub: @MainActor () -> StubExerciseRepository
 
-    init(makeStub: @escaping @MainActor () -> StubGenerator = { StubGenerator() }) {
+    init(makeStub: @escaping @MainActor () -> StubExerciseRepository = { StubExerciseRepository() }) {
         self.makeStub = makeStub
     }
 
-    var latest: StubGenerator {
+    var latest: StubExerciseRepository {
         stubs.last!
     }
 
-    func make(_ settings: RoundSettings) -> any ExerciseGenerating {
+    func make(_ settings: RoundSettings) -> any ExerciseRepository {
         self.settings.append(settings)
         let stub = makeStub()
         stubs.append(stub)

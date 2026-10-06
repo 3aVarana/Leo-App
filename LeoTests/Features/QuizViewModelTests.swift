@@ -11,37 +11,44 @@ struct QuizViewModelTests {
         #expect(quiz.selectedOption == nil, sourceLocation: sourceLocation)
         #expect(quiz.correctCount == 0, sourceLocation: sourceLocation)
         #expect(!quiz.isLastExercise, sourceLocation: sourceLocation)
+        #expect(quiz.isAnswerCorrect == nil, sourceLocation: sourceLocation)
+        #expect(quiz.optionState(at: 0) == .idle, sourceLocation: sourceLocation)
+    }
+
+    /// A quiz whose repository is never used.
+    private func makeQuiz() -> QuizViewModel {
+        QuizViewModel { _ in StubExerciseRepository() }
     }
 
     @Test func startingState() {
-        expectStartingState(QuizViewModel())
+        expectStartingState(makeQuiz())
     }
 
     @Test func startBeforeConfigure() {
-        let quiz = QuizViewModel()
+        let quiz = makeQuiz()
         quiz.start()
         expectStartingState(quiz)
     }
 
     @Test func selectWithoutExercise() {
-        let quiz = QuizViewModel()
+        let quiz = makeQuiz()
         quiz.select(0)
         expectStartingState(quiz)
     }
 
     @Test func nextWithoutSelection() {
-        let quiz = QuizViewModel()
+        let quiz = makeQuiz()
         quiz.next()
         expectStartingState(quiz)
     }
 
     @Test func retryBeforeConfigure() {
-        let quiz = QuizViewModel()
+        let quiz = makeQuiz()
         quiz.retry()
         expectStartingState(quiz)
     }
 
-    // MARK: - With a stub generator
+    // MARK: - With a stub repository
 
     private let settings = RoundSettings(
         ageGroup: .nine,
@@ -50,13 +57,13 @@ struct QuizViewModelTests {
     private let otherSettings = RoundSettings(ageGroup: .twelve, topics: ["chess", "glaciers", "radios"])
     private let failure = Result<Exercise, any Error>.failure(ExerciseGenerationError.failed)
 
-    private func makeQuiz(_ spy: GeneratorFactorySpy) -> QuizViewModel {
+    private func makeQuiz(_ spy: ExerciseRepositoryFactorySpy) -> QuizViewModel {
         QuizViewModel { spy.make($0) }
     }
 
     /// Starts a round whose 6 exercises are ready, and waits until they are.
-    private func startedQuiz(_ spy: GeneratorFactorySpy? = nil) async -> QuizViewModel {
-        let spy = spy ?? GeneratorFactorySpy { .ready() }
+    private func startedQuiz(_ spy: ExerciseRepositoryFactorySpy? = nil) async -> QuizViewModel {
+        let spy = spy ?? ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
@@ -76,7 +83,7 @@ struct QuizViewModelTests {
 
 extension QuizViewModelTests {
     @Test func configureStartsGenerating() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
 
@@ -89,7 +96,7 @@ extension QuizViewModelTests {
     }
 
     @Test func configureWithSameSettingsKeepsRound() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         quiz.configure(settings)
@@ -99,7 +106,7 @@ extension QuizViewModelTests {
     }
 
     @Test func configureWithNewSettingsCancelsEarlierRound() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.waitingCount == 1 }
@@ -113,8 +120,8 @@ extension QuizViewModelTests {
     }
 
     @Test func lateResultOfEarlierRoundIsNotShown() async {
-        var stubs = [StubGenerator(ignoresCancellation: true), StubGenerator()]
-        let spy = GeneratorFactorySpy { stubs.removeFirst() }
+        var stubs = [StubExerciseRepository(ignoresCancellation: true), StubExerciseRepository()]
+        let spy = ExerciseRepositoryFactorySpy { stubs.removeFirst() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.waitingCount == 1 }
@@ -138,7 +145,7 @@ extension QuizViewModelTests {
 
 extension QuizViewModelTests {
     @Test func generatesOneAtATime() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         let stub = spy.latest
@@ -154,7 +161,7 @@ extension QuizViewModelTests {
     }
 
     @Test func generatesWholeRoundBeforeStart() async {
-        let spy = GeneratorFactorySpy { .ready() }
+        let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
@@ -168,7 +175,7 @@ extension QuizViewModelTests {
 
 extension QuizViewModelTests {
     @Test func startBeforeFirstExerciseIsReady() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         quiz.start()
@@ -189,7 +196,7 @@ extension QuizViewModelTests {
     }
 
     @Test func startUsesPreparedRound() async {
-        let spy = GeneratorFactorySpy { .ready() }
+        let spy = ExerciseRepositoryFactorySpy { .ready() }
         _ = await startedQuiz(spy)
         await settle()
         #expect(spy.settings.count == 1)
@@ -240,7 +247,7 @@ extension QuizViewModelTests {
     }
 
     @Test func nextWaitsForExerciseThatIsNotReady() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.waitingCount == 1 }
@@ -285,7 +292,7 @@ extension QuizViewModelTests {
 
 extension QuizViewModelTests {
     @Test func failureWhileWaiting() async {
-        let spy = GeneratorFactorySpy()
+        let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         quiz.start()
@@ -299,7 +306,7 @@ extension QuizViewModelTests {
     }
 
     @Test func failureShowsWhenReaderReachesIt() async {
-        let spy = GeneratorFactorySpy { StubGenerator(results: [.success(.fixture()), failure]) }
+        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
@@ -315,7 +322,7 @@ extension QuizViewModelTests {
     }
 
     @Test func retryGeneratesFailedExerciseAgain() async {
-        let spy = GeneratorFactorySpy { StubGenerator(results: [.success(.fixture()), failure]) }
+        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
@@ -341,7 +348,7 @@ extension QuizViewModelTests {
     }
 
     @Test func retryWhenRoundIsGeneratedDoesNothing() async {
-        let spy = GeneratorFactorySpy { .ready() }
+        let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
@@ -357,7 +364,7 @@ extension QuizViewModelTests {
 
 extension QuizViewModelTests {
     @Test func practiceAgainStartsNewRound() async {
-        let spy = GeneratorFactorySpy { .ready() }
+        let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = await startedQuiz(spy)
         for _ in 0 ..< QuizViewModel.exerciseCount {
             answer(quiz, correctly: true)
