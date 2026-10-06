@@ -68,6 +68,7 @@ struct RootView: View {
             if let exercise = quiz.currentExercise {
                 ExerciseView(quiz: quiz, exercise: exercise)
                     .id(exercise.id)
+                    .toolbar(.hidden, for: .navigationBar)
             }
         case .finished:
             ResultView(correct: quiz.correctCount, total: QuizViewModel.exerciseCount, onRestart: quiz.start)
