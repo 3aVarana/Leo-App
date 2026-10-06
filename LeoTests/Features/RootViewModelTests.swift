@@ -14,6 +14,7 @@ struct RootViewModelTests {
         return RootViewModel(
             preferences: repository,
             availability: availability,
+            topicReviews: StubTopicReviewRepository(),
             quiz: QuizViewModel { factory.make($0) },
         )
     }
@@ -108,5 +109,43 @@ struct RootViewModelTests {
         #expect(root.availability == .available)
         availability.availability = .unavailable(.modelNotReady)
         #expect(root.availability == .unavailable(.modelNotReady))
+    }
+}
+
+// MARK: - Editors
+
+extension RootViewModelTests {
+    @Test func settingsEditorStartsFromCurrentPreferences() {
+        repository.stored = preferences
+        let editor = makeRoot().makeSettingsEditor()
+        #expect(editor?.draft == preferences)
+        #expect(editor?.newTopic.isEmpty == true)
+    }
+
+    @Test func settingsEditorSaveGoesThroughRoot() throws {
+        repository.stored = preferences
+        let root = makeRoot()
+        let editor = try #require(root.makeSettingsEditor())
+        editor.draft.ageGroup = .adult
+        #expect(repository.saved.isEmpty)
+
+        editor.save()
+        #expect(root.preferences == editor.draft)
+        #expect(repository.saved == [editor.draft])
+    }
+
+    @Test func onboardingEditorSaveEndsOnboarding() {
+        let root = makeRoot()
+        let editor = root.makeOnboardingEditor()
+        #expect(root.preferences == nil)
+
+        editor.draft.ageGroup = .six
+        editor.save()
+        #expect(root.preferences == editor.draft)
+        #expect(repository.saved == [editor.draft])
+    }
+
+    @Test func settingsEditorIsNilBeforeOnboarding() {
+        #expect(makeRoot().makeSettingsEditor() == nil)
     }
 }

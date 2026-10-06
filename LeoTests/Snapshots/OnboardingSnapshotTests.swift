@@ -24,7 +24,8 @@ extension ViewSnapshots {
         }
 
         @Test func firstScreen() {
-            assertViewSnapshot(of: OnboardingView { _ in }, named: "first-screen")
+            let view = OnboardingView(viewModel: .fixture(draft: ReaderPreferences(ageGroup: .fifteen)))
+            assertViewSnapshot(of: view, named: "first-screen")
         }
     }
 }

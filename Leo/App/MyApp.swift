@@ -5,6 +5,7 @@ import SwiftUI
     @State private var root = RootViewModel(
         preferences: UserDefaultsPreferencesRepository(defaults: .standard),
         availability: SystemModelAvailabilityProvider(),
+        topicReviews: FoundationModelsTopicReviewRepository(),
         quiz: QuizViewModel { FoundationModelsExerciseRepository(ageGroup: $0.ageGroup) },
     )
 

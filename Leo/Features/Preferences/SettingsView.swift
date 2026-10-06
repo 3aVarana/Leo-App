@@ -4,27 +4,26 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @State private var draft: ReaderPreferences
-    private let onSave: (ReaderPreferences) -> Void
+    @State private var viewModel: PreferencesEditorViewModel
 
-    init(preferences: ReaderPreferences, onSave: @escaping (ReaderPreferences) -> Void) {
-        _draft = State(initialValue: preferences)
-        self.onSave = onSave
+    init(viewModel: PreferencesEditorViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         // A sheet doesn't inherit the presenter's navigation stack.
         NavigationStack {
             Form {
                 Section("Age group") {
-                    Picker("Age group", selection: $draft.ageGroup) {
+                    Picker("Age group", selection: $viewModel.draft.ageGroup) {
                         ForEach(AgeGroup.allCases, id: \.self) { group in
                             Text(group.displayName)
                         }
                     }
                     .pickerStyle(.navigationLink)
                 }
-                TopicsEditor(preferences: $draft, group: draft.ageGroup)
+                TopicsEditor(viewModel: viewModel)
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -34,7 +33,7 @@ struct SettingsView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        onSave(draft)
+                        viewModel.save()
                         dismiss()
                     }
                 }
@@ -44,5 +43,9 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(preferences: ReaderPreferences(ageGroup: .twelve)) { _ in }
+    SettingsView(viewModel: PreferencesEditorViewModel(
+        draft: ReaderPreferences(ageGroup: .twelve),
+        topicReviews: FoundationModelsTopicReviewRepository(),
+        onSave: { _ in },
+    ))
 }
