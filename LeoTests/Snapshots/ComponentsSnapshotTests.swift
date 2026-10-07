@@ -57,7 +57,6 @@ extension ViewSnapshots {
                 .leoReadableWidth()
             }
             .leoScreenBackground()
-            .environment(\.animatesPlaceholders, false)
         }
 
         @Test func gallery() {

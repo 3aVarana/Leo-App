@@ -20,7 +20,7 @@ struct RootView: View {
                                 viewModel.preferencesDidChange()
                             }
                             .toolbar {
-                                if viewModel.canShowSettings {
+                                if quiz.phase == .finished {
                                     ToolbarItem(placement: .topBarTrailing) {
                                         Button("Settings", systemImage: "gearshape") {
                                             viewModel.isShowingSettings = true
@@ -49,9 +49,21 @@ struct RootView: View {
     private func content(ageGroup: AgeGroup) -> some View {
         switch quiz.phase {
         case .welcome:
-            WelcomeView(ageGroup: ageGroup, onStart: quiz.start)
+            WelcomeView(
+                ageGroup: ageGroup,
+                topicNames: quiz.plannedTopicNames,
+                onStart: quiz.start,
+                onSettings: viewModel.canShowSettings ? { viewModel.isShowingSettings = true } : nil,
+            )
+            .toolbar(.hidden, for: .navigationBar)
         case .loading:
-            LoadingView(index: quiz.currentIndex, total: QuizViewModel.exerciseCount)
+            LoadingView(
+                index: quiz.currentIndex,
+                dots: dots,
+                topicName: quiz.writingTopicName,
+                ageGroup: quiz.roundAgeGroup ?? ageGroup,
+            )
+            .toolbar(.hidden, for: .navigationBar)
         case .answering:
             if let exercise = quiz.currentExercise {
                 ExerciseView(quiz: quiz, exercise: exercise)
@@ -60,15 +72,19 @@ struct RootView: View {
         case .finished:
             ResultView(correct: quiz.correctCount, total: QuizViewModel.exerciseCount, onRestart: quiz.start)
         case .failed:
-            ContentUnavailableView {
-                Label("Something went wrong", systemImage: "exclamationmark.triangle")
-            } description: {
-                Text(ExerciseGenerationError.failed.localizedDescription)
-            } actions: {
-                Button("Try again", action: quiz.retry)
-                    .buttonStyle(.borderedProminent)
-            }
+            GenerationFailedView(
+                index: quiz.currentIndex,
+                dots: dots,
+                topicName: quiz.plannedTopicName(at: quiz.currentIndex),
+                onRetry: quiz.retry,
+                onTryDifferentTopic: quiz.retryWithDifferentTopics,
+            )
+            .toolbar(.hidden, for: .navigationBar)
         }
+    }
+
+    private var dots: [DotState] {
+        (0 ..< QuizViewModel.exerciseCount).map(quiz.dotState(at:))
     }
 }
 

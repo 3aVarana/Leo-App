@@ -1,6 +1,22 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ short texts, written for you.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ textos breves, escritos para ti."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ textos curtos, escritos para você."
+          }
+        }
+      }
+    },
     "%lld of %lld": {
       "localizations": {
         "es": {
@@ -45,6 +61,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld temas ativados · mantenha pelo menos 3. O Leo escolhe um para cada texto."
+          }
+        }
+      }
+    },
+    ", ": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", "
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", "
           }
         }
       }
@@ -205,6 +237,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "9–11"
+          }
+        }
+      }
+    },
+    "A %lld-word text for readers %@. Usually ready in a few seconds.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un texto de %1$lld palabras para lectores de %2$@. Suele estar listo en unos segundos."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um texto de %1$lld palavras para leitores de %2$@. Normalmente fica pronto em poucos segundos."
           }
         }
       }
@@ -721,6 +769,54 @@
         }
       }
     },
+    "Drawn from %@ and %lld more of your topics. One question after each.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre %1$@ y %2$lld temas más de los tuyos. Una pregunta después de cada uno."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre %1$@ e mais %2$lld dos seus temas. Uma pergunta depois de cada um."
+          }
+        }
+      }
+    },
+    "Drawn from %@. One question after each.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre %@. Una pregunta después de cada uno."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre %@. Uma pergunta depois de cada um."
+          }
+        }
+      }
+    },
+    "Drawn from your topics. One question after each.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre tus temas. Una pregunta después de cada uno."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre os seus temas. Uma pergunta depois de cada um."
+          }
+        }
+      }
+    },
     "Economics in daily life": {
       "localizations": {
         "es": {
@@ -1188,6 +1284,22 @@
         }
       }
     },
+    "Now writing": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escribiendo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escrevendo"
+          }
+        }
+      }
+    },
     "Nuance and inference · %lld–%lld words": {
       "localizations": {
         "es": {
@@ -1572,22 +1684,6 @@
         }
       }
     },
-    "Six short texts for readers aged %@, about the topics you chose.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seis textos cortos para lectores de %@ años, sobre los temas que elegiste."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seis textos curtos para leitores de %@ anos, sobre os temas que você escolheu."
-          }
-        }
-      }
-    },
     "Social media and friendship": {
       "localizations": {
         "es": {
@@ -1620,18 +1716,34 @@
         }
       }
     },
-    "Something went wrong": {
+    "Something went wrong while writing your text about %@.": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Algo salió mal"
+            "value": "Algo salió mal al escribir tu texto sobre %@."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Algo deu errado"
+            "value": "Algo deu errado ao escrever seu texto sobre %@."
+          }
+        }
+      }
+    },
+    "Something went wrong while writing your text.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo salió mal al escribir tu texto."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo deu errado ao escrever seu texto."
           }
         }
       }
@@ -1776,6 +1888,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tecnologia e sociedade"
+          }
+        }
+      }
+    },
+    "Text %lld didn't print": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El texto %lld no salió"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O texto %lld não saiu"
           }
         }
       }
@@ -1972,22 +2100,6 @@
         }
       }
     },
-    "This can take a few seconds.": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esto puede tardar unos segundos."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Isso pode levar alguns segundos."
-          }
-        }
-      }
-    },
     "This device doesn't support Apple Intelligence, which Leo uses to create exercises.": {
       "localizations": {
         "es": {
@@ -2000,6 +2112,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este dispositivo não é compatível com o Apple Intelligence, que o Leo usa para criar os exercícios."
+          }
+        }
+      }
+    },
+    "Today's round · readers %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La ronda de hoy · lectores de %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A rodada de hoje · leitores de %@"
           }
         }
       }
@@ -2048,6 +2176,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Viagens e geografia"
+          }
+        }
+      }
+    },
+    "Try a different topic": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar otro tema"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tentar outro tema"
           }
         }
       }
@@ -2212,6 +2356,22 @@
         }
       }
     },
+    "We couldn't write this one.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pudimos escribir este."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não conseguimos escrever este."
+          }
+        }
+      }
+    },
     "Welcome to Leo": {
       "localizations": {
         "es": {
@@ -2292,18 +2452,18 @@
         }
       }
     },
-    "Writing text %lld of %lld…": {
+    "Writing text %lld of %lld, about %@": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escribiendo el texto %1$lld de %2$lld…"
+            "value": "Escribiendo el texto %1$lld de %2$lld, sobre %3$@"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escrevendo o texto %1$lld de %2$lld…"
+            "value": "Escrevendo o texto %1$lld de %2$lld, sobre %3$@"
           }
         }
       }
@@ -2324,6 +2484,22 @@
         }
       }
     },
+    "Your answer to text 1 is saved — nothing is lost.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu respuesta al texto 1 está guardada: no se pierde nada."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua resposta ao texto 1 está salva: nada se perde."
+          }
+        }
+      }
+    },
     "Your answer, incorrect": {
       "localizations": {
         "es": {
@@ -2336,6 +2512,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sua resposta, incorreta"
+          }
+        }
+      }
+    },
+    "Your answers so far are saved — nothing is lost.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus respuestas hasta ahora están guardadas: no se pierde nada."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suas respostas até agora estão salvas: nada se perde."
+          }
+        }
+      }
+    },
+    "Your next text": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu próximo texto"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seu próximo texto"
           }
         }
       }

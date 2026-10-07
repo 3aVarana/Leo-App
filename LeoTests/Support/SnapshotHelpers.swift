@@ -1,3 +1,4 @@
+@testable import Leo
 import SnapshotTesting
 import SwiftUI
 import Testing
@@ -43,7 +44,8 @@ func assertViewSnapshot(
     let config = ViewImageConfig.iPhone13Pro
     let size = height.map { CGSize(width: config.size!.width, height: $0) }
     for (colorScheme, suffix) in [(UIUserInterfaceStyle.light, ""), (.dark, "-dark")] {
-        let controller = UIHostingController(rootView: view)
+        // Pulsing placeholders would make the image depend on timing.
+        let controller = UIHostingController(rootView: view.environment(\.animatesPlaceholders, false))
         // The trait override alone doesn't reach the navigation bar's buttons.
         controller.overrideUserInterfaceStyle = colorScheme
         let traits = UITraitCollection(userInterfaceStyle: colorScheme).modifyingTraits {

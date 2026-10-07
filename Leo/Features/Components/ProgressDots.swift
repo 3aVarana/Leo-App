@@ -13,6 +13,8 @@ struct ProgressDots: View {
     /// Read by VoiceOver as "Text 2 of 6". `nil` hides the dots from VoiceOver.
     let currentIndex: Int?
     var size: Size = .regular
+    /// Centered above Loading, Error and Exercise; leading on Welcome.
+    var alignment: HorizontalAlignment = .center
 
     @ScaledMetric(relativeTo: .footnote) private var regularDiameter = 28
     @ScaledMetric(relativeTo: .footnote) private var largeDiameter = 36
@@ -23,7 +25,7 @@ struct ProgressDots: View {
                 dot(number: index + 1, state: states[index])
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))
         // Six dots must fit across a phone, so they stop growing past the largest standard size.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .ignore)
@@ -85,7 +87,12 @@ struct ProgressDots: View {
         ProgressDots(states: [.done, .failed, .upcoming, .upcoming, .upcoming, .upcoming], currentIndex: 1)
         ProgressDots(states: [.done, .done, .currentCorrect, .upcoming, .upcoming, .upcoming], currentIndex: 2)
         ProgressDots(states: [.currentMissed, .upcoming, .upcoming, .upcoming, .upcoming, .upcoming], currentIndex: 0)
-        ProgressDots(states: Array(repeating: .upcoming, count: 6), currentIndex: nil, size: .large)
+        ProgressDots(
+            states: Array(repeating: .upcoming, count: 6),
+            currentIndex: nil,
+            size: .large,
+            alignment: .leading,
+        )
     }
     .padding(24)
     .leoScreenBackground()
