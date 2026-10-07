@@ -66,6 +66,7 @@
       }
     },
     ", ": {
+      "comment": "Separates topic names in a list",
       "localizations": {
         "es": {
           "stringUnit": {
