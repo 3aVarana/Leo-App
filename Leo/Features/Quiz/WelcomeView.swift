@@ -16,6 +16,7 @@ struct WelcomeView: View {
                 Text(verbatim: "Leo")
                     .leoTextStyle(.wordmark)
                     .accessibilityAddTraits(.isHeader)
+                    .launchWordmarkTarget()
                 Spacer()
                 if let onSettings {
                     Button(action: onSettings) {

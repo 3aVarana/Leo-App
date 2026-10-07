@@ -791,6 +791,6 @@ All of these are specified above and marked *(extrapolated)*. They're collected 
 3. **A "Quit round" affordance.** Neither the mock nor the app has a way out of a round in progress. A small toolbar ✕ with a confirmation would help on long rounds.
 4. **Keep the last round across launches.** Results and Review live in memory today. Persisting the last `RoundAnswer`s would let a reader come back to Review later. Out of scope here.
 5. **iPad regular width.** Show the passage and the question side by side in two columns on iPad landscape, instead of one capped column.
-6. **App icon and launch screen** in the Broadsheet palette, so the first frame matches the new ground color instead of flashing white or black.
+6. **App icon and launch screen** in the Broadsheet palette, so the first frame matches the new ground color instead of flashing white or black. *Launch screen done: see `docs/Leo-Launch-Screen-Plan.md`. The app icon is still open.*
 7. **Enforce the theme with SwiftLint.** A custom rule in `Leo/Features` that flags `Color.red`, `.green`, `.foregroundStyle(.secondary)` and system `.font(.headline)`-style fonts outside `Theme/`, so new views don't drift back to system styling. This is like the existing layer-boundary rules.
 8. **Ask Claude Design for the extrapolated states** in section 9 before PRs 5–7, especially Feedback correct and Results 6/6, which most readers will see.

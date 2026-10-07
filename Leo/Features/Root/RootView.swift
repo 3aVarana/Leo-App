@@ -34,6 +34,7 @@ struct RootView: View {
             }
         }
         .animation(.default, value: viewModel.preferences == nil)
+        .launchIntro()
     }
 
     @ViewBuilder
