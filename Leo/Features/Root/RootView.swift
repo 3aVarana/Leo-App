@@ -19,15 +19,6 @@ struct RootView: View {
                             .task(id: preferences.roundSettings) {
                                 viewModel.preferencesDidChange()
                             }
-                            .toolbar {
-                                if quiz.phase == .finished {
-                                    ToolbarItem(placement: .topBarTrailing) {
-                                        Button("Settings", systemImage: "gearshape") {
-                                            viewModel.isShowingSettings = true
-                                        }
-                                    }
-                                }
-                            }
                             .sheet(isPresented: $viewModel.isShowingSettings) {
                                 if let editor = viewModel.makeSettingsEditor() {
                                     SettingsView(viewModel: editor)
@@ -71,7 +62,13 @@ struct RootView: View {
                     .toolbar(.hidden, for: .navigationBar)
             }
         case .finished:
-            ResultView(correct: quiz.correctCount, total: QuizViewModel.exerciseCount, onRestart: quiz.start)
+            ResultView(
+                answers: quiz.answers,
+                ageGroup: quiz.roundAgeGroup ?? ageGroup,
+                onRestart: quiz.start,
+                onSettings: viewModel.canShowSettings ? { viewModel.isShowingSettings = true } : nil,
+            )
+            .toolbar(.hidden, for: .navigationBar)
         case .failed:
             GenerationFailedView(
                 index: quiz.currentIndex,

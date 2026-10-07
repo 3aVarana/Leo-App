@@ -33,18 +33,18 @@
         }
       }
     },
-    "%lld of %lld correct": {
+    "%lld of %lld missed": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$lld de %2$lld correctas"
+            "value": "%1$lld de %2$lld falladas"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$lld de %2$lld corretas"
+            "value": "%1$lld de %2$lld erradas"
           }
         }
       }
@@ -465,6 +465,22 @@
         }
       }
     },
+    "Answer": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Respuesta"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resposta"
+          }
+        }
+      }
+    },
     "Apple Intelligence is still getting ready. Please try again in a few minutes.": {
       "localizations": {
         "es": {
@@ -593,6 +609,22 @@
         }
       }
     },
+    "Back to results": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a los resultados"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voltar aos resultados"
+          }
+        }
+      }
+    },
     "Baking cookies": {
       "localizations": {
         "es": {
@@ -685,6 +717,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Continuar"
+          }
+        }
+      }
+    },
+    "Correct": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correcta"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correta"
           }
         }
       }
@@ -909,6 +957,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dragões amigáveis e fadas"
+          }
+        }
+      }
+    },
+    "From the text": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Del texto"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do texto"
           }
         }
       }
@@ -1236,6 +1300,22 @@
         }
       }
     },
+    "Next missed text": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente texto fallado"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo texto errado"
+          }
+        }
+      }
+    },
     "Next text": {
       "localizations": {
         "es": {
@@ -1556,6 +1636,38 @@
         }
       }
     },
+    "Results": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resultados"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resultados"
+          }
+        }
+      }
+    },
+    "Review": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repasar"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar"
+          }
+        }
+      }
+    },
     "Richer vocabulary · %lld–%lld words": {
       "localizations": {
         "es": {
@@ -1584,6 +1696,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Robôs e inteligência artificial"
+          }
+        }
+      }
+    },
+    "Round complete · readers %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ronda completa · lectores de %@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rodada concluída · leitores de %@"
           }
         }
       }
@@ -1904,6 +2032,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Texto %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Text %lld · %@": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld · %2$@"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld · %2$@"
+          }
+        }
+      }
+    },
+    "Text %lld, %@, correct": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld, %2$@, correcta"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld, %2$@, correta"
+          }
+        }
+      }
+    },
+    "Text %lld, %@, missed": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld, %2$@, fallada"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld, %2$@, errada"
           }
         }
       }
@@ -2448,6 +2624,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escrevendo o texto %1$lld de %2$lld, sobre %3$@"
+          }
+        }
+      }
+    },
+    "You": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tú"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Você"
           }
         }
       }
