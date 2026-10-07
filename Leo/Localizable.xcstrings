@@ -1252,6 +1252,22 @@
         }
       }
     },
+    "Removes this topic.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quita este tema."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove este tema."
+          }
+        }
+      }
+    },
     "Renewable energy": {
       "localizations": {
         "es": {
@@ -1536,6 +1552,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tecnologia e sociedade"
+          }
+        }
+      }
+    },
+    "Text %lld of %lld": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld de %2$lld"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto %1$lld de %2$lld"
           }
         }
       }
