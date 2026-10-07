@@ -38,10 +38,27 @@ struct LaunchIntroTests {
         #expect(LaunchIntro.Phase.done.isPageShown)
     }
 
-    @Test func headerWordmarkStaysHiddenUntilTheIntroIsDone() {
+    @Test func theIntroIsRunningUntilItIsDone() {
         #expect(LaunchIntro.Phase.launch.isRunning)
         #expect(LaunchIntro.Phase.playing.isRunning)
         #expect(!LaunchIntro.Phase.done.isRunning)
+    }
+
+    @Test func wordmarkMovesOnlyWhenMotionIsAllowedAndThereIsAHeaderToLandOn() {
+        #expect(LaunchIntro.exit(reduceMotion: false, hasTarget: true) == .move)
+        #expect(LaunchIntro.exit(reduceMotion: true, hasTarget: true) == .fade)
+        #expect(LaunchIntro.exit(reduceMotion: false, hasTarget: false) == .fade)
+        #expect(LaunchIntro.exit(reduceMotion: true, hasTarget: false) == .fade)
+    }
+
+    /// Under Reduce Motion the header is part of the page and fades in with it.
+    @Test func headerWordmarkIsHiddenOnlyWhileTheMovingOneStandsInForIt() {
+        #expect(LaunchIntro.hidesHeader(phase: .launch, exit: .move))
+        #expect(LaunchIntro.hidesHeader(phase: .playing, exit: .move))
+        #expect(!LaunchIntro.hidesHeader(phase: .done, exit: .move))
+        for phase in [LaunchIntro.Phase.launch, .playing, .done] {
+            #expect(!LaunchIntro.hidesHeader(phase: phase, exit: .fade))
+        }
     }
 
     /// 20 / 48 at the default text size.

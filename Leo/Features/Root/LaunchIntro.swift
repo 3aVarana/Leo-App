@@ -64,6 +64,25 @@ enum LaunchIntro {
         }
     }
 
+    /// How the centered wordmark leaves.
+    enum Exit {
+        /// It moves into the header wordmark, which stays hidden until the intro ends.
+        case move
+        /// It fades out where it is, while the header, part of the page, fades in with the rest.
+        case fade
+    }
+
+    /// The wordmark only moves when motion is allowed and there's a header to land on. Welcome
+    /// is the only screen with one.
+    static func exit(reduceMotion: Bool, hasTarget: Bool) -> Exit {
+        reduceMotion || !hasTarget ? .fade : .move
+    }
+
+    /// The header wordmark is hidden only while the moving wordmark stands in for it.
+    static func hidesHeader(phase: Phase, exit: Exit) -> Bool {
+        phase.isRunning && exit == .move
+    }
+
     /// Where the centered wordmark ends up, and how much it shrinks, to land exactly on the
     /// header wordmark.
     struct WordmarkMove: Equatable {
@@ -97,12 +116,14 @@ struct LaunchWordmarkFrame: PreferenceKey {
 }
 
 extension EnvironmentValues {
-    /// Whether the intro is running. The header wordmark stays hidden, in its place, until it ends.
-    @Entry var isLaunchIntroRunning = false
+    /// Whether the moving launch wordmark stands in for the header wordmark. The header stays
+    /// hidden, in its place, until the intro ends.
+    @Entry var hidesLaunchWordmarkTarget = false
 }
 
 extension View {
-    /// Marks this view as the place the launch wordmark moves to, and hides it while the intro runs.
+    /// Marks this view as the place the launch wordmark moves to, and hides it while the wordmark
+    /// is moving there.
     func launchWordmarkTarget() -> some View {
         modifier(LaunchWordmarkTargetModifier())
     }
@@ -114,11 +135,11 @@ extension View {
 }
 
 private struct LaunchWordmarkTargetModifier: ViewModifier {
-    @Environment(\.isLaunchIntroRunning) private var isIntroRunning
+    @Environment(\.hidesLaunchWordmarkTarget) private var isHidden
 
     func body(content: Content) -> some View {
         content
-            .opacity(isIntroRunning ? 0 : 1)
+            .opacity(isHidden ? 0 : 1)
             .background {
                 GeometryReader { proxy in
                     Color.clear.preference(key: LaunchWordmarkFrame.self, value: proxy.frame(in: .global))
@@ -131,22 +152,33 @@ private struct LaunchWordmarkTargetModifier: ViewModifier {
 
 struct LaunchIntroModifier: ViewModifier {
     /// `plays: false` freezes the intro at `initialPhase`, for snapshots and previews.
-    init(initialPhase: LaunchIntro.Phase? = nil, plays: Bool = true) {
+    /// `reduceMotion` replaces the system setting, which the environment can't override.
+    init(initialPhase: LaunchIntro.Phase? = nil, plays: Bool = true, reduceMotion: Bool? = nil) {
         _phase = State(initialValue: initialPhase ?? (LaunchIntro.hasPlayed ? .done : .launch))
         self.plays = plays
+        reduceMotionOverride = reduceMotion
     }
 
     private let plays: Bool
+    private let reduceMotionOverride: Bool?
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var phase: LaunchIntro.Phase
     /// The header wordmark's frame, kept from the first frame, while nothing has moved yet.
     @State private var headerFrame: CGRect?
     @State private var overlayHeight: CGFloat = 0
 
+    private var reduceMotion: Bool {
+        reduceMotionOverride ?? systemReduceMotion
+    }
+
+    private var exit: LaunchIntro.Exit {
+        LaunchIntro.exit(reduceMotion: reduceMotion, hasTarget: headerFrame != nil)
+    }
+
     func body(content: Content) -> some View {
         content
-            .environment(\.isLaunchIntroRunning, phase.isRunning)
+            .environment(\.hidesLaunchWordmarkTarget, LaunchIntro.hidesHeader(phase: phase, exit: exit))
             .opacity(phase.isPageShown ? 1 : 0)
             .visualEffect { [phase, reduceMotion] view, _ in
                 view.offset(y: phase.isPageShown || reduceMotion ? 0 : LaunchIntro.Timing.rise)
@@ -174,7 +206,7 @@ struct LaunchIntroModifier: ViewModifier {
     private var wordmark: some View {
         GeometryReader { proxy in
             let screen = proxy.frame(in: .global)
-            let move = reduceMotion ? nil : headerFrame.flatMap(wordmarkMove)
+            let move = exit == .move ? headerFrame.flatMap(wordmarkMove) : nil
             let isMoving = phase.isPageShown
             let center = isMoving ? move?.center : nil
             Text(verbatim: "Leo")
