@@ -865,22 +865,6 @@
         }
       }
     },
-    "Exercise %lld": {
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ejercicio %lld"
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exercício %lld"
-          }
-        }
-      }
-    },
     "Famous explorers": {
       "localizations": {
         "es": {
@@ -1252,18 +1236,18 @@
         }
       }
     },
-    "Next": {
+    "Next text": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Siguiente"
+            "value": "Siguiente texto"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Próximo"
+            "value": "Próximo texto"
           }
         }
       }
@@ -2480,6 +2464,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Você pode ter até 20 temas próprios."
+          }
+        }
+      }
+    },
+    "Your answer": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu respuesta"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua resposta"
           }
         }
       }

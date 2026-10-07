@@ -6,31 +6,37 @@ struct ExerciseView: View {
 
     private static let feedbackID = "feedback"
 
+    @ScaledMetric(relativeTo: .title3) private var verdictIconSize = 22
+
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    header
+                VStack(alignment: .leading, spacing: 0) {
+                    ProgressDots(states: dots, currentIndex: quiz.currentIndex)
+                        .padding(.top, 12)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(exercise.title)
-                            .font(.title2.bold())
-                        Text(exercise.passage)
-                            .font(.body)
-                            .lineSpacing(4)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.fill.quaternary, in: .rect(cornerRadius: 16))
+                    Kicker(verbatim: exercise.topic.name)
+                        .padding(.top, 28)
+                    Text(exercise.title)
+                        .leoTextStyle(.title)
+                        .accessibilityAddTraits(.isHeader)
+                        .padding(.top, 8)
+                        .padding(.bottom, 14)
+                    Text(exercise.passage)
+                        .leoTextStyle((quiz.roundAgeGroup ?? .nine).passageStyle)
+                        .textSelection(.enabled)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(exercise.skill.displayName.uppercased())
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        Text(exercise.question)
-                            .font(.headline)
+                    Kicker(verbatim: exercise.skill.displayName, color: .leoAccent700)
+                        .padding(.top, 28)
+                    Text(exercise.question)
+                        .leoTextStyle(.question)
+                        .accessibilityAddTraits(.isHeader)
+                        .padding(.top, 8)
+                        .padding(.bottom, 14)
+                    VStack(spacing: 8) {
                         ForEach(exercise.options.indices, id: \.self) { index in
                             OptionButton(
+                                letter: Self.letter(index),
                                 text: exercise.options[index],
                                 state: quiz.optionState(at: index),
                                 action: { quiz.select(index) },
@@ -40,59 +46,66 @@ struct ExerciseView: View {
 
                     if let isCorrect = quiz.isAnswerCorrect {
                         feedback(isCorrect: isCorrect)
+                            .padding(.top, 26)
                             .id(Self.feedbackID)
                     }
                 }
-                .padding()
+                .foregroundStyle(Color.leoInk)
+                .leoReadableWidth()
+                .padding(.bottom, 24)
             }
             .onChange(of: quiz.isAnswerCorrect) {
                 withAnimation { proxy.scrollTo(Self.feedbackID, anchor: .bottom) }
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            if quiz.isAnswerCorrect != nil {
+                Button(quiz.isLastExercise ? "See results" : "Next text", action: quiz.next)
+                    .buttonStyle(.leo(.primary))
+                    .leoReadableWidth()
+                    .padding(.top, 16)
+                    .background(Color.leoBackground)
+            }
+        }
+        .leoScreenBackground()
         .sensoryFeedback(trigger: quiz.isAnswerCorrect) { _, isCorrect in
             guard let isCorrect else { return nil }
             return isCorrect ? .success : .error
         }
-        .navigationTitle("Exercise \(quiz.currentIndex + 1)")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ProgressView(value: Double(quiz.currentIndex + 1), total: Double(QuizViewModel.exerciseCount))
-            Text("\(quiz.currentIndex + 1) of \(QuizViewModel.exerciseCount)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
+    private var dots: [DotState] {
+        (0 ..< QuizViewModel.exerciseCount).map(quiz.dotState(at:))
+    }
+
+    /// A, B, C, D.
+    private static func letter(_ index: Int) -> String {
+        String(UnicodeScalar(UInt8(ascii: "A") + UInt8(index)))
     }
 
     private func feedback(isCorrect: Bool) -> some View {
-        VStack(spacing: 16) {
-            Label(
-                isCorrect ? "Correct!" : "Not quite",
-                systemImage: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill",
-            )
-            .font(.headline)
-            .foregroundStyle(isCorrect ? .green : .red)
+        VStack(alignment: .leading, spacing: 8) {
+            Label {
+                Text(isCorrect ? "Correct!" : "Not quite")
+                    .leoTextStyle(.verdict)
+            } icon: {
+                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.system(size: verdictIconSize))
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .foregroundStyle(isCorrect ? Color.leoAccent700 : Color.leoMagenta700)
+            .accessibilityAddTraits(.isHeader)
             if !isCorrect, !exercise.explanation.isEmpty {
                 Text(exercise.explanation)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .leoTextStyle(.explanation)
             }
-            Button(action: quiz.next) {
-                Text(quiz.isLastExercise ? "See results" : "Next")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-            }
-            .buttonStyle(.borderedProminent)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 private struct OptionButton: View {
+    let letter: String
     let text: String
     let state: QuizViewModel.OptionState
     let action: () -> Void
@@ -102,22 +115,12 @@ private struct OptionButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(text)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                // Always laid out, so the text keeps the same width when the icon appears.
-                Image(systemName: icon ?? "checkmark.circle.fill")
-                    .foregroundStyle(border)
-                    .opacity(icon == nil ? 0 : 1)
-                    .accessibilityHidden(icon == nil)
-            }
-            .padding()
-            .foregroundStyle(foreground)
-            .background(background, in: .rect(cornerRadius: 12))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12).strokeBorder(border, lineWidth: 1.5)
-            }
+            AnswerRow(
+                marker: letter,
+                text: text,
+                state: state,
+                note: state == .incorrect ? "Your answer" : nil,
+            )
         }
         .buttonStyle(.plain)
         .modifier(ShakeEffect(shakes: shakes))
@@ -127,35 +130,8 @@ private struct OptionButton: View {
         }
         // Not `.disabled`, which would grey out the highlighted answers.
         .allowsHitTesting(state == .idle)
+        .accessibilityLabel(text)
         .accessibilityValue(accessibilityValue)
-    }
-
-    private var icon: String? {
-        switch state {
-        case .correct: "checkmark.circle.fill"
-        case .incorrect: "xmark.circle.fill"
-        case .idle, .dimmed: nil
-        }
-    }
-
-    private var foreground: Color {
-        state == .dimmed ? .secondary : .primary
-    }
-
-    private var background: Color {
-        switch state {
-        case .correct: .green.opacity(0.15)
-        case .incorrect: .red.opacity(0.15)
-        case .idle, .dimmed: .clear
-        }
-    }
-
-    private var border: Color {
-        switch state {
-        case .correct: .green
-        case .incorrect: .red
-        case .idle, .dimmed: .secondary.opacity(0.4)
-        }
     }
 
     private var accessibilityValue: String {
