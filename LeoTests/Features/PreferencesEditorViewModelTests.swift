@@ -284,10 +284,38 @@ extension PreferencesEditorViewModelTests {
         #expect(editor.draft.disabledDefaultTopics == [.six: ["dinosaurs"]])
     }
 
-    @Test func removeCustomTopics() {
+    @Test func removeCustomTopic() throws {
         let editor = makeEditor(.fixture(ageGroup: .nine, custom: [.nine: ["Chess", "Origami"]]))
-        editor.removeCustomTopics(atOffsets: [0])
+        try editor.removeCustomTopic(#require(editor.customTopics.first))
         #expect(editor.customTopics.map(\.name) == ["Origami"])
+    }
+
+    /// At the minimum the remove control is hidden; a stray call changes nothing.
+    @Test func removeCustomTopicAtMinimumDoesNothing() throws {
+        let ids = DefaultTopics.topics(for: .six).map(\.id)
+        let editor = makeEditor(.fixture(
+            ageGroup: .six,
+            disabled: [.six: Set(ids.dropLast(2))],
+            custom: [.six: ["Chess"]],
+        ))
+        #expect(editor.isAtMinimum)
+        try editor.removeCustomTopic(#require(editor.customTopics.first))
+        #expect(editor.customTopics.map(\.name) == ["Chess"])
+    }
+
+    @Test func counts() {
+        let editor = makeEditor(.fixture(
+            ageGroup: .nine,
+            disabled: [.nine: ["volcanoes"], .six: ["dinosaurs"]],
+            custom: [.nine: ["Chess", "Origami"]],
+        ))
+        let suggested = DefaultTopics.topics(for: .nine).count
+        #expect(editor.enabledSuggestedCount == suggested - 1)
+        #expect(editor.enabledTopicCount == suggested + 1)
+
+        editor.draft.ageGroup = .six
+        #expect(editor.enabledSuggestedCount == DefaultTopics.topics(for: .six).count - 1)
+        #expect(editor.enabledTopicCount == DefaultTopics.topics(for: .six).count - 1)
     }
 
     @Test func saveCallsOnSaveWithDraft() {

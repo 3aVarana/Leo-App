@@ -85,7 +85,7 @@ struct RootViewModelTests {
 
         quiz.select(0)
         quiz.next()
-        #expect(quiz.phase == .failed(ExerciseGenerationError.failed.localizedDescription))
+        #expect(quiz.phase == .failed)
         #expect(!root.canShowSettings)
 
         quiz.retry()

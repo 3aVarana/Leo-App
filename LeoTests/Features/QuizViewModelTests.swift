@@ -300,7 +300,7 @@ extension QuizViewModelTests {
 
         spy.latest.resume(with: failure)
         await waitUntil { quiz.phase != .loading }
-        #expect(quiz.phase == .failed(ExerciseGenerationError.failed.localizedDescription))
+        #expect(quiz.phase == .failed)
         await settle()
         #expect(spy.latest.calls.count == 1)
     }
@@ -318,27 +318,34 @@ extension QuizViewModelTests {
         quiz.select(0)
         #expect(quiz.phase == .answering)
         quiz.next()
-        #expect(quiz.phase == .failed(ExerciseGenerationError.failed.localizedDescription))
+        #expect(quiz.phase == .failed)
     }
 
-    @Test func retryGeneratesFailedExerciseAgain() async {
-        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
+    /// A quiz showing the failure of its second exercise.
+    private func quizFailedAtSecondExercise(
+        _ spy: ExerciseRepositoryFactorySpy = ExerciseRepositoryFactorySpy {
+            StubExerciseRepository(results: [.success(.fixture()), .failure(ExerciseGenerationError.failed)])
+        },
+    ) async -> QuizViewModel {
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
         quiz.start()
         quiz.select(0)
         quiz.next()
+        return quiz
+    }
+
+    @Test func retryGeneratesFailedExerciseAgain() async {
+        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
+        let quiz = await quizFailedAtSecondExercise(spy)
         let stub = spy.latest
         let failedCall = stub.calls[1]
 
         quiz.retry()
         #expect(quiz.phase == .loading)
         await waitUntil { stub.waitingCount == 1 }
-        let retryCall = stub.calls[2]
-        #expect(retryCall.skill == failedCall.skill)
-        #expect((1 ... 3).contains(retryCall.topics.count))
-        #expect(Set(retryCall.topics).isSubset(of: settings.topics))
+        #expect(stub.calls[2] == failedCall)
 
         stub.resume(returning: .fixture(title: "Retried"))
         await waitUntil { quiz.phase == .answering }

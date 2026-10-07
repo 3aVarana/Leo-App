@@ -49,4 +49,19 @@ struct AgeGroupTests {
         #expect(!group.promptAudience.isEmpty)
         #expect(!group.styleGuidance.isEmpty)
     }
+
+    @Test func shortNames() {
+        #expect(AgeGroup.allCases.map(\.shortName) == ["6–8", "9–11", "12–14", "15–17", "18+"])
+    }
+
+    /// The figures in the summary are the ones the model is asked for.
+    @Test(arguments: AgeGroup.allCases)
+    func summaryMatchesPassageWordRange(_ group: AgeGroup) {
+        let range = group.passageWordRange
+        #expect(group.summary.hasSuffix(" · \(range.lowerBound)–\(range.upperBound) words"))
+    }
+
+    @Test func summaryExample() {
+        #expect(AgeGroup.nine.summary == "Everyday words · 80–120 words")
+    }
 }

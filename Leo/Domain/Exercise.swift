@@ -3,7 +3,7 @@ import Foundation
 /// A ready-to-present exercise with shuffled options.
 nonisolated struct Exercise: Identifiable, Sendable {
     let id = UUID()
-    let topic: String
+    let topic: RoundTopic
     let skill: ComprehensionSkill
     let title: String
     let passage: String
@@ -15,7 +15,7 @@ nonisolated struct Exercise: Identifiable, Sendable {
 
     /// Builds an exercise as given, without validation or shuffling. For tests and previews;
     /// model output goes through `init?(generated:topic:skill:acceptedWordCount:)`.
-    init(topic: String, skill: ComprehensionSkill, title: String, passage: String,
+    init(topic: RoundTopic, skill: ComprehensionSkill, title: String, passage: String,
          question: String, options: [String], correctIndex: Int, explanation: String)
     {
         precondition(options.indices.contains(correctIndex))

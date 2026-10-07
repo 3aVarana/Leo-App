@@ -65,6 +65,15 @@ final class PreferencesEditorViewModel {
         draft.customTopics[group] ?? []
     }
 
+    /// Suggested and custom topics that are on.
+    var enabledTopicCount: Int {
+        draft.enabledTopicCount(in: group)
+    }
+
+    var enabledSuggestedCount: Int {
+        draft.enabledSuggestedTopicCount(in: group)
+    }
+
     var isAtMinimum: Bool {
         draft.isAtMinimum(in: group)
     }
@@ -90,8 +99,10 @@ final class PreferencesEditorViewModel {
         draft.resetSuggestedTopics(in: group)
     }
 
-    func removeCustomTopics(atOffsets offsets: IndexSet) {
-        draft.removeCustomTopics(atOffsets: offsets, in: group)
+    /// Does nothing at the minimum, where the remove control is hidden.
+    func removeCustomTopic(_ topic: CustomTopic) {
+        guard !isAtMinimum else { return }
+        draft.removeCustomTopic(id: topic.id, in: group)
     }
 
     // MARK: - Adding a topic

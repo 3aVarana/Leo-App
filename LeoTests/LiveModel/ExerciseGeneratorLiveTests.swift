@@ -10,7 +10,7 @@ extension LiveModel {
         /// the prompts produce usable output within its 3 attempts.
         @Test(arguments: AgeGroup.allCases)
         func generatesUsableExercise(_ group: AgeGroup) async throws {
-            let topics = DefaultTopics.topics(for: group).prefix(3).map(\.prompt)
+            let topics = DefaultTopics.topics(for: group).prefix(3).map(\.roundTopic)
             let generator = ExerciseGenerator(language: .english, ageGroup: group)
 
             let exercise = try await generator.generate(topics: Array(topics), skill: .mainIdea)

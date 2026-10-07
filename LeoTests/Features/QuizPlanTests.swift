@@ -8,11 +8,11 @@ import Testing
 struct QuizPlanTests {
     private static let seeds: Range<UInt64> = 0 ..< 100
 
-    private func topics(_ count: Int) -> [String] {
-        (0 ..< count).map { "topic \($0)" }
+    private func topics(_ count: Int) -> [RoundTopic] {
+        (0 ..< count).map { RoundTopic(stringLiteral: "topic \($0)") }
     }
 
-    private func plan(_ topics: [String], seed: UInt64) -> [QuizViewModel.PlanItem] {
+    private func plan(_ topics: [RoundTopic], seed: UInt64) -> [QuizViewModel.PlanItem] {
         var rng = SplitMix64(seed: seed)
         return QuizViewModel.makePlan(topics: topics, using: &rng)
     }

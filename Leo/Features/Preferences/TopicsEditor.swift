@@ -23,7 +23,9 @@ struct TopicsEditor: View {
                 Text(topic.name)
                     .deleteDisabled(viewModel.isAtMinimum)
             }
-            .onDelete { viewModel.removeCustomTopics(atOffsets: $0) }
+            .onDelete { offsets in
+                offsets.map { viewModel.customTopics[$0] }.forEach(viewModel.removeCustomTopic)
+            }
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     TextField("Add a topic", text: $viewModel.newTopic)

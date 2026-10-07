@@ -56,43 +56,52 @@ struct ReaderPreferencesTests {
         #expect(preferences.isEnabled(topic, in: .twelve))
     }
 
-    @Test func enabledTopicPromptsKeepsOrder() {
+    @Test func enabledTopicsKeepsOrder() {
         let preferences = ReaderPreferences.fixture(ageGroup: .nine, custom: [.nine: ["Chess", "Origami"]])
         let suggested = DefaultTopics.topics(for: .nine).map(\.prompt)
-        #expect(preferences.enabledTopicPrompts(for: .nine) == suggested + ["Chess", "Origami"])
+        #expect(preferences.enabledTopics(for: .nine).map(\.prompt) == suggested + ["Chess", "Origami"])
     }
 
-    @Test func enabledTopicPromptsExcludesDisabled() {
+    /// Suggested topics show their localized name; the reader's own show what they typed.
+    @Test func enabledTopicsNames() throws {
+        let preferences = ReaderPreferences.fixture(ageGroup: .nine, custom: [.nine: ["Chess"]])
+        let topics = preferences.enabledTopics(for: .nine)
+        let mystery = try #require(topics.first { $0.prompt == "a short story about a mystery at school" })
+        #expect(mystery.name == "A mystery at school")
+        #expect(topics.last == RoundTopic(prompt: "Chess", name: "Chess"))
+    }
+
+    @Test func enabledTopicsExcludesDisabled() {
         let preferences = ReaderPreferences.fixture(ageGroup: .nine, disabled: [.nine: ["volcanoes", "recycling"]])
-        let prompts = preferences.enabledTopicPrompts(for: .nine)
+        let prompts = preferences.enabledTopics(for: .nine).map(\.prompt)
         let expected = DefaultTopics.topics(for: .nine).filter { !["volcanoes", "recycling"].contains($0.id) }
             .map(\.prompt)
         #expect(prompts == expected)
     }
 
-    @Test func enabledTopicPromptsExcludesOtherGroupsCustomTopics() {
+    @Test func enabledTopicsExcludesOtherGroupsCustomTopics() {
         let preferences = ReaderPreferences.fixture(ageGroup: .nine, custom: [.twelve: ["Chess"]])
-        #expect(!preferences.enabledTopicPrompts(for: .nine).contains("Chess"))
-        #expect(preferences.enabledTopicPrompts(for: .twelve).last == "Chess")
+        #expect(!preferences.enabledTopics(for: .nine).map(\.prompt).contains("Chess"))
+        #expect(preferences.enabledTopics(for: .twelve).last?.prompt == "Chess")
     }
 
-    @Test func enabledTopicPromptsIgnoresUnknownDisabledIds() {
+    @Test func enabledTopicsIgnoresUnknownDisabledIds() {
         let preferences = ReaderPreferences.fixture(ageGroup: .nine, disabled: [.nine: ["no-such-topic"]])
-        #expect(preferences.enabledTopicPrompts(for: .nine) == DefaultTopics.topics(for: .nine).map(\.prompt))
+        #expect(preferences.enabledTopics(for: .nine).map(\.prompt) == DefaultTopics.topics(for: .nine).map(\.prompt))
     }
 
     /// Only possible with stale data, since the editor keeps a minimum enabled.
-    @Test func enabledTopicPromptsFallsBackToAllSuggested() {
+    @Test func enabledTopicsFallsBackToAllSuggested() {
         let all = DefaultTopics.topics(for: .six)
         let preferences = ReaderPreferences.fixture(ageGroup: .six, disabled: [.six: Set(all.map(\.id))])
-        #expect(preferences.enabledTopicPrompts(for: .six) == all.map(\.prompt))
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.map(\.prompt))
     }
 
     /// `QuizViewModel.configure` relies on equal preferences giving equal settings to skip work.
     @Test func roundSettings() {
         let preferences = ReaderPreferences.fixture(ageGroup: .twelve, custom: [.twelve: ["Chess"]])
         #expect(preferences.roundSettings.ageGroup == .twelve)
-        #expect(preferences.roundSettings.topics == preferences.enabledTopicPrompts(for: .twelve))
+        #expect(preferences.roundSettings.topics == preferences.enabledTopics(for: .twelve))
         #expect(preferences.roundSettings == preferences.roundSettings)
 
         var copy = preferences
