@@ -11,9 +11,14 @@ extension ViewSnapshots {
         }
 
         private func editor(_ viewModel: PreferencesEditorViewModel) -> some View {
-            List {
-                TopicsEditor(viewModel: viewModel)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    MinimumTopicsWarning(viewModel: viewModel)
+                    TopicsEditor(viewModel: viewModel)
+                }
+                .leoReadableWidth()
             }
+            .leoScreenBackground()
         }
 
         private var customizedPreferences: ReaderPreferences {
@@ -24,24 +29,28 @@ extension ViewSnapshots {
             )
         }
 
-        /// Every suggested topic in `.six` turned off except the last 3.
+        /// Every suggested topic in `.six` turned off except the last 2, plus one of the reader's own.
         private var minimumPreferences: ReaderPreferences {
             let ids = DefaultTopics.topics(for: .six).map(\.id)
-            return .fixture(ageGroup: .six, disabled: [.six: Set(ids.dropLast(3))])
+            return .fixture(ageGroup: .six, disabled: [.six: Set(ids.dropLast(2))], custom: [.six: ["Chess"]])
         }
 
         @Test func defaults() {
-            assertViewSnapshot(of: editor(ReaderPreferences(ageGroup: .nine)), named: "9-11-defaults", height: 1250)
+            assertViewSnapshot(of: editor(ReaderPreferences(ageGroup: .nine)), named: "9-11-defaults")
         }
 
-        /// "Reset suggested topics" shows once a suggested topic is off.
+        /// Turned-off chips, and the reader's own topics with their remove marks.
         @Test func customized() {
-            assertViewSnapshot(of: editor(customizedPreferences), named: "9-11-customized", height: 1250)
+            assertViewSnapshot(of: editor(customizedPreferences), named: "9-11-customized")
         }
 
-        /// The footer shows, and the topics still on can't be turned off.
-        @Test func atMinimum() {
-            assertViewSnapshot(of: editor(minimumPreferences), named: "6-8-minimum", height: 1250)
+        /// The reader's own topic can't be removed, and after a refused tap the warning shows.
+        @Test func atMinimum() throws {
+            let viewModel = PreferencesEditorViewModel.fixture(draft: minimumPreferences)
+            try viewModel.setEnabled(false, #require(DefaultTopics.topics(for: .six).last))
+            #expect(viewModel.isAtMinimum)
+            #expect(viewModel.isShowingMinimumWarning)
+            assertViewSnapshot(of: editor(viewModel), named: "6-8-minimum")
         }
 
         /// After a rejected review, the reason shows under the field and the topic stays in it.
@@ -56,7 +65,7 @@ extension ViewSnapshots {
             viewModel.newTopic = "Taxes"
             viewModel.add()
             await waitUntil { viewModel.message != nil }
-            assertViewSnapshot(of: editor(viewModel), named: "9-11-message", height: 1250)
+            assertViewSnapshot(of: editor(viewModel), named: "9-11-message")
         }
 
         /// A pending review shows the progress indicator and disables the field.
@@ -65,7 +74,7 @@ extension ViewSnapshots {
             viewModel.newTopic = "Chess"
             viewModel.add()
             #expect(viewModel.isReviewing)
-            assertViewSnapshot(of: editor(viewModel), named: "9-11-reviewing", height: 1250)
+            assertViewSnapshot(of: editor(viewModel), named: "9-11-reviewing")
         }
     }
 }

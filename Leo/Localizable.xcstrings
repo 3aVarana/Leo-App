@@ -33,6 +33,22 @@
         }
       }
     },
+    "%lld topics on · keep at least 3. Leo picks one for each text.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld temas activados · deja al menos 3. Leo elige uno para cada texto."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld temas ativados · mantenha pelo menos 3. O Leo escolhe um para cada texto."
+          }
+        }
+      }
+    },
     "12 to 14": {
       "localizations": {
         "es": {
@@ -497,6 +513,22 @@
         }
       }
     },
+    "At least 3 topics must stay on.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al menos 3 temas deben quedar activados."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pelo menos 3 temas precisam ficar ativados."
+          }
+        }
+      }
+    },
     "Author's purpose": {
       "localizations": {
         "es": {
@@ -701,6 +733,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Economia no dia a dia"
+          }
+        }
+      }
+    },
+    "Every text is written for your age — its length, its words, its questions.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada texto se escribe para tu edad: su extensión, sus palabras, sus preguntas."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada texto é escrito para a sua idade: o tamanho, as palavras, as perguntas."
           }
         }
       }
@@ -1396,18 +1444,18 @@
         }
       }
     },
-    "Reset suggested topics": {
+    "Reset": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Restablecer temas sugeridos"
+            "value": "Restablecer"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Redefinir temas sugeridos"
+            "value": "Redefinir"
           }
         }
       }
@@ -1668,18 +1716,34 @@
         }
       }
     },
-    "Suggested": {
+    "Suggested for %@": {
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sugeridos"
+            "value": "Sugeridos para %@"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sugeridos"
+            "value": "Sugeridos para %@"
+          }
+        }
+      }
+    },
+    "Suggested · %lld on": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugeridos · %lld activados"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugeridos · %lld ativados"
           }
         }
       }
@@ -2144,6 +2208,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Não conseguimos criar este exercício. Tente novamente."
+          }
+        }
+      }
+    },
+    "Welcome to Leo": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te damos la bienvenida a Leo"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boas-vindas ao Leo"
           }
         }
       }

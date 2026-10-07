@@ -14,20 +14,48 @@ struct SettingsView: View {
         @Bindable var viewModel = viewModel
         // A sheet doesn't inherit the presenter's navigation stack.
         NavigationStack {
-            Form {
-                Section("Age group") {
-                    Picker("Age group", selection: $viewModel.draft.ageGroup) {
-                        ForEach(AgeGroup.allCases, id: \.self) { group in
-                            Text(group.displayName)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Kicker("Age group")
+                        .accessibilityAddTraits(.isHeader)
+                        .padding(.bottom, 10)
+                    AgeSegmentedControl(selection: $viewModel.draft.ageGroup)
+                    Text(viewModel.draft.ageGroup.summary)
+                        .leoTextStyle(.caption)
+                        .foregroundStyle(Color.leoInkMuted)
+                        .padding(.top, 8)
+
+                    HStack(alignment: .firstTextBaseline) {
+                        Kicker("Suggested · \(viewModel.enabledSuggestedCount) on")
+                            .accessibilityAddTraits(.isHeader)
+                        Spacer()
+                        if viewModel.canResetSuggestedTopics {
+                            Button("Reset", action: viewModel.resetSuggestedTopics)
+                                .buttonStyle(.leo(.ghost))
+                                .font(.leo(14, relativeTo: .subheadline))
                         }
                     }
-                    .pickerStyle(.navigationLink)
+                    .frame(minHeight: 44)
+                    .padding(.top, 14)
+                    MinimumTopicsWarning(viewModel: viewModel)
+                        .padding(.bottom, 8)
+                    TopicsEditor(viewModel: viewModel)
                 }
-                TopicsEditor(viewModel: viewModel)
+                .foregroundStyle(Color.leoInk)
+                .padding(.top, 22)
+                .padding(.bottom, 24)
+                .leoReadableWidth()
             }
-            .navigationTitle("Settings")
+            .scrollDismissesKeyboard(.interactively)
+            .leoScreenBackground()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Settings")
+                        .leoTextStyle(LeoTextStyle(size: 17, weight: .semibold, relativeTo: .headline))
+                        .foregroundStyle(Color.leoInk)
+                        .accessibilityAddTraits(.isHeader)
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
@@ -39,6 +67,7 @@ struct SettingsView: View {
                 }
             }
         }
+        .presentationBackground(Color.leoBackground)
     }
 }
 

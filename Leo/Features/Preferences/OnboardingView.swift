@@ -17,23 +17,9 @@ struct OnboardingView: View {
                 viewModel.draft.ageGroup = selection
                 isShowingTopics = true
             }
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $isShowingTopics) {
-                topics
-            }
-        }
-    }
-
-    private var topics: some View {
-        List {
-            Section {} header: {
-                OnboardingTitle("What do you like reading about?")
-            }
-            TopicsEditor(viewModel: viewModel)
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Done", action: viewModel.save)
+                OnboardingTopics(viewModel: viewModel)
             }
         }
     }
@@ -44,60 +30,78 @@ struct AgeGroupPicker: View {
     let onContinue: () -> Void
 
     var body: some View {
-        List {
-            Section {
-                ForEach(AgeGroup.allCases, id: \.self) { group in
-                    Button {
-                        selection = group
-                    } label: {
-                        HStack {
-                            Text(group.displayName)
-                            Spacer()
-                            if selection == group {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(Color.accentColor)
-                            }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                Kicker("Welcome to Leo")
+                Text("How old are you?")
+                    .leoTextStyle(.display(38))
+                    .accessibilityAddTraits(.isHeader)
+                    .padding(.vertical, 12)
+                Text("Every text is written for your age — its length, its words, its questions.")
+                    .leoTextStyle(.body)
+                    .foregroundStyle(Color.leoInkSoft)
+                    .padding(.bottom, 24)
+                VStack(spacing: 2) {
+                    ForEach(AgeGroup.allCases, id: \.self) { group in
+                        AgeRow(label: group.displayName, description: group.summary, isSelected: selection == group) {
+                            selection = group
                         }
-                        .contentShape(.rect)
                     }
-                    .tint(.primary)
-                    .accessibilityAddTraits(selection == group ? .isSelected : [])
                 }
-            } header: {
-                OnboardingTitle("How old are you?")
             }
+            .foregroundStyle(Color.leoInk)
+            .padding(.top, 20)
+            .leoReadableWidth()
         }
         .safeAreaInset(edge: .bottom) {
-            Button(action: onContinue) {
-                Text("Continue")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(selection == nil)
-            .padding(24)
+            Button("Continue", action: onContinue)
+                .buttonStyle(.leo(.primary))
+                .disabled(selection == nil)
+                .leoReadableWidth()
+                .padding(.top, 16)
+                .background(Color.leoBackground)
         }
+        .leoScreenBackground()
     }
 }
 
-/// A large title for the top of an onboarding list. Used as a section header rather than a
-/// navigation title, which truncates long translations, or a row, whose rounded corners clip it.
-private struct OnboardingTitle: View {
-    let title: LocalizedStringKey
-
-    init(_ title: LocalizedStringKey) {
-        self.title = title
-    }
+/// The second onboarding screen. The system back button returns to the age groups.
+struct OnboardingTopics: View {
+    let viewModel: PreferencesEditorViewModel
 
     var body: some View {
-        Text(title)
-            .font(.largeTitle.bold())
-            // A section header draws in a secondary style, which `.primary` would follow.
-            .foregroundStyle(Color.primary)
-            .textCase(nil)
-            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 12, trailing: 0))
-            .accessibilityAddTraits(.isHeader)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                Kicker("Welcome to Leo")
+                Text("What do you like reading about?")
+                    .leoTextStyle(.display(34))
+                    .accessibilityAddTraits(.isHeader)
+                    .padding(.vertical, 10)
+                Text("\(viewModel.enabledTopicCount) topics on · keep at least 3. Leo picks one for each text.")
+                    .leoTextStyle(.bodySmall)
+                    .foregroundStyle(Color.leoInkSoft)
+                MinimumTopicsWarning(viewModel: viewModel)
+                    .padding(.top, 6)
+                Kicker("Suggested for \(viewModel.draft.ageGroup.displayName)")
+                    .padding(.top, 22)
+                    .padding(.bottom, 10)
+                    .accessibilityAddTraits(.isHeader)
+                TopicsEditor(viewModel: viewModel)
+            }
+            .foregroundStyle(Color.leoInk)
+            .padding(.top, 8)
+            .leoReadableWidth()
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            Button("Done", action: viewModel.save)
+                .buttonStyle(.leo(.primary))
+                .leoReadableWidth()
+                .padding(.top, 14)
+                .background(Color.leoBackground)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .leoScreenBackground()
     }
 }
 
