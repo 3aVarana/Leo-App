@@ -4,10 +4,10 @@ Leo helps people of all ages build their reading comprehension. Each round has v
 
 <table>
   <tr>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/OnboardingSnapshotTests/pickerWithSelection.12-14-dark-en.png"><img src="LeoTestsSnapshots/OnboardingSnapshotTests/pickerWithSelection.12-14-en.png" width="200" alt="Onboarding: choosing an age group"></picture></td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/OnboardingSnapshotTests/topicsScreen-_.topics-nine-dark-en.png"><img src="LeoTestsSnapshots/OnboardingSnapshotTests/topicsScreen-_.topics-nine-en.png" width="200" alt="Onboarding: choosing topics"></picture></td>
     <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ExerciseViewSnapshotTests/wrongAnswer.wrong-dark-en.png"><img src="LeoTestsSnapshots/ExerciseViewSnapshotTests/wrongAnswer.wrong-en.png" width="200" alt="An exercise after a wrong answer, with the explanation"></picture></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_-_.5-of-6-dark-en.png"><img src="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_-_.5-of-6-en.png" width="200" alt="Results at the end of a round"></picture></td>
-    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/TopicsEditorSnapshotTests/customized.9-11-customized-dark-en.png"><img src="LeoTestsSnapshots/TopicsEditorSnapshotTests/customized.9-11-customized-en.png" width="200" alt="Choosing topics and adding your own"></picture></td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_-_.3-of-6-dark-en.png"><img src="LeoTestsSnapshots/ResultViewSnapshotTests/correct-_-_.3-of-6-en.png" width="200" alt="Results at the end of a round, with Review on the missed texts"></picture></td>
+    <td><picture><source media="(prefers-color-scheme: dark)" srcset="LeoTestsSnapshots/ReviewViewSnapshotTests/secondOfThree.2-of-3-dark-en.png"><img src="LeoTestsSnapshots/ReviewViewSnapshotTests/secondOfThree.2-of-3-en.png" width="200" alt="Reviewing a missed text against the passage"></picture></td>
   </tr>
 </table>
 
@@ -22,10 +22,11 @@ Reading and understanding a text is the foundation for learning everything else.
 - **Five age groups:** 6–8, 9–11, 12–14, 15–17 and 18+. The age group sets how long the passages are and how complex their language is, from 50–80 words of short, everyday sentences up to 160–230 words with varied structure and precise vocabulary.
 - **Five comprehension skills:** every round mixes questions on the main idea, key details, inference, vocabulary in context and the author's purpose.
 - **Topics the reader chooses:** each age group has its own list of suggested topics that can be turned on and off, and readers can add their own. The on-device model checks that a new topic suits the reader's age and tidies up its wording before it's saved.
-- **Feedback that teaches:** after a wrong answer, Leo shows the correct one and a short explanation that points back to the passage.
+- **Feedback that teaches:** after a wrong answer, Leo shows the correct one and a short explanation that points back to the passage. At the end of a round, Review goes back through the missed texts with the reader's answer, the right one, the explanation and the passage.
 - **Reads in your language:** texts are written in the device's language when the on-device model supports it, and in English otherwise. The interface is available in English, Spanish and Brazilian Portuguese for the moment.
 - **Little waiting for questions:** the exercises start generating in the background as soon as the app opens, before the reader taps Start.
-- **Accessible:** supports Dynamic Type up to accessibility sizes, Dark Mode and VoiceOver.
+- **Accessible:** supports Dynamic Type up to accessibility sizes, Dark Mode, Increase Contrast and VoiceOver.
+- **Made to read like print:** the Broadsheet design sets everything in [Source Serif 4](https://github.com/adobe-fonts/source-serif) on a warm paper ground, with a dark ink version for Dark Mode.
 
 ## How it uses Foundation Models
 
@@ -68,14 +69,16 @@ Leo/
 ├── App/           The composition root: MyApp builds the repositories and ViewModels
 ├── Domain/        Plain value types and rules, with no SwiftUI or FoundationModels imports: AgeGroup,
 │                  Exercise, ComprehensionSkill, ReaderPreferences (with the topic editing rules),
-│                  RoundSettings, Topic, ModelAvailability and TopicReviewOutcome
+│                  RoundSettings, RoundTopic, Topic, ModelAvailability and TopicReviewOutcome
 ├── Data/          Repositories/ holds the protocols the ViewModels depend on and their implementations
 │                  (preferences in UserDefaults, exercises, topic reviews, model availability), and
 │                  FoundationModels/ holds the on-device model code behind them: ExerciseGenerator,
 │                  GeneratedExercise, PromptVocabulary, TopicValidator and ContentLanguage
-└── Features/      One folder per feature, each with its ViewModel and views: Root (RootViewModel),
-                   Quiz (QuizViewModel) and Preferences (PreferencesEditorViewModel, shared by
-                   onboarding and settings)
+├── Features/      One folder per feature, each with its ViewModel and views: Root (RootViewModel),
+│                  Quiz (QuizViewModel) and Preferences (PreferencesEditorViewModel, shared by
+│                  onboarding and settings), plus Theme (colors, type and layout) and Components
+│                  (the shared Broadsheet controls)
+└── Resources/     Fonts/ holds Source Serif 4 and its licence, registered through Info.plist
 LeoTests/          Unit, snapshot and live-model tests, mirroring the folders above
 LeoTestsSnapshots/ Reference images and text snapshots
 docs/              Feature specifications, the test plan and the architecture plan
@@ -118,3 +121,7 @@ Leo is in development and isn't on the App Store or TestFlight yet. Planned next
 Copyright © 2026 Victor Arana. All rights reserved.
 
 The source code is public so you can read it and learn from it, but it isn't licensed for reuse, modification or redistribution.
+
+## Credits
+
+Source Serif 4 is © 2014–2023 Adobe, used under the [SIL Open Font License 1.1](Leo/Resources/Fonts/OFL.md).
