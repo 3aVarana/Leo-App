@@ -37,6 +37,7 @@ struct QuizViewModelRoundTests {
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
         quiz.start()
+        quiz.finishReading()
         quiz.select(0)
         quiz.next()
         return quiz
@@ -45,6 +46,7 @@ struct QuizViewModelRoundTests {
     /// Answers the current exercise and moves on, correctly or not.
     private func answer(_ quiz: QuizViewModel, correctly: Bool) {
         let exercise = quiz.currentExercise!
+        quiz.finishReading()
         quiz.select(correctly ? exercise.correctIndex : (exercise.correctIndex + 1) % exercise.options.count)
         quiz.next()
     }
@@ -110,12 +112,14 @@ extension QuizViewModelRoundTests {
         #expect(dots(quiz) == [.current, .upcoming, .upcoming, .upcoming, .upcoming, .upcoming])
 
         let exercise = try #require(quiz.currentExercise)
+        quiz.finishReading()
         quiz.select((exercise.correctIndex + 1) % exercise.options.count)
         #expect(dots(quiz) == [.currentMissed, .upcoming, .upcoming, .upcoming, .upcoming, .upcoming])
 
         quiz.next()
         #expect(dots(quiz) == [.done, .current, .upcoming, .upcoming, .upcoming, .upcoming])
 
+        quiz.finishReading()
         try quiz.select(#require(quiz.currentExercise?.correctIndex))
         #expect(dots(quiz) == [.done, .currentCorrect, .upcoming, .upcoming, .upcoming, .upcoming])
     }

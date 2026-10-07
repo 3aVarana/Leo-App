@@ -1,11 +1,18 @@
 import SwiftUI
 
+/// An exercise in two steps: the reader reads the passage, then answers its question. After
+/// answering, the passage shows again under the feedback.
 struct ExerciseView: View {
     let quiz: QuizViewModel
     let exercise: Exercise
+    /// Whether the question replaces the passage when its reading time runs out.
+    var isReadingTimed = true
 
+    private static let topID = "top"
     private static let feedbackID = "feedback"
 
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverOn
+    @AccessibilityFocusState private var isQuestionFocused: Bool
     @ScaledMetric(relativeTo: .title3) private var verdictIconSize = 22
 
     var body: some View {
@@ -14,52 +21,46 @@ struct ExerciseView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ProgressDots(states: dots, currentIndex: quiz.currentIndex)
                         .padding(.top, 12)
+                        .id(Self.topID)
 
-                    Kicker(verbatim: exercise.topic.name)
-                        .padding(.top, 28)
-                    Text(exercise.title)
-                        .leoTextStyle(.title)
-                        .accessibilityAddTraits(.isHeader)
-                        .padding(.top, 8)
-                        .padding(.bottom, 14)
-                    Text(exercise.passage)
-                        .leoTextStyle((quiz.roundAgeGroup ?? .nine).passageStyle)
-                        .textSelection(.enabled)
-
-                    Kicker(verbatim: exercise.skill.displayName, color: .leoAccent700)
-                        .padding(.top, 28)
-                    Text(exercise.question)
-                        .leoTextStyle(.question)
-                        .accessibilityAddTraits(.isHeader)
-                        .padding(.top, 8)
-                        .padding(.bottom, 14)
-                    VStack(spacing: 8) {
-                        ForEach(exercise.options.indices, id: \.self) { index in
-                            OptionButton(
-                                letter: Self.letter(index),
-                                text: exercise.options[index],
-                                state: quiz.optionState(at: index),
-                                action: { quiz.select(index) },
-                            )
+                    if quiz.isReading {
+                        passage
+                    } else {
+                        question
+                        if let isCorrect = quiz.isAnswerCorrect {
+                            feedback(isCorrect: isCorrect)
+                                .padding(.top, 26)
+                                .id(Self.feedbackID)
+                            passage
                         }
-                    }
-
-                    if let isCorrect = quiz.isAnswerCorrect {
-                        feedback(isCorrect: isCorrect)
-                            .padding(.top, 26)
-                            .id(Self.feedbackID)
                     }
                 }
                 .foregroundStyle(Color.leoInk)
                 .leoReadableWidth()
                 .padding(.bottom, 24)
             }
+            .onChange(of: quiz.isReading) {
+                proxy.scrollTo(Self.topID, anchor: .top)
+                isQuestionFocused = true
+            }
             .onChange(of: quiz.isAnswerCorrect) {
                 withAnimation { proxy.scrollTo(Self.feedbackID, anchor: .bottom) }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: quiz.isReading)
         .safeAreaInset(edge: .bottom) {
-            if quiz.isAnswerCorrect != nil {
+            if quiz.isReading {
+                VStack(spacing: 14) {
+                    if let readingTime {
+                        ReadingTimer(total: readingTime, onTimeUp: quiz.finishReading)
+                    }
+                    Button("Answer the question", action: quiz.finishReading)
+                        .buttonStyle(.leo(.primary))
+                }
+                .leoReadableWidth()
+                .padding(.top, 16)
+                .background(Color.leoBackground)
+            } else if quiz.isAnswerCorrect != nil {
                 Button(quiz.isLastExercise ? "See results" : "Next text", action: quiz.next)
                     .buttonStyle(.leo(.primary))
                     .leoReadableWidth()
@@ -71,6 +72,49 @@ struct ExerciseView: View {
         .sensoryFeedback(trigger: quiz.isAnswerCorrect) { _, isCorrect in
             guard let isCorrect else { return nil }
             return isCorrect ? .success : .error
+        }
+    }
+
+    /// The time to read the passage. `nil`, for as long as the reader needs, when the timer is off
+    /// or VoiceOver is on, since reading by ear takes much longer.
+    private var readingTime: Duration? {
+        guard isReadingTimed, !isVoiceOverOn else { return nil }
+        return quiz.readingTime
+    }
+
+    @ViewBuilder
+    private var passage: some View {
+        Kicker(verbatim: exercise.topic.name)
+            .padding(.top, 28)
+        Text(exercise.title)
+            .leoTextStyle(.title)
+            .accessibilityAddTraits(.isHeader)
+            .padding(.top, 8)
+            .padding(.bottom, 14)
+        Text(exercise.passage)
+            .leoTextStyle((quiz.roundAgeGroup ?? .nine).passageStyle)
+            .textSelection(.enabled)
+    }
+
+    @ViewBuilder
+    private var question: some View {
+        Kicker(verbatim: exercise.skill.displayName, color: .leoAccent700)
+            .padding(.top, 28)
+        Text(exercise.question)
+            .leoTextStyle(.question)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityFocused($isQuestionFocused)
+            .padding(.top, 8)
+            .padding(.bottom, 14)
+        VStack(spacing: 8) {
+            ForEach(exercise.options.indices, id: \.self) { index in
+                OptionButton(
+                    letter: Self.letter(index),
+                    text: exercise.options[index],
+                    state: quiz.optionState(at: index),
+                    action: { quiz.select(index) },
+                )
+            }
         }
     }
 
@@ -139,6 +183,59 @@ private struct OptionButton: View {
         case .correct: String(localized: "Correct answer")
         case .incorrect: String(localized: "Your answer, incorrect")
         case .idle, .dimmed: ""
+        }
+    }
+}
+
+/// The time left to read, and a bar that empties with it. Counts down only while the app is
+/// in front, and calls `onTimeUp` at zero.
+private struct ReadingTimer: View {
+    let total: Duration
+    let onTimeUp: () -> Void
+
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var remaining: Duration
+
+    init(total: Duration, onTimeUp: @escaping () -> Void) {
+        self.total = total
+        self.onTimeUp = onTimeUp
+        _remaining = State(initialValue: total)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Kicker("Time to read")
+                Spacer()
+                Text(remaining, format: .time(pattern: .minuteSecond))
+                    .leoTextStyle(LeoTextStyle(size: 15, weight: .semibold, relativeTo: .subheadline))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.leoInk)
+            }
+            Rectangle()
+                .fill(Color.leoDivider)
+                .frame(height: 2)
+                .overlay(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.leoAccent)
+                        .scaleEffect(x: remaining / total, anchor: .leading)
+                        .animation(.linear(duration: 1), value: remaining)
+                }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Time left to read"))
+        .accessibilityValue(Text(remaining, format: .units(allowed: [.minutes, .seconds], width: .wide)))
+        .task(id: scenePhase == .active) {
+            guard scenePhase == .active else { return }
+            while remaining > .zero {
+                do {
+                    try await Task.sleep(for: .seconds(1))
+                } catch {
+                    return
+                }
+                remaining -= .seconds(1)
+            }
+            onTimeUp()
         }
     }
 }

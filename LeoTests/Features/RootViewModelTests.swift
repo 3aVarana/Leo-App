@@ -83,6 +83,7 @@ struct RootViewModelTests {
         #expect(quiz.phase == .answering)
         #expect(!root.canShowSettings)
 
+        quiz.finishReading()
         quiz.select(0)
         quiz.next()
         #expect(quiz.phase == .failed)
@@ -97,6 +98,7 @@ struct RootViewModelTests {
             factory.latest.resume(returning: .fixture())
             await waitUntil { quiz.phase == .answering }
             #expect(!root.canShowSettings)
+            quiz.finishReading()
             quiz.select(0)
             quiz.next()
         }

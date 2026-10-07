@@ -25,6 +25,29 @@ struct AgeGroupTests {
         #expect(group.acceptedWordCount == expected)
     }
 
+    @Test(arguments: [
+        (AgeGroup.nine, 100, Duration.seconds(90)),
+        (.adult, 200, .seconds(90)),
+        // 75 seconds, rounded up to 10.
+        (.six, 50, .seconds(80)),
+        (.six, 80, .seconds(120)),
+        (.adult, 345, .seconds(160)),
+        // Short passages get the minimum.
+        (.adult, 40, .seconds(30)),
+        (.nine, 0, .seconds(30)),
+    ])
+    func readingTime(_ group: AgeGroup, wordCount: Int, expected: Duration) {
+        #expect(group.readingTime(wordCount: wordCount) == expected)
+    }
+
+    /// Older readers read faster, and get no more time for the same passage.
+    @Test func readingPaceNeverDecreases() {
+        for (younger, older) in zip(AgeGroup.allCases, AgeGroup.allCases.dropFirst()) {
+            #expect(younger.readingWordsPerMinute < older.readingWordsPerMinute, "\(younger) → \(older)")
+            #expect(younger.readingTime(wordCount: 150) >= older.readingTime(wordCount: 150), "\(younger) → \(older)")
+        }
+    }
+
     @Test func passageWordRangeNeverDecreases() {
         for (younger, older) in zip(AgeGroup.allCases, AgeGroup.allCases.dropFirst()) {
             #expect(younger.passageWordRange.lowerBound <= older.passageWordRange.lowerBound, "\(younger) → \(older)")

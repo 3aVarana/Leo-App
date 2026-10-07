@@ -5,6 +5,9 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
     /// so suggested topics added in later versions start out enabled.
     var disabledDefaultTopics: [AgeGroup: Set<String>] = [:]
     var customTopics: [AgeGroup: [CustomTopic]] = [:]
+    /// Whether the question replaces the passage when its reading time runs out. Without it,
+    /// the passage stays until the reader moves on.
+    var isReadingTimerOn = true
 
     static let minimumEnabledTopics = 3
     static let maximumCustomTopics = 20
@@ -21,6 +24,7 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
             forKey: .disabledDefaultTopics,
         ) ?? [:]
         customTopics = try container.decodeIfPresent([AgeGroup: [CustomTopic]].self, forKey: .customTopics) ?? [:]
+        isReadingTimerOn = try container.decodeIfPresent(Bool.self, forKey: .isReadingTimerOn) ?? true
     }
 
     func isEnabled(_ topic: DefaultTopic, in group: AgeGroup) -> Bool {

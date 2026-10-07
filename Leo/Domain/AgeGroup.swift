@@ -58,4 +58,26 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
     var acceptedWordCount: ClosedRange<Int> {
         passageWordRange.lowerBound * 6 / 10 ... passageWordRange.upperBound * 3 / 2
     }
+
+    /// A slow silent reading pace for this age, in words per minute.
+    var readingWordsPerMinute: Int {
+        switch self {
+        case .six: 60
+        case .nine: 100
+        case .twelve: 140
+        case .fifteen: 170
+        case .adult: 200
+        }
+    }
+
+    static let minimumReadingTime = Duration.seconds(30)
+
+    /// How long the reader gets to read a passage of `wordCount` words: their pace with half as
+    /// much again to spare, rounded up to 10 seconds, and never less than `minimumReadingTime`.
+    func readingTime(wordCount: Int) -> Duration {
+        // 90 seconds per `readingWordsPerMinute` words, in tens of seconds rounded up. Integer
+        // math, so an exact multiple of 10 isn't rounded up past itself.
+        let tens = (wordCount * 9 + readingWordsPerMinute - 1) / readingWordsPerMinute
+        return max(.seconds(tens * 10), Self.minimumReadingTime)
+    }
 }

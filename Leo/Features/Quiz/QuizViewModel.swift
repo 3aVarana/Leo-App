@@ -32,6 +32,9 @@ final class QuizViewModel {
     private(set) var currentIndex = 0
     private(set) var currentExercise: Exercise?
     private(set) var selectedOption: Int?
+    /// Whether the reader is still on the passage of the current exercise. Its question shows,
+    /// and can be answered, once they finish reading.
+    private(set) var isReading = false
     /// The answers of the round started last, kept after it ends, and when the settings
     /// change, so Results and Review still show them.
     private(set) var answers: [RoundAnswer] = []
@@ -75,6 +78,12 @@ final class QuizViewModel {
 
     var isLastExercise: Bool {
         currentIndex == Self.exerciseCount - 1
+    }
+
+    /// How long the reader gets to read the current passage, for the reading timer.
+    var readingTime: Duration? {
+        guard let currentExercise, let roundAgeGroup else { return nil }
+        return roundAgeGroup.readingTime(wordCount: currentExercise.passage.wordCount)
     }
 
     /// Whether the picked answer is right. `nil` before answering.
@@ -142,8 +151,14 @@ final class QuizViewModel {
         showCurrent()
     }
 
+    /// Hides the passage and shows the question, when the reader is done or their time is up.
+    func finishReading() {
+        guard phase == .answering else { return }
+        isReading = false
+    }
+
     func select(_ option: Int) {
-        guard selectedOption == nil, let exercise = currentExercise else { return }
+        guard !isReading, selectedOption == nil, let exercise = currentExercise else { return }
         selectedOption = option
         answers.append(RoundAnswer(index: currentIndex, exercise: exercise, selectedOption: option))
     }
@@ -240,9 +255,11 @@ final class QuizViewModel {
         }
     }
 
-    /// Shows the current exercise if it's ready, otherwise waits for it or reports why it failed.
+    /// Shows the current exercise from its passage if it's ready, otherwise waits for it or reports
+    /// why it failed.
     private func showCurrent() {
         selectedOption = nil
+        isReading = true
         if currentIndex < exercises.count {
             currentExercise = exercises[currentIndex]
             phase = .answering
