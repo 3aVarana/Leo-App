@@ -17,7 +17,7 @@ enum ResultViewSnapshotTitles {
     static let english = [
         "The Sleeping Mountain",
         "Pirates of the Silver Bay",
-        "How Bees Talk",
+        "Exploring the Sun and Planets",
         "The Inventor's Notebook",
         "A Walk Through the Rainforest Canopy at Dawn",
         "Ancient Egypt's Lost City",

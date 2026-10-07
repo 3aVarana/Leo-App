@@ -154,6 +154,8 @@ private struct ResultRow: View {
         Text(answer.exercise.title)
             .leoTextStyle(LeoTextStyle(size: 16, relativeTo: .callout, lineHeight: 24))
             .multilineTextAlignment(.leading)
+            // Wraps instead of truncating when the title only just doesn't fit.
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     @ViewBuilder
