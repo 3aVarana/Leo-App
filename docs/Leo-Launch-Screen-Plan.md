@@ -23,7 +23,7 @@ The target uses Xcode's generated launch screen with no keys (`INFOPLIST_KEY_UIL
 | Static frame | "Leo" in Source Serif 4 Semibold, **48pt**, Ink color, centered on the Background ground. Light: #201e1d on #f3f2f2. Dark: #efeded on #1c1b1a. |
 | Wordmark move | From the center of the screen into Welcome's header wordmark (20pt, top-left). Scale 2.4 → 1 and translate, **480 ms**, `cubic-bezier(.65, 0, .25, 1)`. |
 | Page | Everything else on Welcome (gear, kicker, headline, dots, body, Start) rises **24pt** and fades in **as one block**: no stagger, starts **200 ms** after the move begins, **480 ms**, `cubic-bezier(.2, .7, .2, 1)`. |
-| Swap | When the move ends, the real header wordmark appears and the moving one is removed in the same frame. |
+| Swap | The real header wordmark appears and the moving one is removed in the same frame. |
 | Total | About 0.7 s from the end of the hold to a resting Welcome. |
 
 In the mock, the static frame holds for 700 ms. That stands in for the app's launch time and isn't part of the intro.
@@ -105,9 +105,13 @@ The first frame is the ground plus the centered overlay, with the page at opacit
 | 0 → 0.30 | Hold (L2) |
 | 0.30 → 0.78 | Wordmark move: `.timingCurve(0.65, 0, 0.25, 1, duration: 0.48)` |
 | 0.50 → 0.98 | Page rises 24pt → 0 and fades 0 → 1: `.timingCurve(0.2, 0.7, 0.2, 1, duration: 0.48)` |
-| 0.78 | Swap: header wordmark shown, overlay removed |
+| 0.98 | Swap: header wordmark shown, overlay removed, taps enabled |
 
-Driven by a single `.task` that sets the phase with `withAnimation` after `Task.sleep`, so it is cancelled with the view.
+The moving wordmark arrives at 0.78 s and waits there, under nothing, until the page has finished rising at 0.98 s, and only then is swapped for the header. (Swapping at 0.78 s, as the first draft had it, left the page about 1.5 pt short of its place, so the header jumped.)
+
+Driven by a single `.task` that sets the phase after `Task.sleep`, so it is cancelled with the view. The animations hang off the phase with `.animation(_:value:)`, one curve for the page and one for the wordmark.
+
+**The rise is a `visualEffect`, not `.offset`.** With a plain `.offset` on the page, the Welcome layout flickered between two heights during the rise. `visualEffect` only changes how the page is drawn, not its layout.
 
 **Move target (Welcome).** `WelcomeView` attaches `anchorPreference(key: LaunchWordmarkTarget.self, value: .bounds)` to its header wordmark. `RootView` reads it with `overlayPreferenceValue` and computes:
 
@@ -132,7 +136,7 @@ While the intro runs, `WelcomeView` sets its header wordmark's opacity to 0, thr
 
 - **Reduce Motion:** no move and no rise. After the hold, the overlay fades out and the page fades in together, over 0.2 s.
 - **VoiceOver:** the overlay is `accessibilityHidden`. The page is focusable straight away; the first element read is still Welcome's "Leo" header (hidden visually for under a second, but present).
-- **Taps are blocked during the intro (L3).** The page has `.allowsHitTesting(false)` until the swap at 0.78 s (0.5 s with Reduce Motion), so a tap on Start or the gear mid-rise does nothing. VoiceOver activation is blocked the same way; the window is under a second.
+- **Taps are blocked during the intro (L3).** The page has `.allowsHitTesting(false)` until the swap at 0.98 s (0.5 s with Reduce Motion), so a tap on Start or the gear mid-rise does nothing. VoiceOver activation is blocked the same way; the window is under a second.
 
 ### 3.5 Not recommended
 
@@ -149,7 +153,7 @@ While the intro runs, `WelcomeView` sets its header wordmark's opacity to 0, thr
 | Launch frame light and dark: the intro's first frame on iPhone portrait | Snapshot (`LeoTests/Snapshots/LaunchIntroSnapshotTests.swift`), recorded and compared by eye against a screenshot of the real launch screen once |
 | Rest frame light and dark: the intro's final frame equals today's Welcome snapshot | Snapshot (same reference as `WelcomeViewSnapshotTests`) |
 | End scale and target: the computation from header bounds and rise offset, at default and an accessibility text size | Unit test on a small pure function in `LaunchIntro.swift` |
-| Timeline: hold + move = swap time, page rise ends last | Unit test on `LaunchIntro.Timing` |
+| Timeline: the page rises during the move and ends after it; the swap waits for the page | Unit test on `LaunchIntro.Timing` |
 | Hit testing: the page isn't hit-testable before the swap and is after it | Unit test on the intro's phase → `allowsHitTesting` mapping |
 
 ### 4.1 Hand checks (iPhone 18 Pro simulator)

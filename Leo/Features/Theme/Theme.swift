@@ -69,9 +69,11 @@ struct LeoTextStyle {
     var lineHeight: CGFloat?
     /// Letter spacing in em.
     var tracking: CGFloat = 0
+    /// `false` keeps the font at `size` at every text size.
+    var scalesWithDynamicType = true
 
     var font: Font {
-        .leo(size, weight, relativeTo: relativeTo)
+        scalesWithDynamicType ? .leo(size, weight, relativeTo: relativeTo) : .custom(weight.fontName, fixedSize: size)
     }
 
     /// Headlines: 48 on Welcome, 40 on Loading and Error, 38 and 34 in onboarding.
@@ -94,6 +96,10 @@ struct LeoTextStyle {
     static let verdict = LeoTextStyle(size: 20, weight: .semibold, relativeTo: .title3)
     static let ageLabel = LeoTextStyle(size: 22, weight: .semibold, relativeTo: .title2, lineHeight: 26.4)
     static let wordmark = LeoTextStyle(size: 20, weight: .semibold, relativeTo: .title3)
+    /// The launch screen's "Leo". Fixed, like the launch image it continues.
+    static let launchWordmark = LeoTextStyle(
+        size: 48, weight: .semibold, relativeTo: .largeTitle, scalesWithDynamicType: false,
+    )
     static let bodyLarge = LeoTextStyle(size: 17, relativeTo: .body, lineHeight: 27)
     static let resultMessage = LeoTextStyle(size: 19, relativeTo: .body, lineHeight: 29)
     static let body = LeoTextStyle(size: 16, relativeTo: .callout, lineHeight: 24)
