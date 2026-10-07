@@ -482,6 +482,22 @@
         }
       }
     },
+    "Answer the question": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Responder la pregunta"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Responder à pergunta"
+          }
+        }
+      }
+    },
     "Apple Intelligence is still getting ready. Please try again in a few minutes.": {
       "localizations": {
         "es": {
@@ -1570,6 +1586,38 @@
         }
       }
     },
+    "Reading": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lectura"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leitura"
+          }
+        }
+      }
+    },
+    "Reading timer": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador de lectura"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador de leitura"
+          }
+        }
+      }
+    },
     "Recycling": {
       "localizations": {
         "es": {
@@ -2210,6 +2258,22 @@
         }
       }
     },
+    "The question replaces the text when time runs out. No limit while VoiceOver is on.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pregunta sustituye al texto cuando se acaba el tiempo. Sin límite mientras VoiceOver está activado."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pergunta substitui o texto quando o tempo acaba. Sem limite enquanto o VoiceOver está ativado."
+          }
+        }
+      }
+    },
     "The science of sleep": {
       "localizations": {
         "es": {
@@ -2270,6 +2334,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este dispositivo não é compatível com o Apple Intelligence, que o Leo usa para criar os exercícios."
+          }
+        }
+      }
+    },
+    "Time left to read": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo restante para leer"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo restante para ler"
+          }
+        }
+      }
+    },
+    "Time to read": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo de lectura"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo de leitura"
           }
         }
       }

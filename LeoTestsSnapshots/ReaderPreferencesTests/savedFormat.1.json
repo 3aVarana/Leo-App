@@ -25,5 +25,6 @@
     "9-11" : [
       "volcanoes"
     ]
-  }
+  },
+  "isReadingTimerOn" : true
 }

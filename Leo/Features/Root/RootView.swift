@@ -13,7 +13,7 @@ struct RootView: View {
             case .available:
                 if let preferences = viewModel.preferences {
                     NavigationStack {
-                        content(ageGroup: preferences.ageGroup)
+                        content(preferences)
                             // Runs after onboarding, on launch and whenever settings are saved.
                             // Unchanged settings keep the round already prepared.
                             .task(id: preferences.roundSettings) {
@@ -37,7 +37,8 @@ struct RootView: View {
     }
 
     @ViewBuilder
-    private func content(ageGroup: AgeGroup) -> some View {
+    private func content(_ preferences: ReaderPreferences) -> some View {
+        let ageGroup = preferences.ageGroup
         switch quiz.phase {
         case .welcome:
             WelcomeView(
@@ -57,7 +58,7 @@ struct RootView: View {
             .toolbar(.hidden, for: .navigationBar)
         case .answering:
             if let exercise = quiz.currentExercise {
-                ExerciseView(quiz: quiz, exercise: exercise)
+                ExerciseView(quiz: quiz, exercise: exercise, isReadingTimed: preferences.isReadingTimerOn)
                     .id(exercise.id)
                     .toolbar(.hidden, for: .navigationBar)
             }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Changes the age group and topics. Nothing is saved until Done.
+/// Changes the age group, the reading timer and the topics. Nothing is saved until Done.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -25,6 +25,21 @@ struct SettingsView: View {
                         .foregroundStyle(Color.leoInkMuted)
                         .padding(.top, 8)
 
+                    Kicker("Reading")
+                        .accessibilityAddTraits(.isHeader)
+                        .padding(.top, 28)
+                        .padding(.bottom, 6)
+                    Toggle(isOn: $viewModel.draft.isReadingTimerOn) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Reading timer")
+                                .leoTextStyle(LeoTextStyle(size: 17, weight: .semibold, relativeTo: .headline))
+                            Text("The question replaces the text when time runs out. No limit while VoiceOver is on.")
+                                .leoTextStyle(.caption)
+                                .foregroundStyle(Color.leoInkMuted)
+                        }
+                    }
+                    .tint(Color.leoAccent)
+
                     HStack(alignment: .firstTextBaseline) {
                         Kicker("Suggested · \(viewModel.enabledSuggestedCount) on")
                             .accessibilityAddTraits(.isHeader)
@@ -36,7 +51,7 @@ struct SettingsView: View {
                         }
                     }
                     .frame(minHeight: 44)
-                    .padding(.top, 14)
+                    .padding(.top, 20)
                     MinimumTopicsWarning(viewModel: viewModel)
                         .padding(.bottom, 8)
                     TopicsEditor(viewModel: viewModel)

@@ -14,6 +14,12 @@ struct ReaderPreferencesTests {
         #expect(preferences.ageGroup == .nine)
         #expect(preferences.disabledDefaultTopics.isEmpty)
         #expect(preferences.customTopics.isEmpty)
+        #expect(preferences.isReadingTimerOn)
+    }
+
+    @Test func decodesReadingTimerOff() throws {
+        let preferences = try decode(#"{"ageGroup":"9-11","isReadingTimerOn":false}"#)
+        #expect(!preferences.isReadingTimerOn)
     }
 
     @Test func unknownAgeGroupThrows() {

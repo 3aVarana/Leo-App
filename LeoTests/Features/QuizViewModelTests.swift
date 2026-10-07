@@ -12,6 +12,8 @@ struct QuizViewModelTests {
         #expect(quiz.correctCount == 0, sourceLocation: sourceLocation)
         #expect(!quiz.isLastExercise, sourceLocation: sourceLocation)
         #expect(quiz.isAnswerCorrect == nil, sourceLocation: sourceLocation)
+        #expect(!quiz.isReading, sourceLocation: sourceLocation)
+        #expect(quiz.readingTime == nil, sourceLocation: sourceLocation)
         #expect(quiz.optionState(at: 0) == .idle, sourceLocation: sourceLocation)
     }
 
@@ -74,6 +76,7 @@ struct QuizViewModelTests {
     /// Answers the current exercise and moves on, correctly or not.
     private func answer(_ quiz: QuizViewModel, correctly: Bool) {
         let exercise = quiz.currentExercise!
+        quiz.finishReading()
         quiz.select(correctly ? exercise.correctIndex : (exercise.correctIndex + 1) % exercise.options.count)
         quiz.next()
     }
@@ -210,6 +213,7 @@ extension QuizViewModelTests {
     @Test func selectCorrectAnswer() async throws {
         let quiz = await startedQuiz()
         let exercise = try #require(quiz.currentExercise)
+        quiz.finishReading()
         quiz.select(exercise.correctIndex)
         #expect(quiz.selectedOption == exercise.correctIndex)
         #expect(quiz.correctCount == 1)
@@ -219,6 +223,7 @@ extension QuizViewModelTests {
         let quiz = await startedQuiz()
         let exercise = try #require(quiz.currentExercise)
         let wrong = (exercise.correctIndex + 1) % exercise.options.count
+        quiz.finishReading()
         quiz.select(wrong)
         quiz.select(exercise.correctIndex)
         #expect(quiz.selectedOption == wrong)
@@ -228,6 +233,7 @@ extension QuizViewModelTests {
     @Test func selectWrongAnswer() async throws {
         let quiz = await startedQuiz()
         let exercise = try #require(quiz.currentExercise)
+        quiz.finishReading()
         quiz.select((exercise.correctIndex + 1) % exercise.options.count)
         #expect(quiz.correctCount == 0)
     }
@@ -238,6 +244,7 @@ extension QuizViewModelTests {
 extension QuizViewModelTests {
     @Test func nextShowsNextExercise() async {
         let quiz = await startedQuiz()
+        quiz.finishReading()
         quiz.select(0)
         quiz.next()
         #expect(quiz.phase == .answering)
@@ -254,6 +261,7 @@ extension QuizViewModelTests {
         spy.latest.resume(returning: .fixture(title: "First"))
         await waitUntil { spy.latest.waitingCount == 1 }
         quiz.start()
+        quiz.finishReading()
         quiz.select(0)
 
         quiz.next()
@@ -315,6 +323,7 @@ extension QuizViewModelTests {
         #expect(quiz.phase == .answering)
         #expect(spy.latest.calls.count == 2)
 
+        quiz.finishReading()
         quiz.select(0)
         #expect(quiz.phase == .answering)
         quiz.next()
@@ -331,6 +340,7 @@ extension QuizViewModelTests {
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 2 }
         quiz.start()
+        quiz.finishReading()
         quiz.select(0)
         quiz.next()
         return quiz
