@@ -66,6 +66,7 @@
       }
     },
     ", ": {
+      "comment": "Separates topic names in a list",
       "localizations": {
         "es": {
           "stringUnit": {
@@ -1200,9 +1201,6 @@
           }
         }
       }
-    },
-    "Leo": {
-      "shouldTranslate": false
     },
     "Main idea": {
       "localizations": {

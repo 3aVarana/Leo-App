@@ -1,15 +1,31 @@
 import SwiftUI
 
-/// Shown instead of the app when the on-device model can't be used.
+/// Shown instead of the app when the on-device model can't be used. No button: iOS can't open
+/// the Apple Intelligence settings page directly.
 struct UnavailableView: View {
     let reason: ModelUnavailableReason
 
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize = 40
+
     var body: some View {
-        ContentUnavailableView(
-            "Apple Intelligence needed",
-            systemImage: "apple.intelligence",
-            description: Text(message),
-        )
+        ScrollingScreen {
+            TopOffset(height: 140)
+            Image(systemName: "apple.intelligence")
+                .font(.system(size: iconSize))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(Color.leoAccent700)
+                .accessibilityHidden(true)
+            Kicker(verbatim: "Leo")
+                .padding(.top, 16)
+            Text("Apple Intelligence needed")
+                .leoTextStyle(.display(40))
+                .accessibilityAddTraits(.isHeader)
+                .padding(.vertical, 10)
+            Text(message)
+                .leoTextStyle(.body)
+                .foregroundStyle(Color.leoInkSoft)
+            Spacer(minLength: 24)
+        }
     }
 
     private var message: String {

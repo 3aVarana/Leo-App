@@ -21,11 +21,11 @@ struct DottedLeader: View {
 
 #Preview {
     HStack(alignment: .lastTextBaseline, spacing: 8) {
-        Text("The Sleeping Mountain")
+        Text(verbatim: "The Sleeping Mountain")
         DottedLeader()
             .frame(minWidth: 20)
             .alignmentGuide(.lastTextBaseline) { $0[.bottom] + 4 }
-        Text("Correct")
+        Text(verbatim: "Correct")
     }
     .padding(24)
     .leoScreenBackground()

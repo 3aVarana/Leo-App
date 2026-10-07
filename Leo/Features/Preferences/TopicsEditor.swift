@@ -11,7 +11,7 @@ struct TopicsEditor: View {
             FlowLayout {
                 ForEach(viewModel.suggestedTopics) { topic in
                     TopicChip(name: String(localized: topic.name), isOn: binding(for: topic))
-                        .accessibilityHint(viewModel.isToggleDisabled(topic) ? Text(Self.minimumHint) : Text(""))
+                        .accessibilityHint(minimumHint(for: topic))
                 }
             }
 
@@ -38,6 +38,11 @@ struct TopicsEditor: View {
     }
 
     private static let minimumHint: LocalizedStringResource = "At least 3 topics must stay on."
+
+    /// Why a topic that's on can't be turned off, at the minimum.
+    private func minimumHint(for topic: DefaultTopic) -> Text {
+        viewModel.isToggleDisabled(topic) ? Text(Self.minimumHint) : Text(verbatim: "")
+    }
 
     private func binding(for topic: DefaultTopic) -> Binding<Bool> {
         Binding {

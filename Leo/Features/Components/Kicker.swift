@@ -25,9 +25,9 @@ struct Kicker: View {
 
 #Preview {
     VStack(alignment: .leading, spacing: 12) {
-        Kicker("Welcome to Leo")
-        Kicker("Now writing", color: .leoAccent700)
-        Kicker("Text 2 didn't print", color: .leoMagenta700)
+        Kicker(verbatim: "Welcome to Leo")
+        Kicker(verbatim: "Now writing", color: .leoAccent700)
+        Kicker(verbatim: "Text 2 didn't print", color: .leoMagenta700)
     }
     .padding(24)
     .leoScreenBackground()
