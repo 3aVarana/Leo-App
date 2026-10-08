@@ -20,6 +20,10 @@ enum LaunchIntro {
         static let rise: CGFloat = 24
         /// With Reduce Motion: the wordmark and the page cross-fade.
         static let reducedMotionFade = 0.2
+        /// After the move begins, the page is still `rise` below its place for `pageDelay`, less
+        /// this margin for the first animated frame. The header's frame is only comparable to the
+        /// one measured on the launch frame until then.
+        static let headerCheckMargin = 0.02
 
         /// When the page finishes rising, from the first frame. The last thing to move.
         static var pageEnd: Double {
@@ -64,6 +68,41 @@ enum LaunchIntro {
         }
     }
 
+    /// How the centered wordmark leaves.
+    enum Exit {
+        /// It moves into the header wordmark, which stays hidden until the intro ends.
+        case move
+        /// It fades out where it is, while the header, part of the page, fades in with the rest.
+        case fade
+    }
+
+    /// The wordmark only moves when motion is allowed, there's a header to land on (Welcome is
+    /// the only screen with one) and the header hasn't moved since it was measured. A header that
+    /// has moved would be missed, so the wordmark fades instead for the rest of the intro.
+    static func exit(reduceMotion: Bool, hasTarget: Bool, headerMoved: Bool) -> Exit {
+        reduceMotion || !hasTarget || headerMoved ? .fade : .move
+    }
+
+    /// Whether the header, measured while the page is below its place, can still be compared
+    /// with its measurement on the launch frame. The page is rising after that, and the rise
+    /// moves the header too.
+    static func canCompareHeader(sinceMoveBegan elapsed: Double) -> Bool {
+        elapsed < Timing.pageDelay - Timing.headerCheckMargin
+    }
+
+    /// Whether the header's frame changed between two measurements. A rotating iPad moves it
+    /// shortly after launch, by 22 points in the iPad Pro 11-inch (M5). Sub-pixel noise doesn't count.
+    static func headerMoved(from old: CGRect, to new: CGRect) -> Bool {
+        let tolerance: CGFloat = 0.5
+        return abs(new.minX - old.minX) > tolerance || abs(new.minY - old.minY) > tolerance
+            || abs(new.width - old.width) > tolerance || abs(new.height - old.height) > tolerance
+    }
+
+    /// The header wordmark is hidden only while the moving wordmark stands in for it.
+    static func hidesHeader(phase: Phase, exit: Exit) -> Bool {
+        phase.isRunning && exit == .move
+    }
+
     /// Where the centered wordmark ends up, and how much it shrinks, to land exactly on the
     /// header wordmark.
     struct WordmarkMove: Equatable {
@@ -97,12 +136,14 @@ struct LaunchWordmarkFrame: PreferenceKey {
 }
 
 extension EnvironmentValues {
-    /// Whether the intro is running. The header wordmark stays hidden, in its place, until it ends.
-    @Entry var isLaunchIntroRunning = false
+    /// Whether the moving launch wordmark stands in for the header wordmark. The header stays
+    /// hidden, in its place, until the intro ends.
+    @Entry var hidesLaunchWordmarkTarget = false
 }
 
 extension View {
-    /// Marks this view as the place the launch wordmark moves to, and hides it while the intro runs.
+    /// Marks this view as the place the launch wordmark moves to, and hides it while the wordmark
+    /// is moving there.
     func launchWordmarkTarget() -> some View {
         modifier(LaunchWordmarkTargetModifier())
     }
@@ -114,11 +155,11 @@ extension View {
 }
 
 private struct LaunchWordmarkTargetModifier: ViewModifier {
-    @Environment(\.isLaunchIntroRunning) private var isIntroRunning
+    @Environment(\.hidesLaunchWordmarkTarget) private var isHidden
 
     func body(content: Content) -> some View {
         content
-            .opacity(isIntroRunning ? 0 : 1)
+            .opacity(isHidden ? 0 : 1)
             .background {
                 GeometryReader { proxy in
                     Color.clear.preference(key: LaunchWordmarkFrame.self, value: proxy.frame(in: .global))
@@ -131,22 +172,36 @@ private struct LaunchWordmarkTargetModifier: ViewModifier {
 
 struct LaunchIntroModifier: ViewModifier {
     /// `plays: false` freezes the intro at `initialPhase`, for snapshots and previews.
-    init(initialPhase: LaunchIntro.Phase? = nil, plays: Bool = true) {
+    /// `reduceMotion` replaces the system setting, which the environment can't override.
+    init(initialPhase: LaunchIntro.Phase? = nil, plays: Bool = true, reduceMotion: Bool? = nil) {
         _phase = State(initialValue: initialPhase ?? (LaunchIntro.hasPlayed ? .done : .launch))
         self.plays = plays
+        reduceMotionOverride = reduceMotion
     }
 
     private let plays: Bool
+    private let reduceMotionOverride: Bool?
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var phase: LaunchIntro.Phase
     /// The header wordmark's frame, kept from the first frame, while nothing has moved yet.
     @State private var headerFrame: CGRect?
     @State private var overlayHeight: CGFloat = 0
+    /// Set when the header moved just after the move began, so the move would miss it.
+    @State private var headerMoved = false
+    @State private var moveBegan = Date.now
+
+    private var reduceMotion: Bool {
+        reduceMotionOverride ?? systemReduceMotion
+    }
+
+    private var exit: LaunchIntro.Exit {
+        LaunchIntro.exit(reduceMotion: reduceMotion, hasTarget: headerFrame != nil, headerMoved: headerMoved)
+    }
 
     func body(content: Content) -> some View {
         content
-            .environment(\.isLaunchIntroRunning, phase.isRunning)
+            .environment(\.hidesLaunchWordmarkTarget, LaunchIntro.hidesHeader(phase: phase, exit: exit))
             .opacity(phase.isPageShown ? 1 : 0)
             .visualEffect { [phase, reduceMotion] view, _ in
                 view.offset(y: phase.isPageShown || reduceMotion ? 0 : LaunchIntro.Timing.rise)
@@ -159,6 +214,8 @@ struct LaunchIntroModifier: ViewModifier {
             .onPreferenceChange(LaunchWordmarkFrame.self) { frame in
                 if phase == .launch {
                     headerFrame = frame
+                } else if phase == .playing {
+                    checkHeader(frame)
                 }
             }
             // The ground is always there, so nothing flashes while the page is transparent.
@@ -174,7 +231,7 @@ struct LaunchIntroModifier: ViewModifier {
     private var wordmark: some View {
         GeometryReader { proxy in
             let screen = proxy.frame(in: .global)
-            let move = reduceMotion ? nil : headerFrame.flatMap(wordmarkMove)
+            let move = exit == .move ? headerFrame.flatMap(wordmarkMove) : nil
             let isMoving = phase.isPageShown
             let center = isMoving ? move?.center : nil
             Text(verbatim: "Leo")
@@ -197,6 +254,18 @@ struct LaunchIntroModifier: ViewModifier {
         .allowsHitTesting(false)
     }
 
+    /// The window rotating at launch moves the header after the launch frame was measured. Seen
+    /// early in the move, the wordmark has barely left the center, so it fades there instead, and
+    /// the header, now part of the page, fades in with it.
+    private func checkHeader(_ frame: CGRect?) {
+        guard exit == .move, let headerFrame, let frame,
+              LaunchIntro.canCompareHeader(sinceMoveBegan: -moveBegan.timeIntervalSinceNow),
+              LaunchIntro.headerMoved(from: headerFrame, to: frame) else { return }
+        withAnimation(LaunchIntro.Timing.reducedMotionCurve) {
+            headerMoved = true
+        }
+    }
+
     private func wordmarkMove(for header: CGRect) -> LaunchIntro.WordmarkMove? {
         guard overlayHeight > 0 else { return nil }
         return LaunchIntro.wordmarkMove(header: header, overlayHeight: overlayHeight)
@@ -207,6 +276,7 @@ struct LaunchIntroModifier: ViewModifier {
         LaunchIntro.hasPlayed = true
         if phase == .launch {
             guard await sleep(LaunchIntro.Timing.hold) else { return }
+            moveBegan = .now
             phase = .playing
         }
         let duration = reduceMotion ? LaunchIntro.Timing.reducedMotionFade : LaunchIntro.Timing.playing

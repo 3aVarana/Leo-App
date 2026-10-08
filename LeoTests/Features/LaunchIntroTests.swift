@@ -38,10 +38,50 @@ struct LaunchIntroTests {
         #expect(LaunchIntro.Phase.done.isPageShown)
     }
 
-    @Test func headerWordmarkStaysHiddenUntilTheIntroIsDone() {
+    @Test func theIntroIsRunningUntilItIsDone() {
         #expect(LaunchIntro.Phase.launch.isRunning)
         #expect(LaunchIntro.Phase.playing.isRunning)
         #expect(!LaunchIntro.Phase.done.isRunning)
+    }
+
+    @Test func wordmarkMovesOnlyWhenMotionIsAllowedAndThereIsAHeaderToLandOn() {
+        #expect(LaunchIntro.exit(reduceMotion: false, hasTarget: true, headerMoved: false) == .move)
+        #expect(LaunchIntro.exit(reduceMotion: true, hasTarget: true, headerMoved: false) == .fade)
+        #expect(LaunchIntro.exit(reduceMotion: false, hasTarget: false, headerMoved: false) == .fade)
+        #expect(LaunchIntro.exit(reduceMotion: true, hasTarget: false, headerMoved: false) == .fade)
+    }
+
+    /// A header that moved after it was measured would be missed, so the wordmark fades instead.
+    @Test func wordmarkFadesOnceTheHeaderHasMoved() {
+        #expect(LaunchIntro.exit(reduceMotion: false, hasTarget: true, headerMoved: true) == .fade)
+    }
+
+    /// The rotating iPad's change arrived about 0.1 s into the move.
+    @Test func headerCanBeComparedOnlyBeforeThePageStartsRising() {
+        #expect(LaunchIntro.canCompareHeader(sinceMoveBegan: 0))
+        #expect(LaunchIntro.canCompareHeader(sinceMoveBegan: 0.11))
+        #expect(!LaunchIntro.canCompareHeader(sinceMoveBegan: Timing.pageDelay))
+        #expect(!LaunchIntro.canCompareHeader(sinceMoveBegan: 0.4))
+    }
+
+    @Test func headerMovedIgnoresSubPixelNoiseOnly() {
+        let header = CGRect(x: 305, y: 68.25, width: 33.5, height: 27.5)
+        #expect(!LaunchIntro.headerMoved(from: header, to: header))
+        #expect(!LaunchIntro.headerMoved(from: header, to: header.offsetBy(dx: 0.2, dy: -0.3)))
+        // The iPad rotating after launch moved it 22 points.
+        #expect(LaunchIntro.headerMoved(from: header, to: header.offsetBy(dx: 0, dy: -22)))
+        #expect(LaunchIntro.headerMoved(from: header, to: header.offsetBy(dx: 10, dy: 0)))
+        #expect(LaunchIntro.headerMoved(from: header, to: CGRect(x: 305, y: 68.25, width: 60, height: 50)))
+    }
+
+    /// Under Reduce Motion the header is part of the page and fades in with it.
+    @Test func headerWordmarkIsHiddenOnlyWhileTheMovingOneStandsInForIt() {
+        #expect(LaunchIntro.hidesHeader(phase: .launch, exit: .move))
+        #expect(LaunchIntro.hidesHeader(phase: .playing, exit: .move))
+        #expect(!LaunchIntro.hidesHeader(phase: .done, exit: .move))
+        for phase in [LaunchIntro.Phase.launch, .playing, .done] {
+            #expect(!LaunchIntro.hidesHeader(phase: phase, exit: .fade))
+        }
     }
 
     /// 20 / 48 at the default text size.

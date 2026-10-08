@@ -120,9 +120,13 @@ Driven by a single `.task` that sets the phase after `Task.sleep`, so it is canc
 
 `scaleEffect` and `position` on the overlay animate together on the move curve. Source Serif 4 here is a static (non-variable) font, so the scaled 48pt glyphs match the 20pt ones at the swap.
 
-While the intro runs, `WelcomeView` sets its header wordmark's opacity to 0, through an environment value `\.isLaunchIntroRunning` set by `RootView`. It keeps its place in the layout so the anchor is valid.
+While the wordmark is moving, `WelcomeView` sets its header wordmark's opacity to 0, through an environment value `\.hidesLaunchWordmarkTarget` set by the intro (`LaunchIntro.hidesHeader(phase:exit:)`). It keeps its place in the layout so the anchor is valid. When the wordmark fades instead of moving, the header isn't hidden: it is part of the page and fades in with it.
 
-**No target (Onboarding, Unavailable): L1.** If no anchor is published, the overlay fades from 1 to 0 in place over the move's 480 ms instead of moving. The page rise is unchanged.
+**How the wordmark leaves (`LaunchIntro.Exit`).** It moves, unless one of these makes it fade out in place over the move's 480 ms, with the page rise unchanged:
+
+- **No target (Onboarding, Unavailable): L1.** No anchor is published.
+- **Reduce Motion** (3.4).
+- **The header moved after it was measured.** A rotating iPad (checked on the iPad Pro 11-inch (M5) with a landscape-only build) finishes its layout about 0.4 s after launch, which is just after the move begins at 0.3 s. The header, measured on the launch frame, then sits 22pt higher than the wordmark's target. The header's frame is compared with its launch-frame measurement during the first 0.18 s of the move, when the page hasn't started to rise yet (it has a 0.2 s delay), so any difference is a layout change. If it changed, the wordmark fades where it is, having barely left the center, and the header fades in with the page. An iPhone that launches already rotated doesn't trigger this: its layout doesn't change, and the move plays.
 
 **Welcome but no round yet.** Welcome shows "Drawn from your topics…" until the round is prepared, as it does today. The intro doesn't wait for topics; the sentence updates when they arrive, as today.
 
@@ -134,7 +138,7 @@ While the intro runs, `WelcomeView` sets its header wordmark's opacity to 0, thr
 
 ### 3.4 Accessibility
 
-- **Reduce Motion:** no move and no rise. After the hold, the overlay fades out and the page fades in together, over 0.2 s.
+- **Reduce Motion:** no move and no rise. After the hold, the overlay fades out and the page fades in together, over 0.2 s. The header "Leo" is part of the page and fades in with it.
 - **VoiceOver:** the overlay is `accessibilityHidden`. The page is focusable straight away; the first element read is still Welcome's "Leo" header (hidden visually for under a second, but present).
 - **Taps are blocked during the intro (L3).** The page has `.allowsHitTesting(false)` until the swap at 0.98 s (0.5 s with Reduce Motion), so a tap on Start or the gear mid-rise does nothing. VoiceOver activation is blocked the same way; the window is under a second.
 
@@ -162,11 +166,11 @@ Delete the app and restart the simulator first (2.3). Then:
 
 1. Light and Dark: no flash, the launch image and the first frame line up, the wordmark lands on the header with no jump at the swap.
 2. First launch (reset preferences): wordmark fades out over Onboarding (L1).
-3. Largest accessibility text size: the swap is still seamless.
-4. Reduce Motion on: crossfade only.
-5. Taps on Start and the gear during the intro do nothing; they work right after the swap.
+3. Largest accessibility text size: the swap is still seamless. (Done 2026-10-07: iPhone and iPad portrait.)
+4. Reduce Motion on: crossfade only. (Done 2026-10-07. Found the header "Leo" popping in after the crossfade; fixed so it fades in with the page.)
+5. Taps on Start and the gear during the intro do nothing; they work right after the swap. (Done 2026-10-07 with a throwaway 8 s hold: both taps did nothing on the launch frame, and the gear opened Settings after the swap.)
 6. Background and foreground: no replay.
-7. Landscape and iPad: centered, no jump.
+7. Landscape and iPad: centered, no jump. (Done 2026-10-07: iPhone landscape, launched already rotated, plays the move. iPad rotating during the intro landed 22pt low and jumped at the swap; fixed with the fade fallback in 3.2, which now fades in place with no jump.)
 8. Slow-motion animations (Simulator ▸ Debug ▸ Slow Animations) to inspect the swap frame.
 
 ---
