@@ -59,6 +59,29 @@ extension ViewSnapshots {
             .leoScreenBackground()
         }
 
+        /// At the largest accessibility size, in a 320 pt frame (Slide Over): one row inside the frame.
+        private var narrowDots: some View {
+            VStack(alignment: .leading, spacing: 20) {
+                ProgressDots(
+                    states: [.done, .current, .failed, .currentCorrect, .currentMissed, .upcoming],
+                    currentIndex: 1,
+                )
+                ProgressDots(states: Array(repeating: .upcoming, count: 6), currentIndex: nil, size: .large)
+            }
+            .padding(24)
+            .frame(width: 320)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .leoScreenBackground()
+        }
+
+        @Test func dotsFitANarrowFrameAtTheLargestAccessibilitySize() {
+            assertViewSnapshot(
+                of: narrowDots,
+                named: "dots-narrow-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+            )
+        }
+
         @Test func gallery() {
             assertViewSnapshot(of: components, named: "gallery", height: 1300)
         }
