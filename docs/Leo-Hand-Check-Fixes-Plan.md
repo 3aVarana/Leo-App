@@ -154,3 +154,21 @@ Update `docs/Leo-Launch-Screen-Plan.md`:
 | 2. Polish the launch intro under Reduce Motion and resizes | `LaunchIntro.swift`, `WelcomeView.swift` (only if the environment key is renamed), `LaunchIntroTests`, `LaunchIntroSnapshotTests`, launch plan doc updates | Nothing (independent of PR 1) |
 
 Each PR includes before and after images: the AX5 Welcome screenshot for PR 1, and the Reduce Motion and iPad frame strips for PR 2.
+
+---
+
+## 5. Implementation notes (2026-10-07)
+
+**PR 1** went as planned. Welcome's dots at AX5 now fit, the gear shows, and the headline wraps inside the margins. Re-recorded images were checked by eye. One result worth knowing: the regular dots scale to about 37 pt at xxxLarge (not the 40.9 computed above), so they fit a 320 pt frame without shrinking; only the large dots shrink there.
+
+**PR 2, F2** went as planned.
+
+**PR 2, F3 (D3) changed in how it is detected.** Diagnosis with logging on the iPad Pro 11-inch (M5) found:
+
+- The window size never changes from SwiftUI's point of view: the overlay reports 1210 x 834 from the first layout, so a size change can't be the trigger.
+- The header's natural position moves 22 pt (44.25 to 22.25) about 0.4 s after launch, when the rotation finishes. It is time-based, not tied to the phase: with the hold stretched to 1.2 s the same change shows up while still on the launch frame. It does not happen on an iPhone that launches already rotated.
+- The first plan, comparing the header in a coordinate space inside the page, doesn't work: that frame still includes the rise, and the safe-area insets only settle at the end.
+
+The fix compares the header's global frame with its launch-frame measurement during the first 0.18 s of the move. The page has a 0.2 s delay before it rises, so until then the frame includes exactly the 24 pt rise, and a difference can only be a layout change. If it changed, the wordmark fades in place (it has barely left the center) and the header fades in with the page, as D3 asked. The trigger is "the header moved", not "the window resized". A shift later than 0.18 s into the move would still not be caught; the observed shift arrived about 0.1 s in.
+
+A wait-until-the-header-is-still approach was tried and dropped: no change is published on the launch frame before the shift, so there was nothing to wait on.
