@@ -97,21 +97,22 @@ struct ReaderPreferencesTests {
     }
 
     /// Only possible with stale data, since the editor keeps a minimum enabled.
-    @Test func enabledTopicsFallsBackToAllSuggested() {
+    @Test func enabledTopicsTopsUpFromNone() {
         let all = DefaultTopics.topics(for: .six)
         let preferences = ReaderPreferences.fixture(ageGroup: .six, disabled: [.six: Set(all.map(\.id))])
-        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.map(\.prompt))
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.prefix(3).map(\.prompt))
     }
 
     /// Only possible with stale data, since the editor keeps a minimum enabled.
-    @Test func enabledTopicsFallsBackBelowMinimum() {
+    @Test func enabledTopicsTopsUpBelowMinimum() {
         let all = DefaultTopics.topics(for: .six)
         let preferences = ReaderPreferences.fixture(
             ageGroup: .six,
-            disabled: [.six: Set(all.map(\.id))],
-            custom: [.six: ["Chess", "Origami"]],
+            disabled: [.six: Set(all.dropFirst().map(\.id))],
+            custom: [.six: ["Chess"]],
         )
-        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.map(\.prompt))
+        let expected = [all[0].prompt, "Chess", all[1].prompt]
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == expected)
     }
 
     @Test func enabledTopicsKeepsMinimum() {
