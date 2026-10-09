@@ -57,7 +57,6 @@ struct QuizViewModelTests {
         topics: ["owls", "rivers", "kites", "bread", "comets", "drums"],
     )
     private let otherSettings = RoundSettings(ageGroup: .twelve, topics: ["chess", "glaciers", "radios"])
-    private let failure = Result<Exercise, any Error>.failure(ExerciseGenerationError.failed)
 
     private func makeQuiz(_ spy: ExerciseRepositoryFactorySpy) -> QuizViewModel {
         QuizViewModel { spy.make($0) }
@@ -296,87 +295,6 @@ extension QuizViewModelTests {
     }
 }
 
-// MARK: - Failure and retry
-
-extension QuizViewModelTests {
-    @Test func failureWhileWaiting() async {
-        let spy = ExerciseRepositoryFactorySpy()
-        let quiz = makeQuiz(spy)
-        quiz.configure(settings)
-        quiz.start()
-        await waitUntil { spy.latest.waitingCount == 1 }
-
-        spy.latest.resume(with: failure)
-        await waitUntil { quiz.phase != .loading }
-        #expect(quiz.phase == .failed)
-        await settle()
-        #expect(spy.latest.calls.count == 1)
-    }
-
-    @Test func failureShowsWhenReaderReachesIt() async {
-        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
-        let quiz = makeQuiz(spy)
-        quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == 2 }
-        quiz.start()
-        await settle()
-        #expect(quiz.phase == .answering)
-        #expect(spy.latest.calls.count == 2)
-
-        quiz.finishReading()
-        quiz.select(0)
-        #expect(quiz.phase == .answering)
-        quiz.next()
-        #expect(quiz.phase == .failed)
-    }
-
-    /// A quiz showing the failure of its second exercise.
-    private func quizFailedAtSecondExercise(
-        _ spy: ExerciseRepositoryFactorySpy = ExerciseRepositoryFactorySpy {
-            StubExerciseRepository(results: [.success(.fixture()), .failure(ExerciseGenerationError.failed)])
-        },
-    ) async -> QuizViewModel {
-        let quiz = makeQuiz(spy)
-        quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == 2 }
-        quiz.start()
-        quiz.finishReading()
-        quiz.select(0)
-        quiz.next()
-        return quiz
-    }
-
-    @Test func retryGeneratesFailedExerciseAgain() async {
-        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
-        let quiz = await quizFailedAtSecondExercise(spy)
-        let stub = spy.latest
-        let failedCall = stub.calls[1]
-
-        quiz.retry()
-        #expect(quiz.phase == .loading)
-        await waitUntil { stub.waitingCount == 1 }
-        #expect(stub.calls[2] == failedCall)
-
-        stub.resume(returning: .fixture(title: "Retried"))
-        await waitUntil { quiz.phase == .answering }
-        #expect(quiz.currentIndex == 1)
-        #expect(quiz.currentExercise?.title == "Retried")
-        #expect(spy.settings.count == 1)
-    }
-
-    @Test func retryWhenRoundIsGeneratedDoesNothing() async {
-        let spy = ExerciseRepositoryFactorySpy { .ready() }
-        let quiz = makeQuiz(spy)
-        quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
-
-        quiz.retry()
-        await settle()
-        #expect(quiz.phase == .welcome)
-        #expect(spy.latest.calls.count == QuizViewModel.exerciseCount)
-    }
-}
-
 // MARK: - Practice again
 
 extension QuizViewModelTests {
@@ -393,5 +311,28 @@ extension QuizViewModelTests {
         #expect(quiz.currentIndex == 0)
         #expect(quiz.correctCount == 0)
         await waitUntil { quiz.phase == .answering }
+    }
+
+    /// Each round gets 3 automatic replacements, however many the one before used.
+    @Test func newRoundResetsReplacementLimit() async {
+        let spy = ExerciseRepositoryFactorySpy { .scripted("F F F S S S S S S") }
+        let quiz = makeQuiz(spy)
+        quiz.configure(settings)
+        for round in 1 ... 2 {
+            await waitUntil { spy.latest.calls.count == 9 }
+            if round == 1 {
+                quiz.start()
+            }
+            await waitUntil { quiz.phase == .answering }
+            for _ in 0 ..< QuizViewModel.exerciseCount {
+                #expect(quiz.phase == .answering, "round \(round)")
+                answer(quiz, correctly: true)
+            }
+            #expect(quiz.phase == .finished, "round \(round)")
+            if round == 1 {
+                quiz.start()
+            }
+        }
+        #expect(spy.stubs.count == 2)
     }
 }

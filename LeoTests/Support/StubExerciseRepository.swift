@@ -33,6 +33,18 @@ final class StubExerciseRepository: ExerciseRepository {
         StubExerciseRepository(results: (0 ..< count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
     }
 
+    /// Answers calls by a pattern such as `"S F S S"`: `S` succeeds with an exercise titled
+    /// "Call N", N being the call's position, and `F` fails. Later calls wait.
+    static func scripted(_ pattern: String) -> StubExerciseRepository {
+        let results: [Result<Exercise, any Error>] = pattern.split(separator: " ").enumerated().map { index, step in
+            precondition(step == "S" || step == "F", "Unknown step \(step)")
+            return step == "S"
+                ? .success(.fixture(title: "Call \(index + 1)"))
+                : .failure(ExerciseGenerationError.failed)
+        }
+        return StubExerciseRepository(results: results)
+    }
+
     var waitingCount: Int {
         waiting.count
     }

@@ -25,21 +25,29 @@ struct QuizViewModelRoundTests {
         return quiz
     }
 
-    private let failure = Result<Exercise, any Error>.failure(ExerciseGenerationError.failed)
-
-    /// A quiz showing the failure of its second exercise.
-    private func quizFailedAtSecondExercise(
-        _ spy: ExerciseRepositoryFactorySpy = ExerciseRepositoryFactorySpy {
-            StubExerciseRepository(results: [.success(.fixture()), .failure(ExerciseGenerationError.failed)])
-        },
-    ) async -> QuizViewModel {
+    /// A quiz showing the failure of its second exercise: every exercise after the first fails,
+    /// and so do the 3 replacements.
+    private func quizFailedAtSecondExercise() async -> QuizViewModel {
+        let spy = ExerciseRepositoryFactorySpy { .scripted("S F F F F F F F F") }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == 2 }
+        await waitUntil { spy.latest.calls.count == 9 }
         quiz.start()
         quiz.finishReading()
         quiz.select(0)
         quiz.next()
+        return quiz
+    }
+
+    /// A quiz showing the failure of its last exercise: the second exercise and its 3 replacements fail.
+    private func quizFailedAtLastExercise(_ spy: ExerciseRepositoryFactorySpy) async -> QuizViewModel {
+        let quiz = makeQuiz(spy)
+        quiz.configure(settings)
+        await waitUntil { spy.latest.calls.count == 9 }
+        quiz.start()
+        for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+            answer(quiz, correctly: true)
+        }
         return quiz
     }
 
@@ -160,8 +168,6 @@ extension QuizViewModelRoundTests {
         quiz.configure(settings)
         #expect(Set(quiz.plannedTopicNames) == Set(settings.topics.map(\.name)))
         #expect(quiz.plannedTopicNames.count == QuizViewModel.exerciseCount)
-        #expect(quiz.plannedTopicName(at: 0) == quiz.plannedTopicNames.first)
-        #expect(quiz.plannedTopicName(at: QuizViewModel.exerciseCount) == nil)
     }
 
     /// Three topics for six exercises: each name is listed once.
@@ -205,21 +211,35 @@ extension QuizViewModelRoundTests {
         report("owls")
         #expect(quiz.writingTopicName == current)
     }
+
+    @Test func failedTopicNameIsFirstFailedJob() async {
+        let spy = ExerciseRepositoryFactorySpy { .scripted("S F S S S S F F") }
+        let quiz = makeQuiz(spy)
+        quiz.configure(settings)
+        await waitUntil { spy.latest.waitingCount == 1 }
+        #expect(spy.latest.calls.count == 9)
+        #expect(quiz.failedTopicName == nil)
+
+        spy.latest.resume(with: .failure(ExerciseGenerationError.failed))
+        await waitUntil { quiz.failedTopicName != nil }
+        #expect(quiz.failedTopicName == spy.latest.calls[8].topics[0].name)
+    }
 }
 
 // MARK: - Retry with different topics
 
 extension QuizViewModelRoundTests {
     @Test func retryWithDifferentTopicsAvoidsFailedTopics() async {
-        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [.success(.fixture()), failure]) }
-        let quiz = await quizFailedAtSecondExercise(spy)
+        let spy = ExerciseRepositoryFactorySpy { .scripted("S F S S S S F F F") }
+        let quiz = await quizFailedAtLastExercise(spy)
+        #expect(quiz.phase == .failed)
         let stub = spy.latest
-        let failedCall = stub.calls[1]
+        let failedCall = stub.calls[8]
 
         quiz.retryWithDifferentTopics()
         #expect(quiz.phase == .loading)
         await waitUntil { stub.waitingCount == 1 }
-        let retryCall = stub.calls[2]
+        let retryCall = stub.calls[9]
         #expect(retryCall.skill == failedCall.skill)
         #expect(retryCall.topics.count == 3)
         #expect(Set(retryCall.topics).isDisjoint(with: failedCall.topics))
@@ -232,7 +252,7 @@ extension QuizViewModelRoundTests {
 
     /// With only the 3 topics that failed, they're tried again in another order.
     @Test func retryWithDifferentTopicsWithoutOthers() async {
-        let spy = ExerciseRepositoryFactorySpy { StubExerciseRepository(results: [failure]) }
+        let spy = ExerciseRepositoryFactorySpy { .scripted("F F F F F F F F F") }
         let quiz = makeQuiz(spy)
         quiz.configure(otherSettings)
         quiz.start()
@@ -241,6 +261,9 @@ extension QuizViewModelRoundTests {
 
         quiz.retryWithDifferentTopics()
         await waitUntil { stub.waitingCount == 1 }
-        #expect(Set(stub.calls[1].topics) == Set(otherSettings.topics))
+        #expect(stub.calls.count == 10)
+        // Jobs 4 to 6 and the 3 replacements failed once the replacements ran out; job 4 is retried first.
+        #expect(stub.calls[9].skill == stub.calls[3].skill)
+        #expect(Set(stub.calls[9].topics) == Set(otherSettings.topics))
     }
 }
