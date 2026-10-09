@@ -4,25 +4,28 @@ import FoundationModels
 /// The raw structure the on-device model fills in.
 /// The correct answer is generated separately from the distractors so the app,
 /// not the model, decides where it lands among the options.
+/// Properties are generated in declaration order: the passage first, so nothing written about it
+/// steers it, and the title last, so it sums up the passage.
 @Generable
 nonisolated struct GeneratedExercise {
-    @Guide(description: "A short, engaging title for the text, at most 6 words")
-    var title: String
-
     @Guide(
-        description: "An original, self-contained reading passage, with the length and reading level requested in the instructions",
+        description: "The reading passage: a story or an informative text, written exactly as it would appear in a book. Plain text, no headings, no markdown, no commentary about the text itself",
     )
     var passage: String
 
-    @Guide(description: "One question about the passage that can only be answered by understanding it")
+    @Guide(
+        description: "One question that tests the skill requested in the prompt and can only be answered by someone who understood the passage",
+    )
     var question: String
 
-    @Guide(description: "The single correct answer to the question, clearly supported by the passage, at most 15 words")
+    @Guide(
+        description: "The correct answer: a short phrase or sentence, at most 12 words, in your own words rather than copied from the passage",
+    )
     var correctAnswer: String
 
     @Guide(
-        description: "Plausible but clearly incorrect answers, each different from the correct answer and from each other, about as long as the correct answer",
-        .count(2 ... 3),
+        description: "Three wrong answers that a careless reader might pick: each about the topic, the same length, grammatical form and punctuation as the correct answer, and clearly wrong according to the passage",
+        .count(3),
     )
     var incorrectAnswers: [String]
 
@@ -30,6 +33,9 @@ nonisolated struct GeneratedExercise {
         description: "One or two short sentences explaining why the correct answer is right, pointing to what the passage says",
     )
     var explanation: String
+
+    @Guide(description: "A short, engaging title for the passage, at most 6 words")
+    var title: String
 }
 
 nonisolated extension Exercise {
@@ -52,7 +58,7 @@ nonisolated extension Exercise {
 
         let passage = clean(generated.passage)
         let question = clean(generated.question)
-        guard !correct.isEmpty, (2 ... 3).contains(distractors.count),
+        guard !correct.isEmpty, distractors.count == 3,
               acceptedWordCount.contains(passage.wordCount), !question.isEmpty
         else { return nil }
 

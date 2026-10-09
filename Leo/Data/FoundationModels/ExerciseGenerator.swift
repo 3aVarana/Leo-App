@@ -16,28 +16,31 @@ struct ExerciseGenerator {
         return "\(words) in \(sentences.lowerBound) to \(sentences.upperBound) sentences"
     }
 
+    /// Apple's prompting guide: a role, MUST for the rules the model keeps breaking, and nothing
+    /// that only applies to some skills (those go in `ComprehensionSkill.promptHint`).
     var instructions: String {
         """
-        You create reading comprehension exercises for \(ageGroup.promptAudience).
-        The passage must be \(wordRange). \(ageGroup.styleGuidance)
-        Write original, accurate, age-appropriate texts in clear \(language.name).
-        Write the title, passage, question, every answer and the explanation in \(language.name), \
-        even though these instructions are in English.
-        Each exercise has a passage, one question, one correct answer and plausible incorrect answers.
-        The correct answer must be supported by the passage. Incorrect answers must be wrong \
-        according to the passage, but believable to someone who read carelessly.
-        Never mention the answer in the question.
-        The passage must not state the answer word for word; the reader should have to understand it.
-        Write every answer as a direct, natural option without phrases like "The main idea is".
-        All answers must have a similar length and style, so the correct one doesn't stand out.
+        You are an expert reading teacher who writes reading comprehension exercises for \(ageGroup.promptAudience).
+        You MUST write the passage, title, question, answers and explanation in \(language.name).
+        The passage is a story or an informative text \(wordRange). \(ageGroup.styleGuidance)
+        Write it as it would appear in a book for these readers: original, accurate, and about the topic only. \
+        It must never talk about itself: no "the author", "the passage", "the text", "the main idea", "this shows", \
+        and no lesson spelled out at the end. Stories have a character who wants something, a problem and an ending. \
+        Informative texts explain real, well-known facts. Plain text only, with no markdown, asterisks or headings.
+        Then write one question that tests the skill the prompt asks for, one correct answer and three wrong answers. \
+        Only the correct answer is supported by the passage; each wrong answer is believable but wrong according to \
+        the passage. All four answers MUST have the same length, form and punctuation, so the correct one does not \
+        stand out. Do not reuse the question's wording in the correct answer only. Never give away the answer in the \
+        question.
         """
     }
 
+    /// The word range is repeated from the instructions on purpose: the model keeps to it better.
     func prompt(topic: String, skill: ComprehensionSkill) -> String {
         """
-        Create a reading comprehension exercise in \(language.name) about \(topic).
+        Write a reading comprehension exercise in \(language.name) about \(topic).
         The passage must be \(wordRange).
-        \(skill.promptHint)
+        Skill to test: \(skill.promptHint)
         """
     }
 

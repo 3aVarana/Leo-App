@@ -27,12 +27,12 @@ extension GeneratedExercise {
         explanation: String = "The passage says the fox ran across a quiet green field.",
     ) -> GeneratedExercise {
         GeneratedExercise(
-            title: title,
             passage: passage,
             question: question,
             correctAnswer: correctAnswer,
             incorrectAnswers: incorrectAnswers,
             explanation: explanation,
+            title: title,
         )
     }
 }

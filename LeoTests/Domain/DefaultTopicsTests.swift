@@ -46,6 +46,16 @@ struct DefaultTopicsTests {
         }
     }
 
+    /// What the question asks, what the passage must do, and what the wrong answers are.
+    @Test(arguments: ComprehensionSkill.allCases)
+    func promptHintHasThreeParts(_ skill: ComprehensionSkill) {
+        var sentences = 0
+        skill.promptHint.enumerateSubstrings(in: skill.promptHint.startIndex..., options: .bySentences) { _, _, _, _ in
+            sentences += 1
+        }
+        #expect(sentences >= 3)
+    }
+
     @Test func generationErrorDescription() {
         #expect(ExerciseGenerationError.failed.errorDescription?.isEmpty == false)
     }
