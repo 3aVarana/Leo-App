@@ -19,7 +19,7 @@ struct ExerciseGenerator {
     /// Apple's prompting guide: a role, MUST for the rules the model keeps breaking, and nothing
     /// that only applies to some skills (those go in `ComprehensionSkill.promptHint`).
     var instructions: String {
-        """
+        language.withLocaleInstruction("""
         You are an expert reading teacher who writes reading comprehension exercises for \(ageGroup.promptAudience).
         You MUST write the passage, title, question, answers and explanation in \(language.name).
         The passage is a story or an informative text \(wordRange). \(ageGroup.styleGuidance)
@@ -31,7 +31,7 @@ struct ExerciseGenerator {
         the passage. All four answers MUST have the same length, form and punctuation, so the correct one does not \
         stand out. Do not reuse the question's wording in the correct answer only. Never give away the answer in the \
         question.
-        """
+        """)
     }
 
     /// The word range is repeated from the instructions on purpose: the model keeps to it better.
