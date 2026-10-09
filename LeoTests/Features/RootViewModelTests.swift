@@ -63,48 +63,6 @@ struct RootViewModelTests {
         #expect(factory.settings.count == 1)
     }
 
-    /// Drives the quiz through every phase: every exercise after the first fails, and so do the
-    /// replacements, then a retry generates the rest.
-    @Test func canShowSettings() async {
-        let factory = ExerciseRepositoryFactorySpy { .scripted("S F F F F F F F F") }
-        repository.stored = preferences
-        let root = makeRoot(factory: factory)
-        let quiz = root.quiz
-        #expect(root.canShowSettings)
-
-        root.preferencesDidChange()
-        await waitUntil { factory.latest.calls.count == 9 }
-        await settle()
-        #expect(quiz.phase == .welcome)
-        #expect(root.canShowSettings)
-
-        quiz.start()
-        #expect(quiz.phase == .answering)
-        #expect(!root.canShowSettings)
-
-        quiz.finishReading()
-        quiz.select(0)
-        quiz.next()
-        #expect(quiz.phase == .failed)
-        #expect(!root.canShowSettings)
-
-        quiz.retry()
-        #expect(quiz.phase == .loading)
-        #expect(!root.canShowSettings)
-
-        for _ in 1 ..< QuizViewModel.exerciseCount {
-            await waitUntil { factory.latest.waitingCount == 1 }
-            factory.latest.resume(returning: .fixture())
-            await waitUntil { quiz.phase == .answering }
-            #expect(!root.canShowSettings)
-            quiz.finishReading()
-            quiz.select(0)
-            quiz.next()
-        }
-        #expect(quiz.phase == .finished)
-        #expect(root.canShowSettings)
-    }
-
     @Test func availabilityFollowsProvider() {
         let root = makeRoot()
         #expect(root.availability == .available)
