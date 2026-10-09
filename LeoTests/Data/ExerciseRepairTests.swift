@@ -36,6 +36,9 @@ struct ExerciseRepairTests {
         ("**Busy Little Bugs** In a sunny garden, a ladybug rests.", "In a sunny garden, a ladybug rests."),
         ("**The Missing Pencil**  Liam found a pencil.", "Liam found a pencil."),
         ("# Volcanoes\n\nHot rock rises.", "Hot rock rises."),
+        ("Title: Mystery in the Locker\n\nA student found a note.", "A student found a note."),
+        ("Título: El volcán\nEl suelo tembló.", "El suelo tembló."),
+        ("Mystery in the Locker\n\nA student found a note.", "A student found a note."),
     ])
     func removesLeadingTitle(_ passage: String, expected: String) {
         #expect(ExerciseRepair.removingLeadingTitle(passage) == expected)
@@ -46,6 +49,8 @@ struct ExerciseRepairTests {
         "Insects live all around us. **Bees** make honey.",
         "**Stop!** Mia shouted.",
         "A plain passage.",
+        "The bell rang.\n\nEveryone ran outside.",
+        "Mia waited by the door, the rain still falling\n\nThen the bus came.",
     ])
     func keepsPassagesWithoutATitle(_ passage: String) {
         #expect(ExerciseRepair.removingLeadingTitle(passage) == passage)

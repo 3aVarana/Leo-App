@@ -14,8 +14,9 @@ nonisolated enum ExerciseRejection: String, Error {
 nonisolated enum ExerciseRepair {
     // MARK: Repairs
 
-    /// Removes a title the model put at the start of the passage, as a `#` heading or in bold on
-    /// its own line or before a new sentence. The title is generated last, as its own field, so the
+    /// Removes a title the model put at the start of the passage: a `#` heading, a bold phrase on
+    /// its own line or before a new sentence, a "Title:" line, or a short line without sentence
+    /// punctuation or commas followed by a blank line. The title is generated last, as its own field, so the
     /// model sometimes writes one into the passage too. Bold words that start a sentence, as in
     /// "**Volcanoes** are mountains", are left for `removingMarkdown`.
     static func removingLeadingTitle(_ passage: String) -> String {
@@ -26,10 +27,16 @@ nonisolated enum ExerciseRepair {
         return String(passage[matched.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    // swiftlint:disable:next force_try
-    private static let leadingTitlePattern = try! NSRegularExpression(
-        pattern: #"^\s*(?:#+[^\n]*\n|\*\*[^*\n.!?]+\*\*[ \t]*(?:\n|(?=\p{Lu})))"#,
-    )
+    private static let leadingTitlePattern: NSRegularExpression = {
+        let titles = [
+            #"#+[^\n]*\n"#,
+            #"\*\*[^*\n.!?]+\*\*[ \t]*(?:\n|(?=\p{Lu}))"#,
+            #"(?i:title|t[ií]tulo)[ \t]*:[^\n]*\n"#,
+            #"[^\n.!?。！？:,，]{1,60}\n[ \t]*\n"#,
+        ]
+        // swiftlint:disable:next force_try
+        return try! NSRegularExpression(pattern: #"^\s*(?:"# + titles.joined(separator: "|") + ")")
+    }()
 
     /// Removes markdown the model sometimes adds: `*` and `_` used for emphasis, `#` headings and
     /// backticks. An asterisk or underscore with letters or digits on both sides, as in "2*3" or
