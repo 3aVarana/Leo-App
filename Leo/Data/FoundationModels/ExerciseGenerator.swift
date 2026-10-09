@@ -86,15 +86,18 @@ struct ExerciseGenerator {
             let session = LanguageModelSession(instructions: instructions)
             do {
                 let generated = try await respond(to: prompt, in: session)
-                if let exercise = Exercise(
+                return try Exercise(
                     generated: generated,
                     topic: topic,
                     skill: skill,
                     acceptedWordCount: ageGroup.acceptedWordCount,
-                ) {
-                    return exercise
-                }
-                logger.error("Invalid content for topic '\(topic.prompt)'")
+                    language: language,
+                )
+            } catch let rejection as ExerciseRejection {
+                logger.error("""
+                Rejected \(skill.rawValue, privacy: .public) exercise \
+                (\(rejection.rawValue, privacy: .public)) for topic '\(topic.prompt)'
+                """)
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
