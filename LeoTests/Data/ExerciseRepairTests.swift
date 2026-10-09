@@ -39,6 +39,7 @@ struct ExerciseRepairTests {
         ("Title: Mystery in the Locker\n\nA student found a note.", "A student found a note."),
         ("Título: El volcán\nEl suelo tembló.", "El suelo tembló."),
         ("Mystery in the Locker\n\nA student found a note.", "A student found a note."),
+        ("Un día en la playa\nEl sol brilla fuerte sobre el mar.", "El sol brilla fuerte sobre el mar."),
     ])
     func removesLeadingTitle(_ passage: String, expected: String) {
         #expect(ExerciseRepair.removingLeadingTitle(passage) == expected)
@@ -50,10 +51,23 @@ struct ExerciseRepairTests {
         "**Stop!** Mia shouted.",
         "A plain passage.",
         "The bell rang.\n\nEveryone ran outside.",
-        "Mia waited by the door, the rain still falling\n\nThen the bus came.",
+        "Mia waited by the door, the rain still falling\nThen the bus came.",
     ])
     func keepsPassagesWithoutATitle(_ passage: String) {
         #expect(ExerciseRepair.removingLeadingTitle(passage) == passage)
+    }
+
+    // MARK: Line breaks
+
+    @Test(arguments: [
+        ("El sol brilla.\nLas olas son suaves.\nHay niños.", "El sol brilla. Las olas son suaves. Hay niños."),
+        ("One line.  \n  Two line.", "One line. Two line."),
+        ("First paragraph.\n\nSecond paragraph.", "First paragraph.\n\nSecond paragraph."),
+        ("First.\n \n\n  Second.\nStill second.", "First.\n\nSecond. Still second."),
+        ("No breaks at all.", "No breaks at all."),
+    ])
+    func joinsLinesButKeepsParagraphs(_ passage: String, expected: String) {
+        #expect(ExerciseRepair.joiningLines(passage) == expected)
     }
 
     // MARK: Punctuation
