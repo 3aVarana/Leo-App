@@ -35,7 +35,8 @@ struct ExerciseGeneratorPromptTests {
     @Test(arguments: AgeGroup.allCases, [ContentLanguage.english, spanish])
     func instructions(_ group: AgeGroup, language: ContentLanguage) {
         let instructions = ExerciseGenerator(language: language, ageGroup: group).instructions
-        #expect(instructions.hasPrefix("You are an expert reading teacher"))
+        #expect(instructions.hasPrefix(language.localeInstruction))
+        #expect(instructions.contains("You are an expert reading teacher"))
         #expect(instructions
             .contains("You MUST write the passage, title, question, answers and explanation in \(language.name)."))
         #expect(instructions.contains(group.promptAudience))
@@ -64,6 +65,11 @@ struct ExerciseGeneratorPromptTests {
         #expect(!informative.contains("The passage is a story"))
         #expect(story.contains("The passage is a story."))
         #expect(!story.contains("informative text"))
+    }
+
+    @Test func spanishInstructionsStartWithTheLocale() {
+        let instructions = ExerciseGenerator(language: Self.spanish, ageGroup: .nine).instructions
+        #expect(instructions.hasPrefix("The person's locale is es_ES.\nYou are an expert reading teacher"))
     }
 
     /// Prompt changes show up in review. Re-record when tuning prompts on purpose.

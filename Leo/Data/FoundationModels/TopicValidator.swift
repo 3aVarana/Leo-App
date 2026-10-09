@@ -38,14 +38,14 @@ struct TopicValidator {
     }
 
     func review(_ text: String, for group: AgeGroup) async throws -> TopicReviewOutcome {
-        let instructions = """
+        let instructions = language.withLocaleInstruction("""
         You review topics a reader wants to practice reading about. \
         Each topic becomes short reading texts written for \(group.promptAudience), at their level: \
         a story, or an explanation of facts. So everyday, school, real-world and imaginative topics \
         all work, and a topic doesn't need to be realistic. \
         Accept a topic if it is appropriate reading material for \(group.promptAudience). \
         Write the topic phrase and the reason in \(language.name).
-        """
+        """)
         let session = LanguageModelSession(instructions: instructions)
         do {
             let response = try await session.respond(
