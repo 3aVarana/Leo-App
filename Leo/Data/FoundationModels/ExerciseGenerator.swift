@@ -53,8 +53,18 @@ struct ExerciseGenerator {
         case .informative:
             """
             The passage is an informative text that explains real, well-known facts about \(topic.prompt). \
-            It is not a story and has no main character.
+            It is not a story and has no main character. \
+            Use well-known facts, and avoid exact figures and dates unless they are famous.
             """
+        }
+    }
+
+    /// Apple's guide suggests a high temperature for creative tasks and a low one for precise ones.
+    /// Informative passages get a lower one, so facts drift less.
+    static func temperature(for kind: TopicKind) -> Double {
+        switch kind {
+        case .story: 0.8
+        case .informative: 0.5
         }
     }
 
@@ -85,7 +95,11 @@ struct ExerciseGenerator {
             // A fresh session per exercise keeps each request well inside the context window.
             let session = LanguageModelSession(instructions: instructions)
             do {
-                let generated = try await respond(to: prompt, in: session)
+                let generated = try await respond(
+                    to: prompt,
+                    in: session,
+                    temperature: Self.temperature(for: topic.kind),
+                )
                 return try Exercise(
                     generated: generated,
                     topic: topic,
@@ -109,11 +123,15 @@ struct ExerciseGenerator {
 
     /// Streams the response so a passage that never ends is abandoned as soon as it runs past
     /// the accepted length, after seconds rather than when the token cap is reached.
-    private func respond(to prompt: String, in session: LanguageModelSession) async throws -> GeneratedExercise {
+    private func respond(
+        to prompt: String,
+        in session: LanguageModelSession,
+        temperature: Double,
+    ) async throws -> GeneratedExercise {
         let stream = session.streamResponse(
             to: prompt,
             generating: GeneratedExercise.self,
-            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens),
+            options: GenerationOptions(temperature: temperature, maximumResponseTokens: Self.maxResponseTokens),
         )
         var content: GeneratedContent?
         for try await snapshot in stream {

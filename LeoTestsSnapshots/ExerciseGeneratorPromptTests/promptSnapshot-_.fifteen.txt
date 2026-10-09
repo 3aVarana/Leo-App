@@ -7,6 +7,6 @@ Then write one question that tests the skill the prompt asks for, one correct an
 ---
 
 Write a reading comprehension exercise in English about volcanoes.
-The passage is an informative text that explains real, well-known facts about volcanoes. It is not a story and has no main character.
+The passage is an informative text that explains real, well-known facts about volcanoes. It is not a story and has no main character. Use well-known facts, and avoid exact figures and dates unless they are famous.
 The passage must be between 120 and 180 words long, about 150 words.
 Skill to test: The question asks about something the passage never says directly but clearly implies: how a character feels, why someone did something, what will probably happen next, or what caused something described. The passage must give the clues but never state the answer. The wrong answers are conclusions the clues do not support.
