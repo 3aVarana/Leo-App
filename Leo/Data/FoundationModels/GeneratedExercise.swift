@@ -62,7 +62,7 @@ nonisolated extension Exercise {
             .map(clean)
             .filter { !$0.isEmpty && seen.insert(key($0)).inserted }
 
-        let passage = clean(generated.passage)
+        let passage = clean(ExerciseRepair.removingLeadingTitle(generated.passage))
         let question = clean(generated.question)
         guard !correct.isEmpty, !question.isEmpty else { throw .emptyField }
         guard distractors.count == 3 else { throw .distractors }
