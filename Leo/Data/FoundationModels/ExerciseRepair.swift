@@ -15,8 +15,8 @@ nonisolated enum ExerciseRepair {
     // MARK: Repairs
 
     /// Removes a title the model put at the start of the passage: a `#` heading, a bold phrase on
-    /// its own line or before a new sentence, a "Title:" line, or a short line without sentence
-    /// punctuation or commas followed by a blank line. The title is generated last, as its own field, so the
+    /// its own line or before a new sentence, a "Title:" line, or a short first line without
+    /// sentence punctuation or commas. The title is generated last, as its own field, so the
     /// model sometimes writes one into the passage too. Bold words that start a sentence, as in
     /// "**Volcanoes** are mountains", are left for `removingMarkdown`.
     static func removingLeadingTitle(_ passage: String) -> String {
@@ -32,11 +32,27 @@ nonisolated enum ExerciseRepair {
             #"#+[^\n]*\n"#,
             #"\*\*[^*\n.!?]+\*\*[ \t]*(?:\n|(?=\p{Lu}))"#,
             #"(?i:title|t[ií]tulo)[ \t]*:[^\n]*\n"#,
-            #"[^\n.!?。！？:,，]{1,60}\n[ \t]*\n"#,
+            #"[^\n.!?。！？:,，]{1,60}\n"#,
         ]
         // swiftlint:disable:next force_try
         return try! NSRegularExpression(pattern: #"^\s*(?:"# + titles.joined(separator: "|") + ")")
     }()
+
+    /// Joins lines the model broke after every sentence, which the reader would see as a list.
+    /// Blank lines between paragraphs are kept, as one blank line.
+    static func joiningLines(_ passage: String) -> String {
+        let range = NSRange(passage.startIndex..., in: passage)
+        let marked = paragraphBreak.stringByReplacingMatches(in: passage, range: range, withTemplate: "\u{2029}")
+        let joined = lineBreak.stringByReplacingMatches(
+            in: marked, range: NSRange(marked.startIndex..., in: marked), withTemplate: " ",
+        )
+        return joined.replacingOccurrences(of: "\u{2029}", with: "\n\n")
+    }
+
+    // swiftlint:disable force_try
+    private static let paragraphBreak = try! NSRegularExpression(pattern: #"[ \t]*\n(?:[ \t]*\n)+[ \t]*"#)
+    private static let lineBreak = try! NSRegularExpression(pattern: #"[ \t]*\n[ \t]*"#)
+    // swiftlint:enable force_try
 
     /// Removes markdown the model sometimes adds: `*` and `_` used for emphasis, `#` headings and
     /// backticks. An asterisk or underscore with letters or digits on both sides, as in "2*3" or
