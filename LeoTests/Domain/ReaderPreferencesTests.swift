@@ -103,6 +103,27 @@ struct ReaderPreferencesTests {
         #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.map(\.prompt))
     }
 
+    /// Only possible with stale data, since the editor keeps a minimum enabled.
+    @Test func enabledTopicsFallsBackBelowMinimum() {
+        let all = DefaultTopics.topics(for: .six)
+        let preferences = ReaderPreferences.fixture(
+            ageGroup: .six,
+            disabled: [.six: Set(all.map(\.id))],
+            custom: [.six: ["Chess", "Origami"]],
+        )
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.map(\.prompt))
+    }
+
+    @Test func enabledTopicsKeepsMinimum() {
+        let all = DefaultTopics.topics(for: .six)
+        let preferences = ReaderPreferences.fixture(
+            ageGroup: .six,
+            disabled: [.six: Set(all.map(\.id))],
+            custom: [.six: ["Chess", "Origami", "Knots"]],
+        )
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == ["Chess", "Origami", "Knots"])
+    }
+
     /// `QuizViewModel.configure` relies on equal preferences giving equal settings to skip work.
     @Test func roundSettings() {
         let preferences = ReaderPreferences.fixture(ageGroup: .twelve, custom: [.twelve: ["Chess"]])
