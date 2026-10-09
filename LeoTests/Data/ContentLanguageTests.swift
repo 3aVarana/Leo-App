@@ -26,6 +26,20 @@ struct ContentLanguageTests {
         #expect(ContentLanguage(locale: Locale(identifier: "und")).name == "Unknown language")
     }
 
+    @Test func localeInstruction() {
+        #expect(ContentLanguage.english.localeInstruction == "")
+        #expect(ContentLanguage(locale: Locale(identifier: "es_ES")).localeInstruction
+            == "The person's locale is es_ES.")
+        #expect(ContentLanguage(locale: Locale(identifier: "en_GB")).localeInstruction
+            == "The person's locale is en_GB.")
+    }
+
+    @Test func withLocaleInstruction() {
+        #expect(ContentLanguage.english.withLocaleInstruction("Write.") == "Write.")
+        #expect(ContentLanguage(locale: Locale(identifier: "es_ES")).withLocaleInstruction("Write.")
+            == "The person's locale is es_ES.\nWrite.")
+    }
+
     @Test func english() {
         #expect(ContentLanguage.english.locale.identifier == "en_US")
     }
