@@ -11,8 +11,15 @@ nonisolated struct DefaultTopic: Identifiable, Sendable {
 }
 
 nonisolated extension DefaultTopic {
+    /// Topics whose prompt asks for a story or fiction, such as "a short story about friendship"
+    /// or "a survival story", are stories; the rest, "music history" included, are informative.
+    var kind: TopicKind {
+        let words = prompt.split(separator: " ")
+        return words.contains { ["story", "fiction", "fictional"].contains($0) } ? .story : .informative
+    }
+
     var roundTopic: RoundTopic {
-        RoundTopic(prompt: prompt, name: String(localized: name))
+        RoundTopic(prompt: prompt, name: String(localized: name), kind: kind)
     }
 }
 
@@ -30,6 +37,7 @@ nonisolated struct CustomTopic: Identifiable, Codable, Hashable, Sendable {
 
 nonisolated extension CustomTopic {
     /// The reader's phrase is both what the model writes about and what the reader sees.
+    /// Informative for now, whatever the reader typed.
     var roundTopic: RoundTopic {
         RoundTopic(prompt: name, name: name)
     }

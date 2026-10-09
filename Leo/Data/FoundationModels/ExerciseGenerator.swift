@@ -25,8 +25,7 @@ struct ExerciseGenerator {
         The passage is a story or an informative text \(wordRange). \(ageGroup.styleGuidance)
         Write it as it would appear in a book for these readers: original, accurate, and about the topic only. \
         It must never talk about itself: no "the author", "the passage", "the text", "the main idea", "this shows", \
-        and no lesson spelled out at the end. Stories have a character who wants something, a problem and an ending. \
-        Informative texts explain real, well-known facts. Plain text only, with no markdown, asterisks or headings.
+        and no lesson spelled out at the end. Plain text only, with no markdown, asterisks or headings.
         Then write one question that tests the skill the prompt asks for, one correct answer and three wrong answers. \
         Only the correct answer is supported by the passage; each wrong answer is believable but wrong according to \
         the passage. All four answers MUST have the same length, form and punctuation, so the correct one does not \
@@ -36,12 +35,27 @@ struct ExerciseGenerator {
     }
 
     /// The word range is repeated from the instructions on purpose: the model keeps to it better.
-    func prompt(topic: String, skill: ComprehensionSkill) -> String {
+    func prompt(topic: RoundTopic, skill: ComprehensionSkill) -> String {
         """
-        Write a reading comprehension exercise in \(language.name) about \(topic).
+        Write a reading comprehension exercise in \(language.name) about \(topic.prompt).
+        \(passageKind(topic))
         The passage must be \(wordRange).
         Skill to test: \(skill.promptHint)
         """
+    }
+
+    /// Without it, the model turns informative topics into stories about a child, sometimes with
+    /// nothing left of the topic. Describing a story's plot here made stories 15 to 30 words shorter.
+    private func passageKind(_ topic: RoundTopic) -> String {
+        switch topic.kind {
+        case .story:
+            "The passage is a story."
+        case .informative:
+            """
+            The passage is an informative text that explains real, well-known facts about \(topic.prompt). \
+            It is not a story and has no main character.
+            """
+        }
     }
 
     private static let maxAttempts = 3
@@ -67,7 +81,7 @@ struct ExerciseGenerator {
         for topic in topics.prefix(Self.maxAttempts) {
             try Task.checkCancellation()
             onAttempt(topic)
-            let prompt = prompt(topic: topic.prompt, skill: skill)
+            let prompt = prompt(topic: topic, skill: skill)
             // A fresh session per exercise keeps each request well inside the context window.
             let session = LanguageModelSession(instructions: instructions)
             do {

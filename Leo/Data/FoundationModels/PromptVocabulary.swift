@@ -87,9 +87,10 @@ nonisolated extension ComprehensionSkill {
         case .purpose:
             """
             The question asks why the writer wrote the passage, or why the writer included a specific event, \
-            detail or example. A character in a story is never the writer. The passage itself must never mention \
-            the writer, the reader, the passage or its purpose; it simply tells or explains. The wrong answers \
-            are purposes that sound reasonable but do not match what the passage actually does.
+            detail or example, and it MUST say "the writer". A character in a story is never the writer. \
+            The passage itself must never mention the writer, the reader, the passage or its purpose; \
+            it simply tells or explains. The wrong answers are purposes that sound reasonable but do not match \
+            what the passage actually does.
             """
         }
     }
