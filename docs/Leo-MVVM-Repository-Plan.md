@@ -252,7 +252,6 @@ private(set) var preferences: ReaderPreferences?   // loaded in init
 var availability: ModelAvailability { get }         // forwards to the provider, never cached
 let quiz: QuizViewModel
 var isShowingSettings = false
-var canShowSettings: Bool { get }                   // quiz.phase is .welcome or .finished
 
 func save(_ preferences: ReaderPreferences)          // does nothing when equal; else persists and sets
 func preferencesDidChange()                          // configures quiz with preferences?.roundSettings
@@ -395,7 +394,6 @@ Tests:
   - `preferencesDidChangeConfiguresQuiz`: the factory spy receives `preferences.roundSettings`.
   - `preferencesDidChangeWithoutPreferencesDoesNothing`
   - `preferencesDidChangeWithSameSettingsKeepsRound`: the factory is called once.
-  - `canShowSettings`: true in `.welcome` and `.finished`, false in `.loading`, `.answering` and `.failed`. The phases are driven through a stub repository.
   - `availabilityFollowsProvider`: changing the stub changes the ViewModel's value.
 - New `Data/ModelAvailabilityTests`:
   - Each `SystemLanguageModel.Availability` case maps to its `ModelAvailability` case.

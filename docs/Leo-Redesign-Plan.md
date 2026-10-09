@@ -549,7 +549,7 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 
 ### 4.12 RootView and navigation
 
-- Settings entry points move from `RootView`'s toolbar into the content of Welcome and Results. `canShowSettings` is unchanged.
+- Settings entry points move from `RootView`'s toolbar into the content of Welcome and Results. Only those two screens call `onSettings`, so Settings is reachable only in the `.welcome` and `.finished` phases.
 - The navigation bar is hidden on Welcome, Loading, Failed, Exercise and Results. It's visible on Review (system back).
 - The phase cross-fade (`.animation(.default, value: quiz.phase)`) stays.
 
