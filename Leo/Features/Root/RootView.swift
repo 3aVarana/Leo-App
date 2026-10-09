@@ -75,7 +75,7 @@ struct RootView: View {
             GenerationFailedView(
                 index: quiz.currentIndex,
                 dots: dots,
-                topicName: quiz.plannedTopicName(at: quiz.currentIndex),
+                topicName: quiz.failedTopicName,
                 onRetry: quiz.retry,
                 onTryDifferentTopic: quiz.retryWithDifferentTopics,
             )

@@ -63,18 +63,17 @@ struct RootViewModelTests {
         #expect(factory.settings.count == 1)
     }
 
-    /// Drives the quiz through every phase: the second exercise fails, then a retry generates the rest.
+    /// Drives the quiz through every phase: every exercise after the first fails, and so do the
+    /// replacements, then a retry generates the rest.
     @Test func canShowSettings() async {
-        let factory = ExerciseRepositoryFactorySpy {
-            StubExerciseRepository(results: [.success(.fixture()), .failure(ExerciseGenerationError.failed)])
-        }
+        let factory = ExerciseRepositoryFactorySpy { .scripted("S F F F F F F F F") }
         repository.stored = preferences
         let root = makeRoot(factory: factory)
         let quiz = root.quiz
         #expect(root.canShowSettings)
 
         root.preferencesDidChange()
-        await waitUntil { factory.latest.calls.count == 2 }
+        await waitUntil { factory.latest.calls.count == 9 }
         await settle()
         #expect(quiz.phase == .welcome)
         #expect(root.canShowSettings)

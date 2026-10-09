@@ -3,7 +3,9 @@ import Observation
 import OSLog
 
 /// Drives a round of exercises. A round's exercises are generated one after another in the
-/// background, starting before the student taps Start, so they are ready when needed.
+/// background, starting before the student taps Start, so they are ready when needed. An exercise
+/// that can't be generated is replaced by one with the same skill and other topics, up to
+/// `maxReplacements` times per round, and the reader gets exercises in the order they're ready.
 @Observable
 final class QuizViewModel {
     enum Phase: Equatable {
@@ -27,6 +29,8 @@ final class QuizViewModel {
     }
 
     nonisolated static let exerciseCount = 6
+    /// How many failed exercises a round replaces automatically.
+    nonisolated static let maxReplacements = 3
 
     private(set) var phase: Phase = .welcome
     private(set) var currentIndex = 0
@@ -47,10 +51,15 @@ final class QuizViewModel {
     private var plan: [PlanItem] = []
     private let makeRepository: (RoundSettings) -> any ExerciseRepository
     private var repository: (any ExerciseRepository)?
-    /// Generated exercises, in order. The next one to generate is at `exercises.count`.
+    /// Exercises still to generate, in order. The first one is being generated.
+    private var queue: [PlanItem] = []
+    /// Generated exercises, in the order they were ready. The reader's is at `currentIndex`.
     private var exercises: [Exercise] = []
-    /// Whether generating the exercise at `exercises.count` failed.
-    private var generationFailed = false
+    /// Exercises that failed once the round's replacements ran out, kept for a manual retry.
+    /// `exercises`, `queue` and `failedJobs` always add up to `exerciseCount`.
+    private var failedJobs: [PlanItem] = []
+    /// How many more failed exercises this round replaces automatically.
+    private var replacementsLeft = maxReplacements
     private var generation: Task<Void, Never>?
     /// Counts generations, so a late report from a replaced one is ignored.
     private var generationNumber = 0
@@ -71,10 +80,22 @@ final class QuizViewModel {
         return plan.compactMap(\.topics.first?.name).filter { seen.insert($0).inserted }
     }
 
-    /// The main topic of the exercise at `index`, as planned.
-    func plannedTopicName(at index: Int) -> String? {
-        plan.indices.contains(index) ? plan[index].topics.first?.name : nil
+    /// The main topic of the first exercise that couldn't be generated, for the failure screen.
+    var failedTopicName: String? {
+        failedJobs.first?.topics.first?.name
     }
+
+    /// Whether generation stopped short of a full round, so only a manual retry can go on.
+    private var isStuck: Bool {
+        queue.isEmpty && !failedJobs.isEmpty
+    }
+
+    #if DEBUG
+        /// Generated, pending and failed exercises together, which is always `exerciseCount`.
+        var jobCount: Int {
+            exercises.count + queue.count + failedJobs.count
+        }
+    #endif
 
     var isLastExercise: Bool {
         currentIndex == Self.exerciseCount - 1
@@ -173,24 +194,38 @@ final class QuizViewModel {
         showCurrent()
     }
 
-    /// Generates the failed exercise again with the same topics. Generation is sampled, so a
-    /// second try often works.
+    /// Generates the failed exercises again with the same topics. Generation is sampled, so a
+    /// second try often works. Doesn't use or reset the round's automatic replacements.
     func retry() {
-        guard settings != nil, exercises.count < Self.exerciseCount else { return }
-        phase = .loading
-        generateRemaining()
+        guard settings != nil, isStuck else { return }
+        requeueFailedJobs()
     }
 
-    /// Generates the failed exercise again with other topics, preferring ones it didn't just try.
+    /// Generates the failed exercises again with other topics, preferring ones they didn't just
+    /// try, and the same skills. Doesn't use or reset the round's automatic replacements.
     func retryWithDifferentTopics() {
-        guard let settings else { return }
-        let index = exercises.count
-        guard index < Self.exerciseCount else { return }
-        let failed = Set(plan[index].topics)
-        let untried = settings.topics.filter { !failed.contains($0) }.shuffled()
-        let tried = settings.topics.filter { failed.contains($0) }.shuffled()
-        plan[index].topics = Array((untried + tried).prefix(3))
-        retry()
+        guard let settings, isStuck else { return }
+        var rng = SystemRandomNumberGenerator()
+        for index in failedJobs.indices {
+            failedJobs[index].topics = Self.replacementTopics(
+                for: failedJobs[index].topics,
+                from: settings.topics,
+                using: &rng,
+            )
+        }
+        requeueFailedJobs()
+    }
+
+    /// Up to 3 topics for another try at a failed exercise, those it didn't just try first.
+    static func replacementTopics(
+        for failed: [RoundTopic],
+        from topics: [RoundTopic],
+        using rng: inout some RandomNumberGenerator,
+    ) -> [RoundTopic] {
+        let failed = Set(failed)
+        let untried = topics.filter { !failed.contains($0) }.shuffled(using: &rng)
+        let tried = topics.filter { failed.contains($0) }.shuffled(using: &rng)
+        return Array((untried + tried).prefix(3))
     }
 
     /// The topics and skill for each exercise of a round. Each exercise gets its own topic while
@@ -216,21 +251,30 @@ final class QuizViewModel {
         plan = Self.makePlan(topics: settings.topics, using: &rng)
         // Made per round, so a change to the device language applies to the next round.
         repository = makeRepository(settings)
+        queue = plan
         exercises = []
+        failedJobs = []
+        replacementsLeft = Self.maxReplacements
         isRoundStarted = false
         generateRemaining()
     }
 
-    /// Generates the remaining exercises one at a time, stopping at the first failure.
+    private func requeueFailedJobs() {
+        queue = failedJobs
+        failedJobs = []
+        phase = .loading
+        generateRemaining()
+    }
+
+    /// Generates the queued exercises one at a time. A failure doesn't stop the others: it's
+    /// replaced at the back of the queue while the round has replacements left.
     private func generateRemaining() {
         generation?.cancel()
-        generationFailed = false
         generationNumber += 1
         let number = generationNumber
         guard let repository else { return }
         generation = Task {
-            while exercises.count < Self.exerciseCount {
-                let item = plan[exercises.count]
+            while let item = queue.first {
                 writingTopicName = item.topics.first?.name
                 do {
                     let exercise = try await repository.exercise(topics: item.topics, skill: item.skill) { topic in
@@ -239,24 +283,39 @@ final class QuizViewModel {
                         self.writingTopicName = topic.name
                     }
                     guard !Task.isCancelled else { return }
+                    queue.removeFirst()
                     exercises.append(exercise)
                 } catch {
                     guard !Task.isCancelled, !(error is CancellationError) else { return }
-                    logger.error("Couldn't generate exercise \(self.exercises.count + 1): \(error)")
-                    generationFailed = true
+                    queue.removeFirst()
+                    handleFailure(of: item, error)
                 }
                 if phase == .loading {
                     showCurrent()
-                }
-                if generationFailed {
-                    return
                 }
             }
         }
     }
 
-    /// Shows the current exercise from its passage if it's ready, otherwise waits for it or reports
-    /// why it failed.
+    /// Queues a replacement with the same skill and other topics while the round has some left,
+    /// and otherwise keeps the exercise for a manual retry.
+    private func handleFailure(of item: PlanItem, _ error: any Error) {
+        let failure = "exercise (\(item.skill), \(item.topics.first?.name ?? "no topic"))"
+        guard let settings, replacementsLeft > 0 else {
+            failedJobs.append(item)
+            logger.error("Couldn't generate an \(failure), no replacements left: \(error)")
+            return
+        }
+        replacementsLeft -= 1
+        let left = replacementsLeft
+        var rng = SystemRandomNumberGenerator()
+        let topics = Self.replacementTopics(for: item.topics, from: settings.topics, using: &rng)
+        queue.append(PlanItem(topics: topics, skill: item.skill))
+        logger.error("Couldn't generate an \(failure), replacing it, \(left) left: \(error)")
+    }
+
+    /// Shows the current exercise from its passage if it's ready, otherwise waits for the next one
+    /// to be ready, or reports the failure once nothing is left to generate.
     private func showCurrent() {
         selectedOption = nil
         isReading = true
@@ -265,7 +324,7 @@ final class QuizViewModel {
             phase = .answering
         } else {
             currentExercise = nil
-            phase = generationFailed ? .failed : .loading
+            phase = queue.isEmpty ? .failed : .loading
         }
     }
 }

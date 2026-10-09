@@ -24,7 +24,7 @@ Reading and understanding a text is the foundation for learning everything else.
 - **Topics the reader chooses:** each age group has its own list of suggested topics that can be turned on and off, and readers can add their own. The on-device model checks that a new topic suits the reader's age and tidies up its wording before it's saved.
 - **Feedback that teaches:** after a wrong answer, Leo shows the correct one and a short explanation that points back to the passage. At the end of a round, Review goes back through the missed texts with the reader's answer, the right one, the explanation and the passage.
 - **Reads in your language:** texts are written in the device's language when the on-device model supports it, and in English otherwise. The interface is available in English, Spanish and Brazilian Portuguese for the moment.
-- **Little waiting for questions:** the exercises start generating in the background as soon as the app opens, before the reader taps Start.
+- **Little waiting for questions:** the exercises start generating in the background as soon as the app opens, before the reader taps Start. A text that can't be written is replaced by another one automatically, up to 3 times per round.
 - **Accessible:** supports Dynamic Type up to accessibility sizes, Dark Mode, Increase Contrast and VoiceOver.
 - **Made to read like print:** the Broadsheet design sets everything in [Source Serif 4](https://github.com/adobe-fonts/source-serif) on a warm paper ground, with a dark ink version for Dark Mode.
 

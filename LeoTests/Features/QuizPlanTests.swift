@@ -48,4 +48,54 @@ struct QuizPlanTests {
             #expect(plan(topics, seed: seed) == plan(topics, seed: seed), "seed \(seed)")
         }
     }
+
+    // MARK: - Replacement topics
+
+    private func replacement(for failed: [RoundTopic], from topics: [RoundTopic], seed: UInt64) -> [RoundTopic] {
+        var rng = SplitMix64(seed: seed)
+        return QuizViewModel.replacementTopics(for: failed, from: topics, using: &rng)
+    }
+
+    @Test(arguments: [4, 5, 6, 20])
+    func replacementTopicsPreferUntried(topicCount: Int) {
+        let topics = topics(topicCount)
+        let failed = Array(topics.prefix(3))
+        let untriedCount = min(topicCount - 3, 3)
+        for seed in Self.seeds {
+            let replacement = replacement(for: failed, from: topics, seed: seed)
+            #expect(replacement.count == 3, "seed \(seed)")
+            #expect(Set(replacement).count == 3, "seed \(seed)")
+            #expect(replacement.allSatisfy(topics.contains), "seed \(seed)")
+            #expect(
+                replacement.prefix(untriedCount).allSatisfy { !failed.contains($0) },
+                "seed \(seed): \(replacement)",
+            )
+            #expect(replacement.dropFirst(untriedCount).allSatisfy(failed.contains), "seed \(seed): \(replacement)")
+        }
+    }
+
+    /// With no other topics, the failed ones come back, in another order for some seeds.
+    @Test func replacementTopicsWithoutOthers() {
+        let topics = topics(3)
+        var orders: Set<[RoundTopic]> = []
+        for seed in Self.seeds {
+            let replacement = replacement(for: topics, from: topics, seed: seed)
+            #expect(Set(replacement) == Set(topics), "seed \(seed)")
+            #expect(replacement.count == 3, "seed \(seed)")
+            orders.insert(replacement)
+        }
+        #expect(orders.count > 1)
+    }
+
+    @Test func replacementTopicsSameSeedSameResult() {
+        let topics = topics(10)
+        let failed = Array(topics.prefix(3))
+        for seed in Self.seeds {
+            #expect(replacement(for: failed, from: topics, seed: seed) == replacement(
+                for: failed,
+                from: topics,
+                seed: seed,
+            ))
+        }
+    }
 }
