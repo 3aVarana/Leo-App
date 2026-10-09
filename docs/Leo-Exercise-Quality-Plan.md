@@ -251,3 +251,12 @@ Not in this plan. Each has a hypothesis and a pass criterion for the harness.
 - **Passage as sentences.** `sentences: [String]` with `.count(8...11)` for 6–8 and 9–11 (`paragraphs` with `.count(2...3)` for 15+), joined by the app. Hypothesis: the constrained sampler enforces counts exactly, so lengths land in range without the list-like text the current sentence request produces. Pass: under-range rate under 10% and passages read as a story in hand checks.
 - **Evidence field.** An `evidence: String` property between `question` and `correctAnswer` ("the sentence in the passage the answer rests on"), following Apple's advice to give the model a reasoning field before the answer. Hypothesis: fewer unsupported correct answers. Cost: about 30 more output tokens.
 - **Model-as-judge in the harness** (§3).
+
+---
+
+## 8. Implementation notes (2026-10-09)
+
+Measured with `scripts/exercise-eval` (two `--all` runs of 50 per version). Departures from the plan above:
+
+- **PR A, the kind of passage moved forward from §2.6.** With the prompts as written in §2.1 and §2.2, about half the informative topics at 6–8 and 9–11 became stories about a child ("volcanoes" became a boy who flees a mountain; "the human body" became a forest story with no body in it). `TopicKind` (§2.6) therefore lands in PR A, and the prompt states the kind: "The passage is a story." or "The passage is an informative text that explains real, well-known facts about <topic>. It is not a story and has no main character." The instructions' "Stories have a character who wants something, a problem and an ending. Informative texts explain real, well-known facts." line was dropped: describing the plot made stories 15 to 30 words shorter, so 6–8 stories still read as lists, as before. Kinds come from the topic prompt by whole word ("story", "fiction", "fictional"), so "music history" stays informative.
+- **PR A, purpose hint.** As planned, 3 of 7 purpose questions asked about a character's motive ("Why did Liam include the strange mark?"). The hint now says the question "MUST say "the writer"".
