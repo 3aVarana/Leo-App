@@ -37,11 +37,8 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
         let defaults = DefaultTopics.topics(for: group)
         let topics = defaults.filter { isEnabled($0, in: group) }.map(\.roundTopic)
             + (customTopics[group] ?? []).map(\.roundTopic)
-        // Fewer than the minimum is only possible with stale data, since the editor keeps a minimum
-        // enabled. makePlan needs that many for a main topic and 2 spares per exercise, so top up
-        // with suggested topics the reader turned off, keeping the ones they chose. This is a rare
-        // edge case (e.g. a later version removing a suggested topic), so this simple top-up is a
-        // stopgap worth revisiting if a better approach comes up.
+        // Fewer than the minimum only happens with stale data. makePlan needs that many topics,
+        // so top up with suggested topics the reader turned off, keeping the ones they chose.
         guard topics.count < Self.minimumEnabledTopics else { return topics }
         let disabled = defaults.filter { !isEnabled($0, in: group) }.map(\.roundTopic)
         return topics + disabled.prefix(Self.minimumEnabledTopics - topics.count)
