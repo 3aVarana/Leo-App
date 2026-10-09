@@ -9,17 +9,14 @@ struct ExerciseTests {
         Exercise(generated: generated, topic: "foxes", skill: .detail, acceptedWordCount: accepted)
     }
 
-    @Test(arguments: [
-        ["Into a cave", "Up a tree"],
-        ["Into a cave", "Up a tree", "Under a bridge"],
-    ])
-    func validInput(incorrectAnswers: [String]) throws {
+    @Test func validInput() throws {
+        let incorrectAnswers = ["Into a cave", "Up a tree", "Under a bridge"]
         let exercise = try #require(exercise(.fixture(
             correctAnswer: "Across a field",
             incorrectAnswers: incorrectAnswers,
         )))
 
-        #expect(exercise.options.count == incorrectAnswers.count + 1)
+        #expect(exercise.options.count == 4)
         #expect(Set(exercise.options) == Set(incorrectAnswers + ["Across a field"]))
         #expect(exercise.options[exercise.correctIndex] == "Across a field")
         #expect(exercise.options.filter { $0 == "Across a field" }.count == 1)
@@ -33,46 +30,49 @@ struct ExerciseTests {
             passage: "\n " + .words(60) + " \n",
             question: "\tWhere did the fox run? ",
             correctAnswer: " Across a field\n",
-            incorrectAnswers: ["  Into a cave", "Up a tree\n"],
+            incorrectAnswers: ["  Into a cave", "Up a tree\n", " Under a bridge"],
             explanation: "\nBecause the passage says so.  ",
         )))
 
         #expect(exercise.title == "The Quiet Field")
         #expect(exercise.passage == .words(60))
         #expect(exercise.question == "Where did the fox run?")
-        #expect(Set(exercise.options) == ["Across a field", "Into a cave", "Up a tree"])
+        #expect(Set(exercise.options) == ["Across a field", "Into a cave", "Up a tree", "Under a bridge"])
         #expect(exercise.options[exercise.correctIndex] == "Across a field")
         #expect(exercise.explanation == "Because the passage says so.")
     }
 
     @Test func dropsEmptyDistractors() throws {
-        let exercise = try #require(exercise(.fixture(incorrectAnswers: ["Into a cave", "", "  \n", "Up a tree"])))
-        #expect(Set(exercise.options) == ["Across a field", "Into a cave", "Up a tree"])
+        let exercise = try #require(exercise(.fixture(
+            incorrectAnswers: ["Into a cave", "", "  \n", "Up a tree", "Under a bridge"],
+        )))
+        #expect(Set(exercise.options) == ["Across a field", "Into a cave", "Up a tree", "Under a bridge"])
     }
 
     @Test func dropsDuplicateDistractorsIgnoringCase() throws {
         let exercise = try #require(exercise(.fixture(
             correctAnswer: "Madrid",
-            incorrectAnswers: ["Paris", "paris", "Rome"],
+            incorrectAnswers: ["Paris", "paris", "Rome", "Lisbon"],
         )))
-        #expect(exercise.options.count == 3)
-        #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome"])
+        #expect(exercise.options.count == 4)
+        #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome", "Lisbon"])
     }
 
     @Test func dropsDistractorEqualToCorrectAnswerIgnoringCase() throws {
         let exercise = try #require(exercise(.fixture(
             correctAnswer: "Madrid",
-            incorrectAnswers: ["MADRID", "Paris", "Rome"],
+            incorrectAnswers: ["MADRID", "Paris", "Rome", "Lisbon"],
         )))
-        #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome"])
+        #expect(Set(exercise.options) == ["Madrid", "Paris", "Rome", "Lisbon"])
     }
 
     @Test func tooFewDistractorsAfterDroppingCorrectAnswer() {
-        #expect(exercise(.fixture(correctAnswer: "Madrid", incorrectAnswers: ["madrid", "Paris"])) == nil)
+        #expect(exercise(.fixture(correctAnswer: "Madrid", incorrectAnswers: ["madrid", "Paris", "Rome"])) == nil)
     }
 
     @Test(arguments: [
         ["Into a cave"],
+        ["Into a cave", "Up a tree"],
         ["Into a cave", "Up a tree", "Under a bridge", "Over the hill"],
     ])
     func wrongDistractorCount(incorrectAnswers: [String]) {
