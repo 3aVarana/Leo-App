@@ -53,6 +53,19 @@ struct ExerciseGeneratorPromptTests {
         #expect(prompt.contains("Skill to test: \(skill.promptHint)"))
     }
 
+    @Test func promptStatesTheKindOfPassage() {
+        let generator = ExerciseGenerator(language: .english, ageGroup: .nine)
+        let informative = generator.prompt(topic: RoundTopic(prompt: "volcanoes", name: "Volcanoes"), skill: .detail)
+        let story = generator.prompt(
+            topic: RoundTopic(prompt: "a story about a kind robot", name: "A kind robot", kind: .story),
+            skill: .detail,
+        )
+        #expect(informative.contains("informative text that explains real, well-known facts about volcanoes"))
+        #expect(!informative.contains("The passage is a story"))
+        #expect(story.contains("The passage is a story."))
+        #expect(!story.contains("informative text"))
+    }
+
     /// Prompt changes show up in review. Re-record when tuning prompts on purpose.
     @Test(arguments: AgeGroup.allCases)
     func promptSnapshot(_ group: AgeGroup) {

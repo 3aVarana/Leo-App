@@ -46,6 +46,34 @@ struct DefaultTopicsTests {
         }
     }
 
+    @Test(arguments: [
+        ("a story about a kind robot", TopicKind.story),
+        ("a short story about friendship", .story),
+        ("a short fictional story about a teenager facing a challenge", .story),
+        ("a short piece of literary fiction", .story),
+        ("a survival story", .story),
+        ("volcanoes", .informative),
+        ("a day at the beach", .informative),
+        ("the history of language", .informative),
+        ("mysteries of history", .informative),
+    ])
+    func topicKind(_ prompt: String, expected: TopicKind) throws {
+        let topic = try #require(AgeGroup.allCases.lazy.flatMap(DefaultTopics.topics(for:))
+            .first { $0.prompt == prompt })
+        #expect(topic.kind == expected)
+        #expect(topic.roundTopic.kind == expected)
+    }
+
+    @Test(arguments: AgeGroup.allCases)
+    func everyGroupHasStoriesAndFacts(_ group: AgeGroup) {
+        let kinds = Set(DefaultTopics.topics(for: group).map(\.kind))
+        #expect(kinds == [.story, .informative])
+    }
+
+    @Test func customTopicsAreInformative() {
+        #expect(CustomTopic(name: "Chess").roundTopic.kind == .informative)
+    }
+
     /// What the question asks, what the passage must do, and what the wrong answers are.
     @Test(arguments: ComprehensionSkill.allCases)
     func promptHintHasThreeParts(_ skill: ComprehensionSkill) {
