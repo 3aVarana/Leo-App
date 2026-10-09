@@ -6,7 +6,13 @@ struct ExerciseTests {
     private let accepted = AgeGroup.six.acceptedWordCount
 
     private func exercise(_ generated: GeneratedExercise) -> Exercise? {
-        Exercise(generated: generated, topic: "foxes", skill: .detail, acceptedWordCount: accepted)
+        try? validated(generated)
+    }
+
+    private func validated(_ generated: GeneratedExercise) throws(ExerciseRejection) -> Exercise {
+        try Exercise(
+            generated: generated, topic: "foxes", skill: .detail, acceptedWordCount: accepted, language: .english,
+        )
     }
 
     @Test func validInput() throws {
@@ -109,6 +115,54 @@ struct ExerciseTests {
     func emptyTitleIsAccepted(_ title: String) throws {
         let exercise = try #require(exercise(.fixture(title: title)))
         #expect(exercise.title == "")
+    }
+
+    // MARK: Repairs and rejections (docs/Leo-Exercise-Quality-Plan.md, section 2.4)
+
+    @Test func rejectionReasons() {
+        #expect(throws: ExerciseRejection.emptyField) { try validated(.fixture(question: " ")) }
+        #expect(throws: ExerciseRejection.distractors) { try validated(.fixture(incorrectAnswers: ["A", "B"])) }
+        #expect(throws: ExerciseRejection.passageLength) { try validated(.fixture(passage: .words(10))) }
+        #expect(throws: ExerciseRejection.selfReference) {
+            try validated(.fixture(passage: .words(50) + " The author wanted to show how foxes live."))
+        }
+        #expect(throws: ExerciseRejection.standoutAnswer) {
+            try validated(.fixture(correctAnswer: "The fox ran across a quiet green field at dawn"))
+        }
+    }
+
+    @Test func distractorDifferingOnlyByFinalPeriodIsADuplicate() {
+        #expect(exercise(.fixture(
+            correctAnswer: "Across a field",
+            incorrectAnswers: ["Across a field.", "Up a tree", "Under a bridge"],
+        )) == nil)
+    }
+
+    @Test func matchesPunctuationAndKeepsTheCorrectIndex() throws {
+        let exercise = try #require(exercise(.fixture(
+            correctAnswer: "Across a field",
+            incorrectAnswers: ["Into a cave.", "Up a tree.", "Under a bridge"],
+        )))
+        #expect(Set(exercise.options) == ["Across a field.", "Into a cave.", "Up a tree.", "Under a bridge."])
+        #expect(exercise.options[exercise.correctIndex] == "Across a field.")
+    }
+
+    @Test func removesMarkdown() throws {
+        let exercise = try #require(exercise(.fixture(
+            title: "# The *Quiet* Field",
+            passage: "A **fox** " + .words(58),
+            question: "Where did the `fox` run?",
+            correctAnswer: "*Across* a field",
+        )))
+        #expect(exercise.title == "The Quiet Field")
+        #expect(exercise.passage.hasPrefix("A fox the small"))
+        #expect(exercise.question == "Where did the fox run?")
+        #expect(exercise.options[exercise.correctIndex] == "Across a field")
+    }
+
+    @Test func dropsTruncatedExplanation() throws {
+        let exercise = try #require(exercise(.fixture(explanation: "The mention of")))
+        #expect(exercise.explanation == "")
     }
 
     @Test func nonRandomInitKeepsValues() {
