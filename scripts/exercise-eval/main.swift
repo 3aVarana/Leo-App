@@ -66,7 +66,9 @@ struct Main {
         language: ContentLanguage,
     ) async {
         let generator = ExerciseGenerator(language: language, ageGroup: group)
-        let roundTopic = RoundTopic(prompt: topic, name: topic)
+        // A default topic as the app builds it; anything else as a custom topic would be.
+        let roundTopic = DefaultTopics.topics(for: group).first { $0.prompt == topic }?.roundTopic
+            ?? RoundTopic(prompt: topic, name: topic)
         for index in 1 ... count {
             let header = "===== [\(group.rawValue) | \(skill.rawValue) | \(topic)] #\(index)"
             let start = Date()
