@@ -67,6 +67,20 @@ struct ExerciseGeneratorPromptTests {
         #expect(!story.contains("informative text"))
     }
 
+    @Test func onlyInformativePromptsAskForWellKnownFacts() {
+        let generator = ExerciseGenerator(language: .english, ageGroup: .nine)
+        let facts = "Use well-known facts, and avoid exact figures and dates unless they are famous."
+        #expect(generator.prompt(topic: RoundTopic(prompt: "volcanoes", name: "Volcanoes"), skill: .detail)
+            .contains(facts))
+        #expect(!generator.prompt(topic: RoundTopic(prompt: "a story", name: "A story", kind: .story), skill: .detail)
+            .contains(facts))
+    }
+
+    @Test func temperatureByKind() {
+        #expect(ExerciseGenerator.temperature(for: .story) == 0.8)
+        #expect(ExerciseGenerator.temperature(for: .informative) == 0.5)
+    }
+
     @Test func spanishInstructionsStartWithTheLocale() {
         let instructions = ExerciseGenerator(language: Self.spanish, ageGroup: .nine).instructions
         #expect(instructions.hasPrefix("The person's locale is es_ES.\nYou are an expert reading teacher"))
