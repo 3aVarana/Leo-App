@@ -14,6 +14,23 @@ nonisolated enum ExerciseRejection: String, Error {
 nonisolated enum ExerciseRepair {
     // MARK: Repairs
 
+    /// Removes a title the model put at the start of the passage, as a `#` heading or in bold on
+    /// its own line or before a new sentence. The title is generated last, as its own field, so the
+    /// model sometimes writes one into the passage too. Bold words that start a sentence, as in
+    /// "**Volcanoes** are mountains", are left for `removingMarkdown`.
+    static func removingLeadingTitle(_ passage: String) -> String {
+        let range = NSRange(passage.startIndex..., in: passage)
+        guard let match = leadingTitlePattern.firstMatch(in: passage, range: range),
+              let matched = Range(match.range, in: passage)
+        else { return passage }
+        return String(passage[matched.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    // swiftlint:disable:next force_try
+    private static let leadingTitlePattern = try! NSRegularExpression(
+        pattern: #"^\s*(?:#+[^\n]*\n|\*\*[^*\n.!?]+\*\*[ \t]*(?:\n|(?=\p{Lu})))"#,
+    )
+
     /// Removes markdown the model sometimes adds: `*` and `_` used for emphasis, `#` headings and
     /// backticks. An asterisk or underscore with letters or digits on both sides, as in "2*3" or
     /// "snake_case", is left alone.

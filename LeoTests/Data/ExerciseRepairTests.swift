@@ -29,6 +29,28 @@ struct ExerciseRepairTests {
         #expect(ExerciseRepair.removingMarkdown(text) == text)
     }
 
+    // MARK: Leading title
+
+    @Test(arguments: [
+        ("**Busy Little Bugs**\nInsects live all around us.", "Insects live all around us."),
+        ("**Busy Little Bugs** In a sunny garden, a ladybug rests.", "In a sunny garden, a ladybug rests."),
+        ("**The Missing Pencil**  Liam found a pencil.", "Liam found a pencil."),
+        ("# Volcanoes\n\nHot rock rises.", "Hot rock rises."),
+    ])
+    func removesLeadingTitle(_ passage: String, expected: String) {
+        #expect(ExerciseRepair.removingLeadingTitle(passage) == expected)
+    }
+
+    @Test(arguments: [
+        "**Volcanoes** are mountains that erupt.",
+        "Insects live all around us. **Bees** make honey.",
+        "**Stop!** Mia shouted.",
+        "A plain passage.",
+    ])
+    func keepsPassagesWithoutATitle(_ passage: String) {
+        #expect(ExerciseRepair.removingLeadingTitle(passage) == passage)
+    }
+
     // MARK: Punctuation
 
     @Test func addsPeriodsWhenMostEndInOne() {
