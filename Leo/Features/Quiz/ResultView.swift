@@ -5,8 +5,7 @@ struct ResultView: View {
     let answers: [RoundAnswer]
     let ageGroup: AgeGroup
     let onRestart: () -> Void
-    /// `nil` hides the Settings button.
-    var onSettings: (() -> Void)?
+    let onSettings: () -> Void
 
     /// The position in `misses` that Review opens at.
     @State private var reviewStart: Int?
@@ -16,18 +15,16 @@ struct ResultView: View {
         ScrollingScreen {
             HStack {
                 Spacer()
-                if let onSettings {
-                    Button(action: onSettings) {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: gearSize))
-                            .symbolRenderingMode(.hierarchical)
-                            .frame(minWidth: 44, minHeight: 44)
-                            .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text("Settings"))
+                Button(action: onSettings) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: gearSize))
+                        .symbolRenderingMode(.hierarchical)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
+                        .contentShape(.rect)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Settings"))
             }
             .frame(minHeight: 44)
             .padding(.top, 4)
