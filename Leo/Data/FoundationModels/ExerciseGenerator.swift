@@ -53,14 +53,26 @@ struct ExerciseGenerator {
         case .informative:
             """
             The passage is an informative text that explains real, well-known facts about \(topic.prompt). \
-            It is not a story and has no main character.
+            It is not a story and has no main character. \
+            Use well-known facts, and avoid exact figures and dates unless they are famous.
             """
         case .open:
             // Facts stay the default, so a plain subject like "chess" doesn't turn into a story.
             """
             If the topic asks for a story, the passage is a story. Otherwise it is an informative text \
-            that explains real, well-known facts about \(topic.prompt), with no main character.
+            that explains real, well-known facts about \(topic.prompt), with no main character, \
+            and it avoids exact figures and dates unless they are famous.
             """
+        }
+    }
+
+    /// Apple's guide suggests a high temperature for creative tasks and a low one for precise ones.
+    /// Informative passages get a lower one, so facts drift less. A reader's own topic is facts
+    /// unless it asks for a story, so it gets the informative one.
+    static func temperature(for kind: TopicKind) -> Double {
+        switch kind {
+        case .story: 0.8
+        case .informative, .open: 0.5
         }
     }
 
@@ -130,7 +142,12 @@ struct ExerciseGenerator {
         let session = LanguageModelSession(instructions: instructions)
         let prompt = prompt(topic: topic, skill: skill)
         do {
-            let generated = try await respond(to: prompt, in: session, signpostID: signpostID)
+            let generated = try await respond(
+                to: prompt,
+                in: session,
+                temperature: Self.temperature(for: topic.kind),
+                signpostID: signpostID,
+            )
             let exercise = try Exercise(
                 generated: generated,
                 topic: topic,
@@ -163,12 +180,13 @@ struct ExerciseGenerator {
     private func respond(
         to prompt: String,
         in session: LanguageModelSession,
+        temperature: Double,
         signpostID: OSSignpostID,
     ) async throws -> GeneratedExercise {
         let stream = session.streamResponse(
             to: prompt,
             generating: GeneratedExercise.self,
-            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens),
+            options: GenerationOptions(temperature: temperature, maximumResponseTokens: Self.maxResponseTokens),
         )
         var content: GeneratedContent?
         for try await snapshot in stream {
