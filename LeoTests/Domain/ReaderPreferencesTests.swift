@@ -97,10 +97,32 @@ struct ReaderPreferencesTests {
     }
 
     /// Only possible with stale data, since the editor keeps a minimum enabled.
-    @Test func enabledTopicsFallsBackToAllSuggested() {
+    @Test func enabledTopicsTopsUpFromNone() {
         let all = DefaultTopics.topics(for: .six)
         let preferences = ReaderPreferences.fixture(ageGroup: .six, disabled: [.six: Set(all.map(\.id))])
-        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.map(\.prompt))
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == all.prefix(3).map(\.prompt))
+    }
+
+    /// Only possible with stale data, since the editor keeps a minimum enabled.
+    @Test func enabledTopicsTopsUpBelowMinimum() {
+        let all = DefaultTopics.topics(for: .six)
+        let preferences = ReaderPreferences.fixture(
+            ageGroup: .six,
+            disabled: [.six: Set(all.dropFirst().map(\.id))],
+            custom: [.six: ["Chess"]],
+        )
+        let expected = [all[0].prompt, "Chess", all[1].prompt]
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == expected)
+    }
+
+    @Test func enabledTopicsKeepsMinimum() {
+        let all = DefaultTopics.topics(for: .six)
+        let preferences = ReaderPreferences.fixture(
+            ageGroup: .six,
+            disabled: [.six: Set(all.map(\.id))],
+            custom: [.six: ["Chess", "Origami", "Knots"]],
+        )
+        #expect(preferences.enabledTopics(for: .six).map(\.prompt) == ["Chess", "Origami", "Knots"])
     }
 
     /// `QuizViewModel.configure` relies on equal preferences giving equal settings to skip work.

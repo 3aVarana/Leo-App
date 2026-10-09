@@ -46,7 +46,7 @@ struct RootView: View {
                 ageGroup: ageGroup,
                 topicNames: quiz.plannedTopicNames,
                 onStart: quiz.start,
-                onSettings: viewModel.canShowSettings ? { viewModel.isShowingSettings = true } : nil,
+                onSettings: { viewModel.isShowingSettings = true },
             )
             .toolbar(.hidden, for: .navigationBar)
         case .loading:
@@ -68,7 +68,7 @@ struct RootView: View {
                 answers: quiz.answers,
                 ageGroup: quiz.roundAgeGroup ?? ageGroup,
                 onRestart: quiz.start,
-                onSettings: viewModel.canShowSettings ? { viewModel.isShowingSettings = true } : nil,
+                onSettings: { viewModel.isShowingSettings = true },
             )
             .toolbar(.hidden, for: .navigationBar)
         case .failed:

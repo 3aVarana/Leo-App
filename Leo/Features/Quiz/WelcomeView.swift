@@ -5,8 +5,7 @@ struct WelcomeView: View {
     /// This round's planned topics, in order. Empty until the round is prepared.
     let topicNames: [String]
     let onStart: () -> Void
-    /// `nil` hides the Settings button.
-    var onSettings: (() -> Void)?
+    let onSettings: () -> Void
 
     @ScaledMetric(relativeTo: .title3) private var gearSize = 24
 
@@ -18,17 +17,15 @@ struct WelcomeView: View {
                     .accessibilityAddTraits(.isHeader)
                     .launchWordmarkTarget()
                 Spacer()
-                if let onSettings {
-                    Button(action: onSettings) {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: gearSize))
-                            .symbolRenderingMode(.hierarchical)
-                            .frame(minWidth: 44, minHeight: 44)
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text("Settings"))
+                Button(action: onSettings) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: gearSize))
+                        .symbolRenderingMode(.hierarchical)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(.rect)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Settings"))
             }
             .padding(.top, 4)
             .frame(minHeight: 44)

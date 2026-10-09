@@ -32,11 +32,6 @@ final class RootViewModel {
         availabilityProvider.availability
     }
 
-    /// Settings can be opened between rounds, not while one is being answered or generated.
-    var canShowSettings: Bool {
-        quiz.phase == .welcome || quiz.phase == .finished
-    }
-
     /// Saves and applies `preferences`. Does nothing when they haven't changed.
     func save(_ preferences: ReaderPreferences) {
         guard preferences != self.preferences else { return }
