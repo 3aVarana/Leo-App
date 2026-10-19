@@ -51,17 +51,47 @@ nonisolated extension AgeGroup {
 }
 
 nonisolated extension ComprehensionSkill {
+    /// Three parts: what the question asks, what the passage must do so the skill can be tested,
+    /// and what the wrong answers are. The model reads this before it writes the passage.
     var promptHint: String {
         switch self {
-        case .mainIdea: "Ask about the main idea or central message of the passage."
-        case .detail: "Ask about a specific, important detail stated in the passage."
-        case .inference: "Ask something that is not stated directly but can be logically inferred from the passage."
+        case .mainIdea:
+            """
+            The question asks what the passage is mostly about, or what its central message is. \
+            The passage must not state its own main idea or moral in a sentence; the reader works it out \
+            from the whole text. The wrong answers are details from the passage that are true but too narrow, \
+            or ideas the passage never supports.
+            """
+        case .detail:
+            """
+            The question asks about one specific, important fact or event in the passage. \
+            State that fact plainly in the passage. The question and the correct answer must rephrase it \
+            in different words. The wrong answers are other things from the passage, slightly changed \
+            so they are false.
+            """
+        case .inference:
+            """
+            The question asks about something the passage never says directly but clearly implies: \
+            how a character feels, why someone did something, what will probably happen next, \
+            or what caused something described. The passage must give the clues but never state the answer. \
+            The wrong answers are conclusions the clues do not support.
+            """
         case .vocabulary:
             """
-            Ask what a specific word or phrase used in the passage means in that context. \
-            Quote the word in the question.
+            Use one word or expression in the passage that is slightly above the reader's level, in a sentence \
+            whose context shows its meaning. Do not define it in the passage, do not mark it in any way, \
+            and do not pick the topic word. The question asks what that word means in the passage and repeats \
+            the word. The wrong answers are meanings that word could have in other contexts, or meanings that fit \
+            the sentence badly.
             """
-        case .purpose: "Ask why the author wrote the passage or why they included a specific part of it."
+        case .purpose:
+            """
+            The question asks why the writer wrote the passage, or why the writer included a specific event, \
+            detail or example, and it MUST say "the writer". A character in a story is never the writer. \
+            The passage itself must never mention the writer, the reader, the passage or its purpose; \
+            it simply tells or explains. The wrong answers are purposes that sound reasonable but do not match \
+            what the passage actually does.
+            """
         }
     }
 }

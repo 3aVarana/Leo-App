@@ -223,6 +223,7 @@ Add-topic sequence. Matching a name ignores case and accents, and compares again
 - `Exercise.init?(generated:topic:skill:acceptedWordCount:)` replaces the hard-coded `wordCount >= 60`. The passage's word count must be inside `acceptedWordCount`.
 - The linguistic word count (`enumerateSubstrings(.byWords)`, so languages without spaces work) moves into a `String.wordCount` extension, shared with `ExerciseGenerator`.
 - `ComprehensionSkill` unchanged.
+- Since [the exercise quality plan](Leo-Exercise-Quality-Plan.md), the model always writes 3 distractors (`.count(3)`). The app still accepts 2 after dropping a blank or duplicate one, so most exercises have 4 options and a few have 3. The schema generates the passage first and the title last.
 
 ### `Leo/Services/ExerciseGenerator.swift`
 - Add `let ageGroup: AgeGroup`.

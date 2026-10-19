@@ -8,11 +8,20 @@ nonisolated struct DefaultTopic: Identifiable, Sendable {
     let name: LocalizedStringResource
     /// The English phrase used in prompts.
     let prompt: String
+    /// Set by hand: a story topic's prompt doesn't always say "story" ("friendly dragons and fairies").
+    let kind: TopicKind
+
+    init(id: String, name: LocalizedStringResource, prompt: String, kind: TopicKind = .informative) {
+        self.id = id
+        self.name = name
+        self.prompt = prompt
+        self.kind = kind
+    }
 }
 
 nonisolated extension DefaultTopic {
     var roundTopic: RoundTopic {
-        RoundTopic(prompt: prompt, name: String(localized: name))
+        RoundTopic(prompt: prompt, name: String(localized: name), kind: kind)
     }
 }
 
@@ -30,8 +39,9 @@ nonisolated struct CustomTopic: Identifiable, Codable, Hashable, Sendable {
 
 nonisolated extension CustomTopic {
     /// The reader's phrase is both what the model writes about and what the reader sees.
+    /// The reader may have typed a story ("a fairy tale") or a subject ("chess"), so the model decides.
     var roundTopic: RoundTopic {
-        RoundTopic(prompt: name, name: name)
+        RoundTopic(prompt: name, name: name, kind: .open)
     }
 }
 
@@ -56,6 +66,7 @@ nonisolated enum DefaultTopics {
             id: "dragons-fairies",
             name: "Friendly dragons and fairies",
             prompt: "friendly dragons and fairies",
+            kind: .story,
         ),
         DefaultTopic(id: "beach", name: "The beach", prompt: "a day at the beach"),
         DefaultTopic(id: "insects-bugs", name: "Insects and bugs", prompt: "insects and bugs"),
@@ -65,12 +76,13 @@ nonisolated enum DefaultTopics {
             id: "lost-toy",
             name: "A lost toy finds its way home",
             prompt: "a story about a lost toy that finds its way home",
+            kind: .story,
         ),
         DefaultTopic(id: "trains-trucks", name: "Trains and trucks", prompt: "trains and trucks"),
         DefaultTopic(id: "moon-stars", name: "The moon and stars", prompt: "the moon and stars"),
         DefaultTopic(id: "baking-cookies", name: "Baking cookies", prompt: "baking cookies"),
         DefaultTopic(id: "playground-games", name: "Playground games", prompt: "playground games"),
-        DefaultTopic(id: "kind-robot", name: "A kind robot", prompt: "a story about a kind robot"),
+        DefaultTopic(id: "kind-robot", name: "A kind robot", prompt: "a story about a kind robot", kind: .story),
     ]
 
     private static let nineToEleven = [
@@ -86,6 +98,7 @@ nonisolated enum DefaultTopics {
             id: "school-mystery",
             name: "A mystery at school",
             prompt: "a short story about a mystery at school",
+            kind: .story,
         ),
         DefaultTopic(id: "ocean-floor", name: "The ocean floor", prompt: "the ocean floor"),
         DefaultTopic(id: "ancient-egypt", name: "Ancient Egypt", prompt: "ancient Egypt"),
@@ -96,6 +109,7 @@ nonisolated enum DefaultTopics {
             id: "magical-adventure",
             name: "A magical adventure",
             prompt: "a short story about a magical adventure",
+            kind: .story,
         ),
     ]
 
@@ -112,10 +126,11 @@ nonisolated enum DefaultTopics {
             id: "friendship-story",
             name: "A story about friendship",
             prompt: "a short story about friendship",
+            kind: .story,
         ),
         DefaultTopic(id: "coding-robots", name: "Coding and robots", prompt: "coding and robots"),
         DefaultTopic(id: "music-history", name: "Music history", prompt: "music history"),
-        DefaultTopic(id: "survival-stories", name: "Survival stories", prompt: "a survival story"),
+        DefaultTopic(id: "survival-stories", name: "Survival stories", prompt: "a survival story", kind: .story),
         DefaultTopic(id: "natural-disasters", name: "Natural disasters", prompt: "natural disasters"),
         DefaultTopic(id: "world-cultures", name: "World cultures", prompt: "world cultures"),
         DefaultTopic(id: "history-mysteries", name: "Mysteries of history", prompt: "mysteries of history"),
@@ -167,6 +182,7 @@ nonisolated enum DefaultTopics {
             id: "teen-challenge-story",
             name: "A teenager facing a challenge",
             prompt: "a short fictional story about a teenager facing a challenge",
+            kind: .story,
         ),
         DefaultTopic(id: "volunteering", name: "Volunteering and community", prompt: "volunteering and community"),
         DefaultTopic(id: "mythology", name: "Mythology", prompt: "mythology"),
@@ -196,6 +212,7 @@ nonisolated enum DefaultTopics {
             id: "literary-fiction",
             name: "Short literary fiction",
             prompt: "a short piece of literary fiction",
+            kind: .story,
         ),
         DefaultTopic(id: "travel-geography", name: "Travel and geography", prompt: "travel and geography"),
         DefaultTopic(id: "history-of-language", name: "The history of language", prompt: "the history of language"),
