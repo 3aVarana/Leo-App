@@ -10,7 +10,9 @@ extension String {
 }
 
 /// Lets tests write a topic as its prompt. The reader-facing name is the prompt, capitalized.
-extension RoundTopic: ExpressibleByStringLiteral {
+extension RoundTopic: @retroactive ExpressibleByExtendedGraphemeClusterLiteral {}
+extension RoundTopic: @retroactive ExpressibleByUnicodeScalarLiteral {}
+extension RoundTopic: @retroactive ExpressibleByStringLiteral {
     public init(stringLiteral prompt: String) {
         self.init(prompt: prompt, name: prompt.prefix(1).uppercased() + prompt.dropFirst())
     }
