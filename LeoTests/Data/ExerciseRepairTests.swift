@@ -35,6 +35,7 @@ struct ExerciseRepairTests {
         ("**Busy Little Bugs**\nInsects live all around us.", "Insects live all around us."),
         ("**Busy Little Bugs** In a sunny garden, a ladybug rests.", "In a sunny garden, a ladybug rests."),
         ("**The Missing Pencil**  Liam found a pencil.", "Liam found a pencil."),
+        ("**Volcanoes**\nHot rock rises.", "Hot rock rises."),
         ("# Volcanoes\n\nHot rock rises.", "Hot rock rises."),
         ("Title: Mystery in the Locker\n\nA student found a note.", "A student found a note."),
         ("Título: El volcán\nEl suelo tembló.", "El suelo tembló."),
@@ -49,6 +50,8 @@ struct ExerciseRepairTests {
         "**Volcanoes** are mountains that erupt.",
         "Insects live all around us. **Bees** make honey.",
         "**Stop!** Mia shouted.",
+        "**Mount** Etna erupted in 2021.",
+        "**Volcanoes** Hot rock rises.",
         "A plain passage.",
         "The bell rang.\n\nEveryone ran outside.",
         "Mia waited by the door, the rain still falling\nThen the bus came.",
@@ -92,6 +95,12 @@ struct ExerciseRepairTests {
             == ["Why?", "Run!", "Stop.", "Wait."])
     }
 
+    @Test func stripKeepsEllipses() {
+        #expect(ExerciseRepair.matchingPunctuation(["Wait...", "A tree.", "A field", "A bridge", "A cave"])
+            == ["Wait...", "A tree", "A field", "A bridge", "A cave"])
+        #expect(ExerciseRepair.matchingPunctuation(["待って。。。", "森", "海", "山"]) == ["待って。。。", "森", "海", "山"])
+    }
+
     @Test func stripKeepsQuestionMarks() {
         #expect(ExerciseRepair.matchingPunctuation(["Why?", "A tree", "A field", "A bridge"])
             == ["Why?", "A tree", "A field", "A bridge"])
@@ -126,12 +135,14 @@ struct ExerciseRepairTests {
 
     @Test func rejectsEnglishSelfReference() {
         #expect(ExerciseRepair.refersToItself("Rivers run. The author wanted to show change.", language: .english))
-        #expect(ExerciseRepair.refersToItself("This shows how small actions matter.", language: .english))
+        #expect(ExerciseRepair.refersToItself("In this passage, we learn about rivers.", language: .english))
         #expect(ExerciseRepair.refersToItself("THE MAIN IDEA is simple.", language: .english))
+        #expect(ExerciseRepair.refersToItself("The writer’s purpose is to warn us.", language: .english))
     }
 
     @Test func rejectsSpanishAndPortugueseSelfReference() {
         #expect(ExerciseRepair.refersToItself("El autor quiso mostrar el cambio.", language: Self.spanish))
+        #expect(ExerciseRepair.refersToItself("Este texto habla del agua.", language: Self.spanish))
         #expect(ExerciseRepair.refersToItself("A autora explica o ciclo.", language: Self.portuguese))
     }
 
@@ -142,6 +153,17 @@ struct ExerciseRepairTests {
         "A coauthor joined them.",
     ])
     func matchesWholeWordsOnly(_ passage: String) {
+        #expect(!ExerciseRepair.refersToItself(passage, language: .english))
+    }
+
+    /// Words that are only self-reference with a verb about the passage, from the PR #31 review.
+    @Test(arguments: [
+        "She read the text on her phone.",
+        "The passage of time made the old writer sad.",
+        "This shows that bees need flowers.",
+        "The writer sat at her desk and smiled.",
+    ])
+    func ordinaryUseIsNotSelfReference(_ passage: String) {
         #expect(!ExerciseRepair.refersToItself(passage, language: .english))
     }
 

@@ -15,10 +15,11 @@ nonisolated enum ExerciseRepair {
     // MARK: Repairs
 
     /// Removes a title the model put at the start of the passage: a `#` heading, a bold phrase on
-    /// its own line or before a new sentence, a "Title:" line, or a short first line without
-    /// sentence punctuation or commas. The title is generated last, as its own field, so the
-    /// model sometimes writes one into the passage too. Bold words that start a sentence, as in
-    /// "**Volcanoes** are mountains", are left for `removingMarkdown`.
+    /// its own line, a bold phrase of 2 or more words before a new sentence, a "Title:" line, or a
+    /// short first line without sentence punctuation or commas. The title is generated last, as
+    /// its own field, so the model sometimes writes one into the passage too. Bold words that
+    /// start a sentence, as in "**Volcanoes** are mountains" or "**Mount** Etna erupted", are left
+    /// for `removingMarkdown`.
     static func removingLeadingTitle(_ passage: String) -> String {
         let range = NSRange(passage.startIndex..., in: passage)
         guard let match = leadingTitlePattern.firstMatch(in: passage, range: range),
@@ -30,7 +31,8 @@ nonisolated enum ExerciseRepair {
     private static let leadingTitlePattern: NSRegularExpression = {
         let titles = [
             #"#+[^\n]*\n"#,
-            #"\*\*[^*\n.!?]+\*\*[ \t]*(?:\n|(?=\p{Lu}))"#,
+            #"\*\*[^*\n.!?]+\*\*[ \t]*\n"#,
+            #"\*\*[^*\s.!?]+(?:[ \t]+[^*\s.!?]+)+\*\*[ \t]*(?=\p{Lu})"#,
             #"(?i:title|t[ií]tulo)[ \t]*:[^\n]*\n"#,
             #"[^\n.!?。！？:,，]{1,60}\n"#,
         ]
@@ -86,7 +88,10 @@ nonisolated enum ExerciseRepair {
         let terminated = answers.filter(endsSentence)
         guard terminated.count * 2 >= answers.count else {
             return answers.map { answer in
-                guard let last = answer.last, periods.contains(last) else { return answer }
+                // An ellipsis ("Wait...") keeps all its dots.
+                guard let last = answer.last, periods.contains(last),
+                      !answer.dropLast().hasSuffix(String(last))
+                else { return answer }
                 return String(answer.dropLast()).trimmingCharacters(in: .whitespaces)
             }
         }
@@ -124,10 +129,28 @@ nonisolated enum ExerciseRepair {
         return pattern.firstMatch(in: passage, range: NSRange(passage.startIndex..., in: passage)) != nil
     }
 
+    /// Only phrases that make sense as self-reference: "the text" or "the writer" alone also
+    /// appear in ordinary passages ("She read the text on her phone"), so the author or writer
+    /// counts only with a verb about the passage.
     private static let selfReferencePatterns: [String: NSRegularExpression] = [
-        "en": ["the author", "the writer", "the passage", "the text", "the main idea", "this shows", "this passage"],
-        "es": ["el autor", "la autora", "el texto", "el pasaje", "la idea principal"],
-        "pt": ["o autor", "a autora", "o texto", "a passagem", "a ideia principal"],
+        "en": selfReferencePhrases(
+            fixed: [
+                "this passage", "this text", "this story", "the main idea",
+                "the author's purpose", "the author’s purpose", "the writer's purpose", "the writer’s purpose",
+            ],
+            subjects: ["the author", "the writer"],
+            verbs: ["wants", "wanted", "explains", "describes", "is trying", "tries", "tells us", "tells the reader"],
+        ),
+        "es": selfReferencePhrases(
+            fixed: ["este texto", "este pasaje", "esta historia", "la idea principal", "el propósito del autor"],
+            subjects: ["el autor", "la autora", "el escritor", "la escritora"],
+            verbs: ["quiere", "quiso", "explica", "describe", "intenta", "nos cuenta", "nos dice"],
+        ),
+        "pt": selfReferencePhrases(
+            fixed: ["este texto", "esta passagem", "esta história", "a ideia principal", "o objetivo do autor"],
+            subjects: ["o autor", "a autora", "o escritor", "a escritora"],
+            verbs: ["quer", "quis", "explica", "descreve", "tenta", "nos conta", "nos diz"],
+        ),
     ].mapValues { phrases in
         let alternatives = phrases.map(NSRegularExpression.escapedPattern(for:)).joined(separator: "|")
         // swiftlint:disable:next force_try
@@ -135,6 +158,10 @@ nonisolated enum ExerciseRepair {
             pattern: #"(?<![\p{L}\p{N}])(?:"# + alternatives + #")(?![\p{L}\p{N}])"#,
             options: .caseInsensitive,
         )
+    }
+
+    private static func selfReferencePhrases(fixed: [String], subjects: [String], verbs: [String]) -> [String] {
+        fixed + subjects.flatMap { subject in verbs.map { "\(subject) \($0)" } }
     }
 
     /// Whether the correct answer is visibly longer than every distractor: more than one and a
