@@ -79,7 +79,7 @@ nonisolated enum ExerciseRepair {
         (try! NSRegularExpression(pattern: pattern), template)
     }
 
-    /// Gives all four answers the same ending, so the correct one doesn't stand out by its
+    /// Gives all the answers the same ending, so the correct one doesn't stand out by its
     /// punctuation: if at least half end in terminal punctuation, a period is added to the others;
     /// otherwise the final period is removed from all of them.
     static func matchingPunctuation(_ answers: [String]) -> [String] {
