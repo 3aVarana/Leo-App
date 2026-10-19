@@ -66,6 +66,13 @@ struct ExerciseGeneratorPromptTests {
         #expect(!story.contains("informative text"))
     }
 
+    @Test func promptLetsTheModelDecideForCustomTopics() {
+        let generator = ExerciseGenerator(language: .english, ageGroup: .nine)
+        let prompt = generator.prompt(topic: CustomTopic(name: "a fairy tale").roundTopic, skill: .detail)
+        #expect(prompt.contains("If the topic asks for a story, the passage is a story."))
+        #expect(prompt.contains("informative text that explains real, well-known facts about a fairy tale"))
+    }
+
     /// Prompt changes show up in review. Re-record when tuning prompts on purpose.
     @Test(arguments: AgeGroup.allCases)
     func promptSnapshot(_ group: AgeGroup) {

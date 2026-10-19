@@ -52,6 +52,7 @@ struct DefaultTopicsTests {
         ("a short fictional story about a teenager facing a challenge", .story),
         ("a short piece of literary fiction", .story),
         ("a survival story", .story),
+        ("friendly dragons and fairies", .story),
         ("volcanoes", .informative),
         ("a day at the beach", .informative),
         ("the history of language", .informative),
@@ -70,8 +71,8 @@ struct DefaultTopicsTests {
         #expect(kinds == [.story, .informative])
     }
 
-    @Test func customTopicsAreInformative() {
-        #expect(CustomTopic(name: "Chess").roundTopic.kind == .informative)
+    @Test func customTopicsLetTheModelDecide() {
+        #expect(CustomTopic(name: "Chess").roundTopic.kind == .open)
     }
 
     /// What the question asks, what the passage must do, and what the wrong answers are.

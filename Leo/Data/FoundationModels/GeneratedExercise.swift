@@ -58,7 +58,8 @@ nonisolated extension Exercise {
 
         let passage = clean(generated.passage)
         let question = clean(generated.question)
-        guard !correct.isEmpty, distractors.count == 3,
+        // The model always writes 3, but losing a blank or duplicate one shouldn't cost a whole attempt.
+        guard !correct.isEmpty, (2 ... 3).contains(distractors.count),
               acceptedWordCount.contains(passage.wordCount), !question.isEmpty
         else { return nil }
 

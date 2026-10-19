@@ -55,6 +55,12 @@ struct ExerciseGenerator {
             The passage is an informative text that explains real, well-known facts about \(topic.prompt). \
             It is not a story and has no main character.
             """
+        case .open:
+            // Facts stay the default, so a plain subject like "chess" doesn't turn into a story.
+            """
+            If the topic asks for a story, the passage is a story. Otherwise it is an informative text \
+            that explains real, well-known facts about \(topic.prompt), with no main character.
+            """
         }
     }
 

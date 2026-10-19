@@ -74,7 +74,7 @@ struct ReaderPreferencesTests {
         let topics = preferences.enabledTopics(for: .nine)
         let mystery = try #require(topics.first { $0.prompt == "a short story about a mystery at school" })
         #expect(mystery.name == "A mystery at school")
-        #expect(topics.last == RoundTopic(prompt: "Chess", name: "Chess"))
+        #expect(topics.last == RoundTopic(prompt: "Chess", name: "Chess", kind: .open))
     }
 
     @Test func enabledTopicsExcludesDisabled() {
