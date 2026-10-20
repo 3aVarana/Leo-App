@@ -76,6 +76,11 @@ struct ExerciseGenerator {
 
     private let logger = Logger(subsystem: "Leo", category: "ExerciseGenerator")
 
+    /// Each attempt is an interval in Instruments' Points of Interest track, nested in one
+    /// interval for the whole exercise, and ends with its outcome. Topics are public so
+    /// Instruments shows them.
+    private static let signposter = OSSignposter(subsystem: "Leo", category: .pointsOfInterest)
+
     /// Tries each topic in order, so a topic that trips the model's guardrails
     /// or produces unusable content is replaced by the next one. `onAttempt` is called
     /// before each topic is tried, so the reader sees the one being written.
@@ -84,38 +89,82 @@ struct ExerciseGenerator {
         skill: ComprehensionSkill,
         onAttempt: (RoundTopic) -> Void = { _ in },
     ) async throws -> Exercise {
+        let signposter = Self.signposter
+        let exerciseInterval = signposter.beginInterval(
+            "Exercise", id: signposter.makeSignpostID(), "\(skill.rawValue, privacy: .public)",
+        )
+        // Every way out of the loop other than these two is a cancellation.
+        var exerciseOutcome = "cancelled"
+        var attempts = 0
+        defer {
+            signposter.endInterval(
+                "Exercise", exerciseInterval, "\(exerciseOutcome, privacy: .public), \(attempts) attempts",
+            )
+        }
         for topic in topics.prefix(Self.maxAttempts) {
             try Task.checkCancellation()
             onAttempt(topic)
-            let prompt = prompt(topic: topic, skill: skill)
-            // A fresh session per exercise keeps each request well inside the context window.
-            let session = LanguageModelSession(instructions: instructions)
-            do {
-                let generated = try await respond(to: prompt, in: session)
-                return try Exercise(
-                    generated: generated,
-                    topic: topic,
-                    skill: skill,
-                    acceptedWordCount: ageGroup.acceptedWordCount,
-                    language: language,
-                )
-            } catch let rejection as ExerciseRejection {
-                logger.error("""
-                Rejected \(skill.rawValue, privacy: .public) exercise \
-                (\(rejection.rawValue, privacy: .public)) for topic '\(topic.prompt)'
-                """)
-            } catch is CancellationError {
-                throw CancellationError()
-            } catch {
-                logger.error("Generation failed for topic '\(topic.prompt)': \(error)")
+            attempts += 1
+            if let exercise = try await attempt(topic: topic, skill: skill) {
+                exerciseOutcome = "accepted"
+                return exercise
             }
         }
+        exerciseOutcome = "failed"
         throw ExerciseGenerationError.failed
+    }
+
+    /// Writes one exercise about `topic`, or returns nil when it's rejected or generation fails,
+    /// so the next topic is tried.
+    private func attempt(topic: RoundTopic, skill: ComprehensionSkill) async throws -> Exercise? {
+        let signposter = Self.signposter
+        let signpostID = signposter.makeSignpostID()
+        let interval = signposter.beginInterval(
+            "Exercise attempt",
+            id: signpostID,
+            "\(skill.rawValue, privacy: .public): \(topic.prompt, privacy: .public)",
+        )
+        var outcome = "failed"
+        defer { signposter.endInterval("Exercise attempt", interval, "\(outcome, privacy: .public)") }
+        // A fresh session per exercise keeps each request well inside the context window.
+        let session = LanguageModelSession(instructions: instructions)
+        let prompt = prompt(topic: topic, skill: skill)
+        do {
+            let generated = try await respond(to: prompt, in: session, signpostID: signpostID)
+            let exercise = try Exercise(
+                generated: generated,
+                topic: topic,
+                skill: skill,
+                acceptedWordCount: ageGroup.acceptedWordCount,
+                language: language,
+            )
+            outcome = "accepted"
+            return exercise
+        } catch let rejection as ExerciseRejection {
+            outcome = "rejected: \(rejection.rawValue)"
+            logger.error("""
+            Rejected \(skill.rawValue, privacy: .public) exercise \
+            (\(rejection.rawValue, privacy: .public)) for topic '\(topic.prompt)'
+            """)
+        } catch is RunawayPassage {
+            outcome = "runaway passage"
+            logger.error("Runaway passage for topic '\(topic.prompt)'")
+        } catch is CancellationError {
+            outcome = "cancelled"
+            throw CancellationError()
+        } catch {
+            logger.error("Generation failed for topic '\(topic.prompt)': \(error)")
+        }
+        return nil
     }
 
     /// Streams the response so a passage that never ends is abandoned as soon as it runs past
     /// the accepted length, after seconds rather than when the token cap is reached.
-    private func respond(to prompt: String, in session: LanguageModelSession) async throws -> GeneratedExercise {
+    private func respond(
+        to prompt: String,
+        in session: LanguageModelSession,
+        signpostID: OSSignpostID,
+    ) async throws -> GeneratedExercise {
         let stream = session.streamResponse(
             to: prompt,
             generating: GeneratedExercise.self,
@@ -123,6 +172,9 @@ struct ExerciseGenerator {
         )
         var content: GeneratedContent?
         for try await snapshot in stream {
+            if content == nil {
+                Self.signposter.emitEvent("First snapshot", id: signpostID)
+            }
             if let passage = snapshot.content.passage, passage.wordCount > ageGroup.acceptedWordCount.upperBound {
                 throw RunawayPassage()
             }
