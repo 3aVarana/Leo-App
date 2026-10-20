@@ -164,6 +164,8 @@ Apple's dynamic profile example uses 0.8 for creative tasks and 0.1–0.2 for pr
 
 This lands only if the harness shows fewer factual oddities at 0.5 without a drop in passage length or variety across two runs of the same topic. If passages become repetitive, try 0.6.
 
+Outcome: not landed. The temperature and the facts sentence did not hold up when measured again against the final `main` (§8); `TopicKind` itself landed in PR A.
+
 ### 2.7 Locale
 
 Apple's locale guide: for locales other than US English, start the instructions with the exact phrase "The person's locale is \(identifier)." which comes from the model's training and reduces multilingual hallucination, then state the output language with MUST. `ContentLanguage` gains:
@@ -241,7 +243,7 @@ A model-as-judge check ("Can the question be answered from the passage alone, an
 2. **PR B, repair and validation:** §2.4 and `ExerciseRepairTests`, thresholds tuned with the harness.
 3. **PR C, harness:** §3, so A and B can cite it. It can land first if preferred.
 4. **PR D, locale:** §2.7 and its tests.
-5. **PR E, temperature by kind:** §2.6, only with measurements.
+5. **PR E, temperature by kind:** §2.6, only with measurements. Closed without merging (#33), see §8.
 
 ## 7. Later: experiments
 
@@ -264,3 +266,7 @@ Measured with `scripts/exercise-eval` (two `--all` runs of 50 per version). Depa
 - **PR B, found in the simulator hand checks.** A plain-text "Title: Mystery in the Locker" line, and in Spanish a title followed by one sentence per line, which read as a list. A short first line without punctuation or commas is now a title too, and `ExerciseRepair.joiningLines` turns single line breaks into spaces while keeping paragraph breaks.
 - **PR B, thresholds kept.** Per attempt, the standout rule rejected 6% (English) and 7% (Spanish), self-reference 2.5%, both under the 10% bar of §2.4, so both ship as rejections.
 - **PR B, narrower self-reference list (review of #31).** The §2.4 list rejected ordinary passages: "the text", "the passage", "the writer" and "this shows" also appear in "She read the text on her phone" or "the passage of time". The list now has only phrases that make sense as self-reference ("this passage", "this text", "this story", "the main idea", "the author's purpose" and the same in Spanish and Portuguese), and "the author" or "the writer" counts only with a verb about the passage ("wants", "explains", "describes", "is trying", "tells us"...). The 2.5% rate above was measured with the old list, and `score.py` still counts the old list, so its self-reference column is an upper bound. Two English `--all` runs per version on 2026-10-19 showed the narrower list missed "The writer shows how bugs live" and "The writer includes this to show…" (5 passages on `main`, 1 accepted on this branch), so "shows" and "includes" were added; with them it rejected 2 of 100 attempts. What `score.py` still counts in accepted passages is a character called "the writer", summaries such as "This shows how nature works", and passages with the whole exercise pasted in ("…Explanation: The passage says…", 4 of 300 passages, also on `main`), which no phrase list catches.
+- **PR E, temperature by kind: closed without merging (#33).** Informative topics at 0.5 with the added sentence "Use well-known facts, and avoid exact figures and dates unless they are famous." (and the same rule for a reader's own topics), against 0.8. Each measurement used two English `--all` runs per version, and the informative passages of both versions were shuffled together and fact-checked blind.
+  - **2026-10-09, on the stacked branches** (before #30 and #31 were revised in review): passages with a factual error went from 23 of 43 (34 errors) to 14 of 44 (19 errors), at the same length (100 and 101 words). Word overlap between two runs of the same case went from 0.28 to 0.34.
+  - **2026-10-20, against `main` at 9dc1f4b** (macOS 27.0.1), with two blind checks using different shuffles, which agreed on 79 of 84 passages: no gain. Passages with an error were 10 and 11 of 39 at 0.8 (26–28%), and 13 and 17 of 45 at 0.5 (29–38%); errors 15 and 16 against 20 and 25. Mean length 99 and 103 words. Variety still dropped: overlap 0.27 to 0.36, distinct opening sentences 32 of 39 against 38 of 45. Informative cases rejected went from 11 to 5 of 50 (standout answer 7 to 3), too few to count on.
+  - Leo keeps 0.8 for every topic. The errors are the same kind at both temperatures: 9–11 volcanoes that "happen deep under the ground", 6–8 insects with "many legs" or that "move slowly", 12–14 blood that goes "through veins to supply oxygen". Error rates from the two dates don't compare with each other, since each date had its own fact check; only the two versions measured on the same date do. Neither the repair rules nor the model-as-judge check (§3, §7) looks at facts, so fewer factual errors needs another approach.
