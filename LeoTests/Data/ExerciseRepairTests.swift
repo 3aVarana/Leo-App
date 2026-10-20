@@ -138,6 +138,9 @@ struct ExerciseRepairTests {
         #expect(ExerciseRepair.refersToItself("In this passage, we learn about rivers.", language: .english))
         #expect(ExerciseRepair.refersToItself("THE MAIN IDEA is simple.", language: .english))
         #expect(ExerciseRepair.refersToItself("The writer’s purpose is to warn us.", language: .english))
+        // Found by the harness after the review's narrower list let them through.
+        #expect(ExerciseRepair.refersToItself("The writer shows how the robot helps.", language: .english))
+        #expect(ExerciseRepair.refersToItself("The writer includes this to show their power.", language: .english))
     }
 
     @Test func rejectsSpanishAndPortugueseSelfReference() {

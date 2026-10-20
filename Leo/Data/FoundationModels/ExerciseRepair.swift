@@ -139,7 +139,10 @@ nonisolated enum ExerciseRepair {
                 "the author's purpose", "the author’s purpose", "the writer's purpose", "the writer’s purpose",
             ],
             subjects: ["the author", "the writer"],
-            verbs: ["wants", "wanted", "explains", "describes", "is trying", "tries", "tells us", "tells the reader"],
+            verbs: [
+                "wants", "wanted", "explains", "describes", "is trying", "tries", "tells us", "tells the reader",
+                "shows", "includes",
+            ],
         ),
         "es": selfReferencePhrases(
             fixed: ["este texto", "este pasaje", "esta historia", "la idea principal", "el propósito del autor"],
