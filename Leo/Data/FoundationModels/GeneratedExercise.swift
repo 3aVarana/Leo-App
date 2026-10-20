@@ -39,40 +39,52 @@ nonisolated struct GeneratedExercise {
 }
 
 nonisolated extension Exercise {
-    /// Validates and normalizes model output. Returns `nil` when the content is unusable.
-    init?(
+    /// Repairs and validates model output, in the order of docs/Leo-Exercise-Quality-Plan.md,
+    /// section 2.4. Throws the rule that made the content unusable.
+    init(
         generated: GeneratedExercise,
         topic: RoundTopic,
         skill: ComprehensionSkill,
         acceptedWordCount: ClosedRange<Int>,
-    ) {
+        language: ContentLanguage,
+    ) throws(ExerciseRejection) {
         func clean(_ text: String) -> String {
-            text.trimmingCharacters(in: .whitespacesAndNewlines)
+            ExerciseRepair.removingMarkdown(text.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        /// Answers that differ only in case or a final period are duplicates.
+        func key(_ answer: String) -> String {
+            answer.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: ".。"))
         }
 
         let correct = clean(generated.correctAnswer)
-        var seen: Set<String> = [correct.lowercased()]
+        var seen: Set<String> = [key(correct)]
         let distractors = generated.incorrectAnswers
             .map(clean)
-            .filter { !$0.isEmpty && seen.insert($0.lowercased()).inserted }
+            .filter { !$0.isEmpty && seen.insert(key($0)).inserted }
 
-        let passage = clean(generated.passage)
+        let passage = clean(ExerciseRepair.joiningLines(ExerciseRepair.removingLeadingTitle(generated.passage)))
         let question = clean(generated.question)
+        guard !correct.isEmpty, !question.isEmpty else { throw .emptyField }
         // The model always writes 3, but losing a blank or duplicate one shouldn't cost a whole attempt.
-        guard !correct.isEmpty, (2 ... 3).contains(distractors.count),
-              acceptedWordCount.contains(passage.wordCount), !question.isEmpty
-        else { return nil }
+        guard (2 ... 3).contains(distractors.count) else { throw .distractors }
+        guard acceptedWordCount.contains(passage.wordCount) else { throw .passageLength }
+        guard !ExerciseRepair.refersToItself(passage, language: language) else { throw .selfReference }
+        guard !ExerciseRepair.correctAnswerStandsOut(correct, distractors: distractors) else {
+            throw .standoutAnswer
+        }
 
-        let options = (distractors + [correct]).shuffled()
+        // The correct answer goes first, then the app shuffles them all.
+        let answers = ExerciseRepair.matchingPunctuation([correct] + distractors)
+        let order = answers.indices.shuffled()
         self.init(
             topic: topic,
             skill: skill,
             title: clean(generated.title),
             passage: passage,
             question: question,
-            options: options,
-            correctIndex: options.firstIndex(of: correct)!,
-            explanation: clean(generated.explanation),
+            options: order.map { answers[$0] },
+            correctIndex: order.firstIndex(of: 0)!,
+            explanation: ExerciseRepair.completeExplanation(clean(generated.explanation)),
         )
     }
 }
