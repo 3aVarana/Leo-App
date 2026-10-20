@@ -27,4 +27,18 @@ nonisolated struct ContentLanguage: Sendable {
         }
         return Locale(identifier: "en").localizedString(forIdentifier: identifier) ?? "English"
     }
+
+    /// Apple's locale phrase for readers outside US English, empty for en_US. It comes from the
+    /// model's training and reduces multilingual hallucination, so it goes first in instructions.
+    /// The ICU form keeps it as trained: `preferredLanguages` gives "es-ES", the phrase uses "es_ES".
+    var localeInstruction: String {
+        locale.language.isEquivalent(to: Locale.Language(identifier: "en_US"))
+            ? ""
+            : "The person's locale is \(locale.identifier(.icu))."
+    }
+
+    /// `instructions` with `localeInstruction` as its first line, when there is one.
+    func withLocaleInstruction(_ instructions: String) -> String {
+        localeInstruction.isEmpty ? instructions : localeInstruction + "\n" + instructions
+    }
 }

@@ -173,7 +173,7 @@ Apple's locale guide: for locales other than US English, start the instructions 
 var localeInstruction: String
 ```
 
-returning `"The person's locale is \(locale.identifier)."` unless `locale.language` is equivalent to `en_US`. `ExerciseGenerator.instructions` and `TopicValidator`'s instructions start with it. `TopicValidator` keeps its own prompts otherwise.
+returning `"The person's locale is \(locale.identifier(.icu))."` unless `locale.language` is equivalent to `en_US`. The ICU form keeps the phrase as Apple writes it: `Locale.preferredLanguages` gives BCP 47 identifiers such as `es-ES`, and the phrase uses `es_ES`. `ExerciseGenerator.instructions` and `TopicValidator`'s instructions start with it. `TopicValidator` keeps its own prompts otherwise.
 
 ### 2.8 Unchanged
 

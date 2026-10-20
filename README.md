@@ -41,7 +41,7 @@ Leo uses Apple's on-device language model for two jobs: writing exercises and re
 - **Runaway passages are stopped early.** The response is streamed, and a passage that keeps going past the accepted length is abandoned after a few seconds instead of running until the token limit.
 - **A fresh session per exercise** keeps every request well inside the model's context window.
 - **Prompts are measured, not eyeballed.** The instructions give the model a role, forbid passages that talk about themselves, and each comprehension skill has a three-part hint. Prompt changes are checked with the evaluation harness in [`scripts/exercise-eval`](scripts/exercise-eval/README.md); see [the quality plan](docs/Leo-Exercise-Quality-Plan.md).
-- **Prompts are in English, content is in the reader's language.** The instructions tell the model which language to write in, using [`ContentLanguage`](Leo/Data/FoundationModels/ContentLanguage.swift), which picks the device's preferred language if the model supports it.
+- **Prompts are in English, content is in the reader's language.** The instructions tell the model which language to write in, using [`ContentLanguage`](Leo/Data/FoundationModels/ContentLanguage.swift), which picks the device's preferred language if the model supports it. For readers outside US English, the instructions start with Apple's locale phrase, "The person's locale is es_ES.", which reduces mixed-language output.
 
 ### Reviewing custom topics
 
