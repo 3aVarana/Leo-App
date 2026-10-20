@@ -34,6 +34,13 @@ struct ContentLanguageTests {
             == "The person's locale is en_GB.")
     }
 
+    /// `Locale.preferredLanguages` gives BCP 47 identifiers, but the phrase uses underscores.
+    @Test(arguments: [("es-ES", "es_ES"), ("es-419", "es_419"), ("zh-Hans-CN", "zh_Hans_CN")])
+    func localeInstructionUsesUnderscores(_ preferred: String, _ phrase: String) {
+        #expect(ContentLanguage(locale: Locale(identifier: preferred)).localeInstruction
+            == "The person's locale is \(phrase).")
+    }
+
     @Test func withLocaleInstruction() {
         #expect(ContentLanguage.english.withLocaleInstruction("Write.") == "Write.")
         #expect(ContentLanguage(locale: Locale(identifier: "es_ES")).withLocaleInstruction("Write.")
