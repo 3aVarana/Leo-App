@@ -126,20 +126,57 @@ private struct LeoTextStyleModifier: ViewModifier {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     func body(content: Content) -> some View {
-        content
+        let styled = content
             .font(style.font)
             .tracking(style.tracking * style.size)
             .lineHeight(lineHeight.map { .exact(points: $0) })
+        if let overhang {
+            styled.textRenderer(OverhangingTextRenderer(overhang: overhang))
+        } else {
+            styled
+        }
     }
 
     /// The mock's line height, scaled with Dynamic Type like the font.
     private var lineHeight: CGFloat? {
         guard let points = style.lineHeight else { return nil }
-        let traits = UITraitCollection(preferredContentSizeCategory: UIContentSizeCategory(dynamicTypeSize))
-        return UIFontMetrics(forTextStyle: UIFont.TextStyle(style.relativeTo)).scaledValue(
-            for: points,
-            compatibleWith: traits,
-        )
+        return metrics.scaledValue(for: points, compatibleWith: traits)
+    }
+
+    /// How far glyphs can reach past the text's frame when the line height is tighter than the
+    /// font's own. iOS 26 clips text to its frame, which cut the descenders of the last line
+    /// (the "g" and "p" of a two-line title). `nil` when the lines leave the glyphs room.
+    private var overhang: CGFloat? {
+        guard let lineHeight, let font = UIFont(name: style.weight.fontName, size: style.size) else { return nil }
+        let naturalLineHeight = style.scalesWithDynamicType
+            ? metrics.scaledFont(for: font, compatibleWith: traits).lineHeight
+            : font.lineHeight
+        let overhang = (naturalLineHeight - lineHeight).rounded(.up)
+        return overhang > 0 ? overhang : nil
+    }
+
+    private var metrics: UIFontMetrics {
+        UIFontMetrics(forTextStyle: UIFont.TextStyle(style.relativeTo))
+    }
+
+    private var traits: UITraitCollection {
+        UITraitCollection(preferredContentSizeCategory: UIContentSizeCategory(dynamicTypeSize))
+    }
+}
+
+/// Draws text as usual, but lets glyphs spill `overhang` points above and below the frame
+/// instead of being clipped there. Horizontal padding would change where lines wrap.
+private struct OverhangingTextRenderer: TextRenderer {
+    let overhang: CGFloat
+
+    var displayPadding: EdgeInsets {
+        EdgeInsets(top: overhang, leading: 0, bottom: overhang, trailing: 0)
+    }
+
+    func draw(layout: Text.Layout, in context: inout GraphicsContext) {
+        for line in layout {
+            context.draw(line)
+        }
     }
 }
 
