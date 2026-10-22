@@ -1,3 +1,4 @@
+import Foundation
 @testable import Leo
 import Testing
 
@@ -11,14 +12,22 @@ struct QuizViewModelRoundTests {
     )
     private let otherSettings = RoundSettings(ageGroup: .twelve, topics: ["chess", "glaciers", "radios"])
 
-    private func makeQuiz(_ spy: ExerciseRepositoryFactorySpy = ExerciseRepositoryFactorySpy()) -> QuizViewModel {
-        QuizViewModel { spy.make($0) }
+    private func makeQuiz(
+        _ spy: ExerciseRepositoryFactorySpy = ExerciseRepositoryFactorySpy(),
+        now: @escaping () -> Date = Date.init,
+        onRoundFinished: @escaping (RoundRecord) -> Void = { _ in },
+    ) -> QuizViewModel {
+        QuizViewModel(makeRepository: { spy.make($0) }, now: now, onRoundFinished: onRoundFinished)
     }
 
     /// Starts a round whose 6 exercises are ready, and waits until they are.
-    private func startedQuiz(_ spy: ExerciseRepositoryFactorySpy? = nil) async -> QuizViewModel {
+    private func startedQuiz(
+        _ spy: ExerciseRepositoryFactorySpy? = nil,
+        now: @escaping () -> Date = Date.init,
+        onRoundFinished: @escaping (RoundRecord) -> Void = { _ in },
+    ) async -> QuizViewModel {
         let spy = spy ?? ExerciseRepositoryFactorySpy { .ready() }
-        let quiz = makeQuiz(spy)
+        let quiz = makeQuiz(spy, now: now, onRoundFinished: onRoundFinished)
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
         quiz.start()
@@ -100,6 +109,54 @@ extension QuizViewModelRoundTests {
         quiz.start()
         #expect(quiz.answers.isEmpty)
         #expect(quiz.roundAgeGroup == .twelve)
+    }
+}
+
+// MARK: - Saving a finished round
+
+extension QuizViewModelRoundTests {
+    @Test func finishingARoundReportsItOnce() async {
+        var finished: [RoundRecord] = []
+        let finishedAt = Date(timeIntervalSinceReferenceDate: 1000)
+        let quiz = await startedQuiz(now: { finishedAt }, onRoundFinished: { finished.append($0) })
+
+        for correctly in [true, false, true, true, false, true] {
+            answer(quiz, correctly: correctly)
+        }
+
+        #expect(finished.count == 1)
+        #expect(finished.first?.finishedAt == finishedAt)
+        #expect(finished.first?.ageGroup == .nine)
+        #expect(finished.first?.answers.map(\.isCorrect) == [true, false, true, true, false, true])
+    }
+
+    @Test func unfinishedRoundIsNotReported() async {
+        var finished: [RoundRecord] = []
+        let quiz = await startedQuiz(onRoundFinished: { finished.append($0) })
+
+        for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+            answer(quiz, correctly: true)
+        }
+
+        #expect(finished.isEmpty)
+    }
+
+    @Test func practiceAgainReportsANewRound() async {
+        var finished: [RoundRecord] = []
+        let spy = ExerciseRepositoryFactorySpy { .ready() }
+        let quiz = await startedQuiz(spy, onRoundFinished: { finished.append($0) })
+        for _ in 0 ..< QuizViewModel.exerciseCount {
+            answer(quiz, correctly: true)
+        }
+
+        quiz.start()
+        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        for _ in 0 ..< QuizViewModel.exerciseCount {
+            answer(quiz, correctly: true)
+        }
+
+        #expect(finished.count == 2)
+        #expect(finished[0].id != finished[1].id)
     }
 }
 

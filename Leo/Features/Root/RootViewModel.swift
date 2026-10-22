@@ -7,6 +7,7 @@ final class RootViewModel {
     /// `nil` until onboarding is done.
     private(set) var preferences: ReaderPreferences?
     let quiz: QuizViewModel
+    let history: RoundHistoryViewModel
     var isShowingSettings = false
 
     private let preferencesRepository: any PreferencesRepository
@@ -18,11 +19,13 @@ final class RootViewModel {
         availability: any ModelAvailabilityProvider,
         topicReviews: any TopicReviewRepository,
         quiz: QuizViewModel,
+        history: RoundHistoryViewModel,
     ) {
         preferencesRepository = preferences
         availabilityProvider = availability
         self.topicReviews = topicReviews
         self.quiz = quiz
+        self.history = history
         self.preferences = preferences.load()
     }
 
@@ -44,6 +47,7 @@ final class RootViewModel {
     func preferencesDidChange() {
         guard let preferences else { return }
         quiz.configure(preferences.roundSettings)
+        history.ageGroup = preferences.ageGroup
     }
 
     /// An editor for the first launch. Saving it ends onboarding.

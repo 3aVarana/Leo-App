@@ -1,6 +1,7 @@
 import Foundation
 
 /// The reader's age group. Controls how long the passages are and how complex their language is.
+/// Raw values are persisted with the reader's preferences and a saved round. Never change them.
 nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
     case six = "6-8"
     case nine = "9-11"

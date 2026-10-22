@@ -65,6 +65,18 @@ extension PreferencesEditorViewModel {
     }
 }
 
+extension RoundRecord {
+    /// A finished round of six exercises, correct or not as `results` says, in round order.
+    @MainActor
+    static func fixture(
+        ageGroup: AgeGroup = .nine,
+        finishedAt: Date = Date(timeIntervalSinceReferenceDate: 0),
+        results: [Bool] = [true, false, true, true, false, true],
+    ) -> RoundRecord {
+        RoundRecord(id: UUID(), finishedAt: finishedAt, ageGroup: ageGroup, answers: roundAnswers(results))
+    }
+}
+
 extension Exercise {
     /// An exercise with fixed options, built without validation or shuffling.
     static func fixture(

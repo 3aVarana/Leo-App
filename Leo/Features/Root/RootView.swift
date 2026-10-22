@@ -94,5 +94,6 @@ struct RootView: View {
         availability: SystemModelAvailabilityProvider(),
         topicReviews: FoundationModelsTopicReviewRepository(),
         quiz: QuizViewModel { FoundationModelsExerciseRepository(ageGroup: $0.ageGroup) },
+        history: RoundHistoryViewModel(repository: SwiftDataRoundHistoryRepository.inMemory()),
     ))
 }

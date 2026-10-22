@@ -9,13 +9,17 @@ struct RootViewModelTests {
     private let availability = StubModelAvailabilityProvider()
     private let factory = ExerciseRepositoryFactorySpy()
 
-    private func makeRoot(factory: ExerciseRepositoryFactorySpy? = nil) -> RootViewModel {
+    private func makeRoot(
+        factory: ExerciseRepositoryFactorySpy? = nil,
+        history: RoundHistoryViewModel? = nil,
+    ) -> RootViewModel {
         let factory = factory ?? self.factory
         return RootViewModel(
             preferences: repository,
             availability: availability,
             topicReviews: StubTopicReviewRepository(),
             quiz: QuizViewModel { factory.make($0) },
+            history: history ?? RoundHistoryViewModel(repository: RoundHistoryRepositorySpy()),
         )
     }
 
@@ -106,5 +110,47 @@ extension RootViewModelTests {
 
     @Test func settingsEditorIsNilBeforeOnboarding() {
         #expect(makeRoot().makeSettingsEditor() == nil)
+    }
+}
+
+// MARK: - History
+
+extension RootViewModelTests {
+    @Test func preferencesDidChangeSetsHistoryAgeGroup() {
+        let history = RoundHistoryViewModel(repository: RoundHistoryRepositorySpy())
+        repository.stored = preferences
+        let root = makeRoot(history: history)
+        #expect(history.ageGroup == nil)
+
+        root.preferencesDidChange()
+        #expect(history.ageGroup == preferences.ageGroup)
+    }
+
+    /// The composition `MyApp` uses: the quiz's `onRoundFinished` goes to `history.record`, and
+    /// `RootViewModel` keeps `history.ageGroup` in step, so a finished round shows up.
+    @Test func finishedRoundReachesHistory() async throws {
+        let history = RoundHistoryViewModel(repository: RoundHistoryRepositorySpy())
+        let spy = ExerciseRepositoryFactorySpy { .ready() }
+        let quiz = QuizViewModel(makeRepository: { spy.make($0) }, onRoundFinished: { history.record($0) })
+        repository.stored = preferences
+        let root = RootViewModel(
+            preferences: repository,
+            availability: availability,
+            topicReviews: StubTopicReviewRepository(),
+            quiz: quiz,
+            history: history,
+        )
+
+        root.preferencesDidChange()
+        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        quiz.start()
+        for _ in 0 ..< QuizViewModel.exerciseCount {
+            let exercise = try #require(quiz.currentExercise)
+            quiz.finishReading()
+            quiz.select(exercise.correctIndex)
+            quiz.next()
+        }
+
+        #expect(history.roundCount == 1)
     }
 }
