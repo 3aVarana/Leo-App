@@ -76,6 +76,7 @@ struct RootView: View {
                 onRestart: quiz.start,
                 onSettings: { viewModel.isShowingSettings = true },
                 onHistory: historyAction,
+                historyAgeGroup: ageGroup,
             )
             .toolbar(.hidden, for: .navigationBar)
         case .failed:

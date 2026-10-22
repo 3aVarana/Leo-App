@@ -1,29 +1,16 @@
 import SwiftUI
 
 /// One saved round: the score and dots, then each text with its topic, skill and how it went.
-/// Loads the round by id; if it's gone (deleted, unreadable) the view pops back.
+/// `HistoryView` loads the round before pushing this, so there's no async load and no blank
+/// first frame; a round that goes missing mid-push (deleted, unreadable) just doesn't push.
 struct RoundView: View {
-    let id: UUID
-    let viewModel: RoundHistoryViewModel
+    let round: RoundRecord
 
-    @Environment(\.dismiss) private var dismiss
-    @State private var loadedRound: RoundRecord?
     @State private var reviewStart: Int?
 
     var body: some View {
-        Group {
-            if let loadedRound {
-                content(loadedRound)
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(Text(verbatim: ""))
-        .task { load() }
-    }
-
-    private func content(_ round: RoundRecord) -> some View {
         ScrollingScreen {
-            Kicker(verbatim: kickerText(round))
+            Kicker(verbatim: kickerText)
                 .padding(.top, 28)
             Text("\(round.correctCount) of \(round.answers.count)")
                 .leoTextStyle(.score)
@@ -32,7 +19,7 @@ struct RoundView: View {
                 .padding(.top, 14)
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(round.answers) { answer in
-                    row(answer, in: round)
+                    row(answer)
                 }
             }
             .padding(.top, 24)
@@ -48,25 +35,20 @@ struct RoundView: View {
                 .buttonStyle(.leo(.secondary))
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(Text(verbatim: ""))
         .navigationDestination(item: $reviewStart) { start in
             ReviewView(misses: round.misses, startIndex: start, backTitle: "Back to round")
         }
     }
 
-    private func load() {
-        loadedRound = viewModel.round(id: id)
-        if loadedRound == nil {
-            dismiss()
-        }
-    }
-
-    private func kickerText(_ round: RoundRecord) -> String {
+    private var kickerText: String {
         let dateTime = round.finishedAt.formatted(.dateTime.day().month(.abbreviated).hour().minute())
         return String(localized: "\(dateTime) · readers \(round.ageGroup.displayName)")
     }
 
     @ViewBuilder
-    private func row(_ answer: RoundAnswer, in round: RoundRecord) -> some View {
+    private func row(_ answer: RoundAnswer) -> some View {
         if answer.isCorrect {
             RoundResultRow(answer: answer)
                 .accessibilityElement(children: .ignore)
@@ -94,29 +76,57 @@ struct RoundView: View {
     }
 }
 
-/// A text's number, its title over its topic and skill, and how it went.
+/// A text's number, its title over its topic and skill, and how it went. At accessibility sizes
+/// the status moves under the title, like `ResultRow` on Results.
 private struct RoundResultRow: View {
     let answer: RoundAnswer
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text(answer.index + 1, format: .number)
-                .leoTextStyle(.answerMarker)
-                .frame(minWidth: 16, alignment: .leading)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(answer.exercise.title)
-                    .leoTextStyle(LeoTextStyle(size: 17, relativeTo: .callout, lineHeight: 24))
-                Text("\(answer.exercise.topic.name) · \(answer.exercise.skill.displayName)")
-                    .leoTextStyle(.caption)
-                    .foregroundStyle(Color.leoInkSoft)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        number
+                        title
+                    }
+                    subtitle
+                    status
+                }
+            } else {
+                HStack(alignment: .top, spacing: 8) {
+                    number
+                    VStack(alignment: .leading, spacing: 2) {
+                        title
+                        subtitle
+                    }
+                    .layoutPriority(1)
+                    Spacer(minLength: 8)
+                    status
+                }
             }
-            .layoutPriority(1)
-            Spacer(minLength: 8)
-            status
         }
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(.rect)
+    }
+
+    private var number: some View {
+        Text(answer.index + 1, format: .number)
+            .leoTextStyle(.answerMarker)
+            .frame(minWidth: 16, alignment: .leading)
+    }
+
+    private var title: some View {
+        Text(answer.exercise.title)
+            .leoTextStyle(LeoTextStyle(size: 17, relativeTo: .callout, lineHeight: 24))
+    }
+
+    private var subtitle: some View {
+        Text("\(answer.exercise.topic.name) · \(answer.exercise.skill.displayName)")
+            .leoTextStyle(.caption)
+            .foregroundStyle(Color.leoInkSoft)
     }
 
     @ViewBuilder
@@ -132,33 +142,8 @@ private struct RoundResultRow: View {
 }
 
 #Preview {
-    let repository = SwiftDataRoundHistoryRepository.inMemory()
     let round = RoundRecord.previewFixture(ageGroup: .nine, results: [true, false, true, true, false, true])
-    try? repository.save(round)
-    let viewModel = RoundHistoryViewModel(repository: repository)
     return NavigationStack {
-        RoundView(id: round.id, viewModel: viewModel)
-    }
-}
-
-private extension RoundRecord {
-    static func previewFixture(ageGroup: AgeGroup, results: [Bool]) -> RoundRecord {
-        let topic = RoundTopic(prompt: "volcanoes", name: "Volcanoes")
-        var answers: [RoundAnswer] = []
-        for (index, isCorrect) in results.enumerated() {
-            let exercise = Exercise(
-                topic: topic,
-                skill: .detail,
-                title: "Preview text \(index + 1)",
-                passage: "A short passage.",
-                question: "A question?",
-                options: ["A", "B", "C", "D"],
-                correctIndex: 0,
-                explanation: "An explanation.",
-            )
-            let selected = isCorrect ? 0 : 1
-            answers.append(RoundAnswer(index: index, exercise: exercise, selectedOption: selected))
-        }
-        return RoundRecord(id: UUID(), finishedAt: Date(), ageGroup: ageGroup, answers: answers)
+        RoundView(round: round)
     }
 }

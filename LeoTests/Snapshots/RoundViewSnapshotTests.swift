@@ -7,13 +7,8 @@ extension ViewSnapshots {
     @MainActor
     struct RoundViewSnapshotTests {
         private func round(results: [Bool]) -> some View {
-            let repository = RoundHistoryRepositorySpy()
-            let viewModel = RoundHistoryViewModel(repository: repository)
-            let record = RoundRecord.fixture(ageGroup: .nine, results: results)
-            viewModel.ageGroup = .nine
-            viewModel.record(record)
-            return NavigationStack {
-                RoundView(id: record.id, viewModel: viewModel)
+            NavigationStack {
+                RoundView(round: .fixture(ageGroup: .nine, results: results))
             }
         }
 

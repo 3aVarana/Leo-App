@@ -2,11 +2,15 @@ import SwiftUI
 
 /// Every finished round at the current age group (H7): the header totals, then the rounds
 /// grouped by when they were read. Swipe to delete a round (H3), no confirmation.
+///
+/// Settings isn't reachable from here (no gear), so the age group can't change while History,
+/// or a round pushed from it, is on screen (5.5). If that ever changes, this view would also
+/// need to react to `viewModel.ageGroup` changing underneath it, not just `hasRounds`.
 struct HistoryView: View {
     let viewModel: RoundHistoryViewModel
 
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedRoundID: UUID?
+    @State private var selectedRound: RoundRecord?
 
     var body: some View {
         List {
@@ -18,7 +22,7 @@ struct HistoryView: View {
                 Section {
                     ForEach(section.rounds) { round in
                         Button {
-                            selectedRoundID = round.id
+                            selectedRound = viewModel.round(id: round.id)
                         } label: {
                             HistoryRow(round: round)
                         }
@@ -45,8 +49,8 @@ struct HistoryView: View {
         .leoScreenBackground()
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(Text(verbatim: ""))
-        .navigationDestination(item: $selectedRoundID) { id in
-            RoundView(id: id, viewModel: viewModel)
+        .navigationDestination(item: $selectedRound) { round in
+            RoundView(round: round)
         }
         .onChange(of: viewModel.hasRounds) { _, hasRounds in
             // Deleting the last round closes History (1.2): the button that opened it is hidden now.
@@ -181,27 +185,5 @@ private struct HistoryRow: View {
     viewModel.ageGroup = .nine
     return NavigationStack {
         HistoryView(viewModel: viewModel)
-    }
-}
-
-private extension RoundRecord {
-    static func previewFixture(ageGroup: AgeGroup, results: [Bool]) -> RoundRecord {
-        let topic = RoundTopic(prompt: "volcanoes", name: "Volcanoes")
-        var answers: [RoundAnswer] = []
-        for (index, isCorrect) in results.enumerated() {
-            let exercise = Exercise(
-                topic: topic,
-                skill: .detail,
-                title: "Preview text \(index + 1)",
-                passage: "A short passage.",
-                question: "A question?",
-                options: ["A", "B", "C", "D"],
-                correctIndex: 0,
-                explanation: "An explanation.",
-            )
-            let selected = isCorrect ? 0 : 1
-            answers.append(RoundAnswer(index: index, exercise: exercise, selectedOption: selected))
-        }
-        return RoundRecord(id: UUID(), finishedAt: Date(), ageGroup: ageGroup, answers: answers)
     }
 }
