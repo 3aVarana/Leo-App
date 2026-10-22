@@ -1,6 +1,7 @@
 import Foundation
 
 /// The comprehension skill each question targets, so a round covers different kinds of understanding.
+/// Raw values are persisted with a saved round. Never change them.
 nonisolated enum ComprehensionSkill: String, CaseIterable, Sendable {
     case mainIdea, detail, inference, vocabulary, purpose
 

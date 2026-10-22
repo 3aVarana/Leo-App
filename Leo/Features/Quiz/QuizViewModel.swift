@@ -50,6 +50,8 @@ final class QuizViewModel {
     private var settings: RoundSettings?
     private var plan: [PlanItem] = []
     private let makeRepository: (RoundSettings) -> any ExerciseRepository
+    private let now: () -> Date
+    private let onRoundFinished: (RoundRecord) -> Void
     private var repository: (any ExerciseRepository)?
     /// Exercises still to generate, in order. The first one is being generated.
     private var queue: [PlanItem] = []
@@ -113,9 +115,18 @@ final class QuizViewModel {
         return selectedOption == currentExercise.correctIndex
     }
 
-    /// - Parameter makeRepository: Makes the repository for each round.
-    init(makeRepository: @escaping (RoundSettings) -> any ExerciseRepository) {
+    /// - Parameters:
+    ///   - makeRepository: Makes the repository for each round.
+    ///   - now: When a round finishes, for `RoundRecord.finishedAt`.
+    ///   - onRoundFinished: Called once, with the round just finished, before `phase` becomes `.finished`.
+    init(
+        makeRepository: @escaping (RoundSettings) -> any ExerciseRepository,
+        now: @escaping () -> Date = Date.init,
+        onRoundFinished: @escaping (RoundRecord) -> Void = { _ in },
+    ) {
         self.makeRepository = makeRepository
+        self.now = now
+        self.onRoundFinished = onRoundFinished
     }
 
     /// How the option at `index` of the current exercise is shown.
@@ -185,64 +196,16 @@ final class QuizViewModel {
     }
 
     func next() {
-        guard selectedOption != nil else { return }
+        guard phase == .answering, selectedOption != nil else { return }
         if isLastExercise {
+            if let roundAgeGroup {
+                onRoundFinished(RoundRecord(id: UUID(), finishedAt: now(), ageGroup: roundAgeGroup, answers: answers))
+            }
             phase = .finished
             return
         }
         currentIndex += 1
         showCurrent()
-    }
-
-    /// Generates the failed exercises again with the same topics. Generation is sampled, so a
-    /// second try often works. Doesn't use or reset the round's automatic replacements.
-    func retry() {
-        guard settings != nil, isStuck else { return }
-        requeueFailedJobs()
-    }
-
-    /// Generates the failed exercises again with other topics, preferring ones they didn't just
-    /// try, and the same skills. Doesn't use or reset the round's automatic replacements.
-    func retryWithDifferentTopics() {
-        guard let settings, isStuck else { return }
-        var rng = SystemRandomNumberGenerator()
-        for index in failedJobs.indices {
-            failedJobs[index].topics = Self.replacementTopics(
-                for: failedJobs[index].topics,
-                from: settings.topics,
-                using: &rng,
-            )
-        }
-        requeueFailedJobs()
-    }
-
-    /// Up to 3 topics for another try at a failed exercise, those it didn't just try first.
-    static func replacementTopics(
-        for failed: [RoundTopic],
-        from topics: [RoundTopic],
-        using rng: inout some RandomNumberGenerator,
-    ) -> [RoundTopic] {
-        let failed = Set(failed)
-        let untried = topics.filter { !failed.contains($0) }.shuffled(using: &rng)
-        let tried = topics.filter { failed.contains($0) }.shuffled(using: &rng)
-        return Array((untried + tried).prefix(3))
-    }
-
-    /// The topics and skill for each exercise of a round. Each exercise gets its own topic while
-    /// there are enough, cycling through them otherwise without repeating a topic back to back,
-    /// plus two other topics to fall back on if generation fails. Every skill is used at least once.
-    static func makePlan(topics: [RoundTopic], using rng: inout some RandomNumberGenerator) -> [PlanItem] {
-        let shuffled = topics.shuffled(using: &rng)
-        let count = shuffled.count
-        var skills: [ComprehensionSkill] = []
-        while skills.count < exerciseCount {
-            skills += ComprehensionSkill.allCases.shuffled(using: &rng)
-        }
-        return skills.prefix(exerciseCount).enumerated().map { i, skill in
-            let primary = (i + i / count) % count
-            let spares = shuffled.indices.filter { $0 != primary }.shuffled(using: &rng).prefix(2).map { shuffled[$0] }
-            return PlanItem(topics: [shuffled[primary]] + spares, skill: skill)
-        }
     }
 
     private func prepareRound() {
@@ -325,6 +288,61 @@ final class QuizViewModel {
         } else {
             currentExercise = nil
             phase = queue.isEmpty ? .failed : .loading
+        }
+    }
+}
+
+// MARK: - Retry with different topics
+
+extension QuizViewModel {
+    /// Generates the failed exercises again with the same topics. Generation is sampled, so a
+    /// second try often works. Doesn't use or reset the round's automatic replacements.
+    func retry() {
+        guard settings != nil, isStuck else { return }
+        requeueFailedJobs()
+    }
+
+    /// Generates the failed exercises again with other topics, preferring ones they didn't just
+    /// try, and the same skills. Doesn't use or reset the round's automatic replacements.
+    func retryWithDifferentTopics() {
+        guard let settings, isStuck else { return }
+        var rng = SystemRandomNumberGenerator()
+        for index in failedJobs.indices {
+            failedJobs[index].topics = Self.replacementTopics(
+                for: failedJobs[index].topics,
+                from: settings.topics,
+                using: &rng,
+            )
+        }
+        requeueFailedJobs()
+    }
+
+    /// Up to 3 topics for another try at a failed exercise, those it didn't just try first.
+    static func replacementTopics(
+        for failed: [RoundTopic],
+        from topics: [RoundTopic],
+        using rng: inout some RandomNumberGenerator,
+    ) -> [RoundTopic] {
+        let failed = Set(failed)
+        let untried = topics.filter { !failed.contains($0) }.shuffled(using: &rng)
+        let tried = topics.filter { failed.contains($0) }.shuffled(using: &rng)
+        return Array((untried + tried).prefix(3))
+    }
+
+    /// The topics and skill for each exercise of a round. Each exercise gets its own topic while
+    /// there are enough, cycling through them otherwise without repeating a topic back to back,
+    /// plus two other topics to fall back on if generation fails. Every skill is used at least once.
+    static func makePlan(topics: [RoundTopic], using rng: inout some RandomNumberGenerator) -> [PlanItem] {
+        let shuffled = topics.shuffled(using: &rng)
+        let count = shuffled.count
+        var skills: [ComprehensionSkill] = []
+        while skills.count < exerciseCount {
+            skills += ComprehensionSkill.allCases.shuffled(using: &rng)
+        }
+        return skills.prefix(exerciseCount).enumerated().map { i, skill in
+            let primary = (i + i / count) % count
+            let spares = shuffled.indices.filter { $0 != primary }.shuffled(using: &rng).prefix(2).map { shuffled[$0] }
+            return PlanItem(topics: [shuffled[primary]] + spares, skill: skill)
         }
     }
 }
