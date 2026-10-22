@@ -4,13 +4,13 @@ import OSLog
 
 /// One group of rounds in the History list, newest group first.
 struct HistorySection: Equatable {
-    enum Kind: Equatable {
+    enum Kind: Hashable {
         case thisWeek
         case lastWeek
         /// Earlier in the current month, not in `.thisWeek` or `.lastWeek`. The month's first day.
         case earlierThisMonth(Date)
-        /// A past month. The month's first day.
-        case month(Date)
+        /// A past month. The month's first day; `showsYear` when it isn't in the current year.
+        case month(Date, showsYear: Bool)
     }
 
     let kind: Kind
@@ -78,6 +78,13 @@ final class RoundHistoryViewModel {
         return sections
     }
 
+    /// A section's month, in `calendar` and its time zone, the ones the sections were built in.
+    /// The device's own time zone could put a month's first day in the month before.
+    func monthName(_ date: Date, showingYear: Bool = false) -> String {
+        let format = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).month(.wide)
+        return date.formatted(showingYear ? format.year() : format)
+    }
+
     /// Saves `round`; reloads `summaries` when it was read at the current age group.
     func record(_ round: RoundRecord) {
         do {
@@ -140,6 +147,7 @@ final class RoundHistoryViewModel {
             return .earlierThisMonth(thisMonth.start)
         }
         let monthStart = calendar.dateInterval(of: .month, for: date)?.start ?? date
-        return .month(monthStart)
+        let showsYear = calendar.component(.year, from: monthStart) != calendar.component(.year, from: today)
+        return .month(monthStart, showsYear: showsYear)
     }
 }

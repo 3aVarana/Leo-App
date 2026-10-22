@@ -27,10 +27,12 @@ enum ResultViewSnapshotTitles {
 extension ViewSnapshots {
     @MainActor
     struct ResultViewSnapshotTests {
-        private func results(_ correct: [Bool]) -> some View {
+        private func results(_ correct: [Bool], ageGroup: AgeGroup = .nine) -> some View {
             NavigationStack {
-                ResultView(answers: roundAnswers(correct), ageGroup: .nine, onRestart: {}, onSettings: {})
-                    .toolbar(.hidden, for: .navigationBar)
+                ResultView(
+                    answers: roundAnswers(correct), ageGroup: ageGroup, onRestart: {}, onSettings: {}, onHistory: {},
+                )
+                .toolbar(.hidden, for: .navigationBar)
             }
         }
 
@@ -43,6 +45,15 @@ extension ViewSnapshots {
         ])
         func correct(_ name: String, _ answers: [Bool]) {
             assertViewSnapshot(of: results(answers), named: "\(name)-of-6", height: 1000)
+        }
+
+        /// The "Past rounds" text button, for 6–8.
+        @Test func historyButtonForSix() {
+            assertViewSnapshot(
+                of: results([true, true, true, true, true, true], ageGroup: .six),
+                named: "6-of-6-six",
+                height: 1000,
+            )
         }
 
         /// The rows stack, without leaders.

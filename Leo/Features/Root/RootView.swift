@@ -3,6 +3,8 @@ import SwiftUI
 struct RootView: View {
     @Bindable var viewModel: RootViewModel
 
+    @State private var isShowingHistory = false
+
     private var quiz: QuizViewModel {
         viewModel.quiz
     }
@@ -23,6 +25,9 @@ struct RootView: View {
                                 if let editor = viewModel.makeSettingsEditor() {
                                     SettingsView(viewModel: editor)
                                 }
+                            }
+                            .navigationDestination(isPresented: $isShowingHistory) {
+                                HistoryView(viewModel: viewModel.history)
                             }
                     }
                     .animation(.default, value: quiz.phase)
@@ -47,6 +52,7 @@ struct RootView: View {
                 topicNames: quiz.plannedTopicNames,
                 onStart: quiz.start,
                 onSettings: { viewModel.isShowingSettings = true },
+                onHistory: historyAction,
             )
             .toolbar(.hidden, for: .navigationBar)
         case .loading:
@@ -69,6 +75,8 @@ struct RootView: View {
                 ageGroup: quiz.roundAgeGroup ?? ageGroup,
                 onRestart: quiz.start,
                 onSettings: { viewModel.isShowingSettings = true },
+                onHistory: historyAction,
+                historyAgeGroup: ageGroup,
             )
             .toolbar(.hidden, for: .navigationBar)
         case .failed:
@@ -85,6 +93,11 @@ struct RootView: View {
 
     private var dots: [DotState] {
         (0 ..< QuizViewModel.exerciseCount).map(quiz.dotState(at:))
+    }
+
+    /// `nil` hides the History button (H6): no saved round to show yet.
+    private var historyAction: (() -> Void)? {
+        viewModel.history.hasRounds ? { isShowingHistory = true } : nil
     }
 }
 

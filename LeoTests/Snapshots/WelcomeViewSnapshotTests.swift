@@ -9,7 +9,7 @@ extension ViewSnapshots {
         private let topics = ["Volcanoes", "The solar system", "Pirates and treasure", "Inventors", "Rainforests"]
 
         private func welcome(_ group: AgeGroup, topics: [String]) -> some View {
-            WelcomeView(ageGroup: group, topicNames: topics, onStart: {}, onSettings: {})
+            WelcomeView(ageGroup: group, topicNames: topics, onStart: {}, onSettings: {}, onHistory: {})
         }
 
         /// Different `displayName` lengths.

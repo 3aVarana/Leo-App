@@ -3,9 +3,16 @@ import SwiftUI
 /// The score of the round, a row per text, and Review for the texts the reader missed.
 struct ResultView: View {
     let answers: [RoundAnswer]
+    /// The round just finished, for the Kicker. Can differ from `historyAgeGroup` when the
+    /// reader changes age group in Settings before leaving Results.
     let ageGroup: AgeGroup
     let onRestart: () -> Void
     let onSettings: () -> Void
+    /// `nil` hides the button (H6): no saved round to show yet.
+    var onHistory: (() -> Void)?
+    /// The age group in the current preferences, which picks the History button's variant (H5)
+    /// and is what `onHistory` opens. Defaults to `ageGroup` for previews and tests.
+    var historyAgeGroup: AgeGroup?
 
     /// The position in `misses` that Review opens at.
     @State private var reviewStart: Int?
@@ -15,16 +22,22 @@ struct ResultView: View {
         ScrollingScreen {
             HStack {
                 Spacer()
-                Button(action: onSettings) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: gearSize))
-                        .symbolRenderingMode(.hierarchical)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
-                        .contentShape(.rect)
+                HStack(spacing: 4) {
+                    if let onHistory {
+                        HistoryButton(ageGroup: historyAgeGroup ?? ageGroup, action: onHistory)
+                    }
+                    Button(action: onSettings) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: gearSize))
+                            .symbolRenderingMode(.hierarchical)
+                            .frame(minWidth: 44, minHeight: 44)
+                            // No outline (intentional, 5.1): matches the History button and
+                            // Welcome's gear, as the mock's ghost icon buttons do.
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Settings"))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("Settings"))
             }
             .frame(minHeight: 44)
             .padding(.top, 4)
@@ -162,16 +175,7 @@ private struct ResultRow: View {
                 .leoTextStyle(LeoTextStyle(size: 14, weight: .semibold, relativeTo: .subheadline))
                 .foregroundStyle(Color.leoAccent700)
         } else {
-            HStack(spacing: 4) {
-                Text("Review")
-                Image(systemName: "arrow.right")
-                    .imageScale(.small)
-            }
-            .leoTextStyle(LeoTextStyle(size: 14, weight: .semibold, relativeTo: .subheadline))
-            .foregroundStyle(Color.leoMagenta700)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 10)
-            .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
+            ReviewLabel()
         }
     }
 }

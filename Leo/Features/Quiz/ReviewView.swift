@@ -3,12 +3,15 @@ import SwiftUI
 /// The texts the reader missed, one page each: their answer, the right one, why, and the text.
 struct ReviewView: View {
     let misses: [RoundAnswer]
+    /// The bottom button's label once every miss has been seen. "Back to round" from the round page.
+    let backTitle: LocalizedStringResource
 
     @Environment(\.dismiss) private var dismiss
     @State private var selection: Int
 
-    init(misses: [RoundAnswer], startIndex: Int) {
+    init(misses: [RoundAnswer], startIndex: Int, backTitle: LocalizedStringResource = "Back to results") {
         self.misses = misses
+        self.backTitle = backTitle
         _selection = State(initialValue: startIndex)
     }
 
@@ -39,7 +42,7 @@ struct ReviewView: View {
                 }
                 .buttonStyle(.leo(.primary))
             } else {
-                Button("Back to results") { dismiss() }
+                Button { dismiss() } label: { Text(backTitle) }
                     .buttonStyle(.leo(.primary))
             }
         }

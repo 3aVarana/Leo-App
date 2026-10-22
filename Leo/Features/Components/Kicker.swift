@@ -15,6 +15,11 @@ struct Kicker: View {
         self.color = color
     }
 
+    init(_ text: Text, color: Color = .leoInkMuted) {
+        self.text = text
+        self.color = color
+    }
+
     var body: some View {
         text
             .leoTextStyle(.kicker)

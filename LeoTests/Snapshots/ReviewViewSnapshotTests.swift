@@ -7,12 +7,18 @@ extension ViewSnapshots {
     @MainActor
     struct ReviewViewSnapshotTests {
         /// Review as Results pushes it, with the system back button.
-        private func review(_ misses: [RoundAnswer], start: Int = 0) -> some View {
+        private func review(
+            _ misses: [RoundAnswer], start: Int = 0, backTitle: LocalizedStringResource? = nil,
+        ) -> some View {
             NavigationStack {
                 Color.clear
                     .navigationTitle(Text("Results"))
                     .navigationDestination(isPresented: .constant(true)) {
-                        ReviewView(misses: misses, startIndex: start)
+                        if let backTitle {
+                            ReviewView(misses: misses, startIndex: start, backTitle: backTitle)
+                        } else {
+                            ReviewView(misses: misses, startIndex: start)
+                        }
                     }
             }
         }
@@ -36,6 +42,15 @@ extension ViewSnapshots {
             let exercise = Exercise.fixture(explanation: "")
             let miss = RoundAnswer(index: 2, exercise: exercise, selectedOption: 0)
             assertViewSnapshot(of: review([miss]), named: "no-explanation", height: 1300)
+        }
+
+        /// From the round page: "Back to round" instead of "Back to results".
+        @Test func backToRound() {
+            assertViewSnapshot(
+                of: review(misses([false, true, true, true, true, true]), backTitle: "Back to round"),
+                named: "1-of-1-back-to-round",
+                height: 1300,
+            )
         }
 
         @Test func accessibilitySize() {
