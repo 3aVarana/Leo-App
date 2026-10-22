@@ -1,6 +1,6 @@
 # Leo
 
-Leo helps people of all ages build their reading comprehension. Each round has various short texts, written for the reader's age on topics they like, each followed by a question. Everything is generated on the device by Apple's [Foundation Models](https://developer.apple.com/documentation/foundationmodels) framework, so Leo works offline and nothing the reader does leaves their iPhone or iPad.
+Leo helps people of all ages build their reading comprehension. Each round has six short texts, written for the reader's age on topics they like, each followed by a question. Everything is generated on the device by Apple's [Foundation Models](https://developer.apple.com/documentation/foundationmodels) framework, so Leo works offline and nothing the reader does leaves their iPhone or iPad.
 
 <table>
   <tr>
@@ -19,14 +19,16 @@ Reading and understanding a text is the foundation for learning everything else.
 
 ## Features
 
-- **Five age groups:** 6–8, 9–11, 12–14, 15–17 and 18+. The age group sets how long the passages are and how complex their language is, from 50–80 words of short, everyday sentences up to 160–230 words with varied structure and precise vocabulary.
+- **Five age groups:** 6–8, 9–11, 12–14, 15–17 and 18+. The age group sets how long the passages are and how complex their language is, from 50–80 words of short, everyday sentences up to 160–230 words with varied structure and precise vocabulary, and younger readers get larger text.
 - **Five comprehension skills:** every round mixes questions on the main idea, key details, inference, vocabulary in context and the author's purpose.
 - **Topics the reader chooses:** each age group has its own list of suggested topics that can be turned on and off, and readers can add their own. The on-device model checks that a new topic suits the reader's age and tidies up its wording before it's saved.
+- **Read first, then answer:** each exercise shows only the title and the passage at first. The question and its answers appear when the reader taps "Answer the question" or the reading timer runs out. The timer gives each age group time to read at a relaxed pace, at least 30 seconds; it can be turned off in Settings and is always off while VoiceOver is running.
 - **Feedback that teaches:** after a wrong answer, Leo shows the correct one and a short explanation that points back to the passage. At the end of a round, Review goes back through the missed texts with the reader's answer, the right one, the explanation and the passage.
 - **Reads in your language:** texts are written in the device's language when the on-device model supports it, and in English otherwise. The interface is available in English, Spanish and Brazilian Portuguese for the moment.
 - **Little waiting for questions:** the exercises start generating in the background as soon as the app opens, before the reader taps Start. A text that can't be written is replaced by another one automatically, up to 3 times per round.
 - **Accessible:** supports Dynamic Type up to accessibility sizes, Dark Mode, Increase Contrast and VoiceOver.
-- **Made to read like print:** the Broadsheet design sets everything in [Source Serif 4](https://github.com/adobe-fonts/source-serif) on a warm paper ground, with a dark ink version for Dark Mode.
+- **iPhone and iPad,** in portrait and landscape.
+- **Made to read like print:** the Broadsheet design sets everything in [Source Serif 4](https://github.com/adobe-fonts/source-serif) on a warm paper ground, with a dark ink version for Dark Mode, and the app opens with a short intro where the Leo wordmark settles into place.
 
 ## How it uses Foundation Models
 
@@ -40,7 +42,7 @@ Leo uses Apple's on-device language model for two jobs: writing exercises and re
 - **The app repairs what it can and checks every exercise.** [`ExerciseRepair`](Leo/Data/FoundationModels/ExerciseRepair.swift) removes markdown, gives all the answers the same final punctuation and drops an explanation the token limit cut off. Exercises with a missing answer, duplicate options, a passage of the wrong length, a passage that describes itself ("the author wanted to show...", in English, Spanish and Portuguese) or a correct answer much longer than the others are discarded, the reason is logged, and Leo tries the next topic instead (up to three).
 - **Runaway passages are stopped early.** The response is streamed, and a passage that keeps going past the accepted length is abandoned after a few seconds instead of running until the token limit.
 - **A fresh session per exercise** keeps every request well inside the model's context window.
-- **Prompts are measured, not eyeballed.** The instructions give the model a role, forbid passages that talk about themselves, and each comprehension skill has a three-part hint. Prompt changes are checked with the evaluation harness in [`scripts/exercise-eval`](scripts/exercise-eval/README.md); see [the quality plan](docs/Leo-Exercise-Quality-Plan.md).
+- **Prompts are measured, not eyeballed.** The instructions give the model a role, say whether the passage should be a story or an informative text (each suggested topic is one or the other, and the reader's own topics can be either), forbid passages that talk about themselves, and each comprehension skill has a three-part hint. Prompt changes are checked with the evaluation harness in [`scripts/exercise-eval`](scripts/exercise-eval/README.md); see [the quality plan](docs/Leo-Exercise-Quality-Plan.md).
 - **Prompts are in English, content is in the reader's language.** The instructions tell the model which language to write in, using [`ContentLanguage`](Leo/Data/FoundationModels/ContentLanguage.swift), which picks the device's preferred language if the model supports it. For readers outside US English, the instructions start with Apple's locale phrase, "The person's locale is es_ES.", which reduces mixed-language output.
 
 ### Reviewing custom topics
@@ -53,7 +55,7 @@ If Apple Intelligence is turned off, the device isn't eligible or the model is s
 
 ## Privacy
 
-Leo has no accounts, no analytics and no network code. Exercises and topic reviews are generated on the device. The only thing Leo stores is the reader's preferences (age group and topics), in `UserDefaults` on the device.
+Leo has no accounts, no analytics and no network code. Exercises and topic reviews are generated on the device. The only thing Leo stores is the reader's preferences (age group, topics and whether the reading timer is on), in `UserDefaults` on the device.
 
 ## Requirements
 
@@ -74,15 +76,20 @@ Leo/
 ├── Data/          Repositories/ holds the protocols the ViewModels depend on and their implementations
 │                  (preferences in UserDefaults, exercises, topic reviews, model availability), and
 │                  FoundationModels/ holds the on-device model code behind them: ExerciseGenerator,
-│                  GeneratedExercise, PromptVocabulary, TopicValidator and ContentLanguage
-├── Features/      One folder per feature, each with its ViewModel and views: Root (RootViewModel),
-│                  Quiz (QuizViewModel) and Preferences (PreferencesEditorViewModel, shared by
-│                  onboarding and settings), plus Theme (colors, type and layout) and Components
-│                  (the shared Broadsheet controls)
+│                  GeneratedExercise, ExerciseRepair, PromptVocabulary, TopicValidator and
+│                  ContentLanguage
+├── Features/      One folder per feature, each with its ViewModel and views: Root (RootViewModel,
+│                  the launch intro and the Unavailable screen), Quiz (QuizViewModel) and Preferences
+│                  (PreferencesEditorViewModel, shared by onboarding and settings), plus Theme
+│                  (colors, type and layout) and Components (the shared Broadsheet controls)
 └── Resources/     Fonts/ holds Source Serif 4 and its licence, registered through Info.plist
 LeoTests/          Unit, snapshot and live-model tests, mirroring the folders above
 LeoTestsSnapshots/ Reference images and text snapshots
-docs/              Feature specifications, the test plan and the architecture plan
+docs/              Feature specifications and the plans behind each larger change: architecture,
+                   tests, the Broadsheet redesign, the launch screen, resilient generation and
+                   exercise quality
+scripts/           The exercise evaluation harness (exercise-eval/) and the script that renders
+                   the launch screen wordmark
 ```
 
 Dependencies point inward: views read their ViewModel and Domain types, ViewModels depend on the repository protocols, and only the repository implementations touch `FoundationModels` and `UserDefaults`. `MyApp` wires the real implementations together, and tests inject hand-written fakes from `LeoTests/Support/`. Two SwiftLint rules keep the boundaries: nothing in `Leo/Domain/` imports SwiftUI, UIKit or FoundationModels, and nothing in `Leo/Features/` imports FoundationModels. The plan behind this layout is in [docs/Leo-MVVM-Repository-Plan.md](docs/Leo-MVVM-Repository-Plan.md).
