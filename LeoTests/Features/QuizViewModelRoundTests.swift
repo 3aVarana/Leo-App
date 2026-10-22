@@ -130,6 +130,21 @@ extension QuizViewModelRoundTests {
         #expect(finished.first?.answers.map(\.isCorrect) == [true, false, true, true, false, true])
     }
 
+    /// A second `next()` on the finished round, such as a double tap during the transition to
+    /// Results, must not save a duplicate.
+    @Test func secondNextOnAFinishedRoundDoesNotReportAgain() async {
+        var finished: [RoundRecord] = []
+        let quiz = await startedQuiz(onRoundFinished: { finished.append($0) })
+
+        for _ in 0 ..< QuizViewModel.exerciseCount {
+            answer(quiz, correctly: true)
+        }
+        quiz.next()
+        quiz.next()
+
+        #expect(finished.count == 1)
+    }
+
     @Test func unfinishedRoundIsNotReported() async {
         var finished: [RoundRecord] = []
         let quiz = await startedQuiz(onRoundFinished: { finished.append($0) })

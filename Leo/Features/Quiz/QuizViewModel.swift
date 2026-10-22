@@ -196,7 +196,7 @@ final class QuizViewModel {
     }
 
     func next() {
-        guard selectedOption != nil else { return }
+        guard phase == .answering, selectedOption != nil else { return }
         if isLastExercise {
             if let roundAgeGroup {
                 onRoundFinished(RoundRecord(id: UUID(), finishedAt: now(), ageGroup: roundAgeGroup, answers: answers))
