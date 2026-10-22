@@ -131,11 +131,11 @@ extension RoundHistoryViewModelTests {
             .thisWeek,
             .lastWeek,
             .earlierThisMonth(thisMonth.start),
-            .month(olderMonthStart),
-            .month(lastYearMonthStart),
+            .month(olderMonthStart, showsYear: false),
+            .month(lastYearMonthStart, showsYear: true),
         ])
         #expect(sections.map(\.rounds.count) == [1, 1, 1, 1, 1])
-        #expect(!sections.map(\.kind).contains(.month(skippedMonthStart)))
+        #expect(!sections.map(\.kind).contains(.month(skippedMonthStart, showsYear: false)))
     }
 
     /// When last week reaches back into the previous month, a round from those days is still
@@ -152,5 +152,23 @@ extension RoundHistoryViewModelTests {
 
         viewModel.record(.fixture(ageGroup: .nine, finishedAt: lastWeekStart.addingTimeInterval(3600)))
         #expect(viewModel.sections.map(\.kind) == [.lastWeek])
+    }
+}
+
+// MARK: - Month names
+
+extension RoundHistoryViewModelTests {
+    /// The month's first day at midnight in `calendar` is still that month, whatever the device's
+    /// time zone: west of UTC it would otherwise read as the month before.
+    @Test func monthNameFollowsTheCalendarTimeZone() {
+        let viewModel = makeViewModel(now: date(2026, 3, 20))
+        #expect(viewModel.monthName(date(2026, 2, 1)) == viewModel.monthName(date(2026, 2, 15)))
+        #expect(viewModel.monthName(date(2026, 2, 1)) != viewModel.monthName(date(2026, 1, 31)))
+    }
+
+    @Test func monthNameShowsTheYearOnlyWhenAsked() {
+        let viewModel = makeViewModel(now: date(2026, 3, 20))
+        #expect(!viewModel.monthName(date(2025, 12, 1)).contains("2025"))
+        #expect(viewModel.monthName(date(2025, 12, 1), showingYear: true).contains("2025"))
     }
 }

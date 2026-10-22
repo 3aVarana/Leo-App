@@ -18,7 +18,8 @@ struct HistoryView: View {
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
-            ForEach(viewModel.sections, id: \.kind) { section in
+            let sections = viewModel.sections
+            ForEach(sections, id: \.kind) { section in
                 Section {
                     ForEach(section.rounds) { round in
                         Button {
@@ -39,7 +40,7 @@ struct HistoryView: View {
                         }
                     }
                 } header: {
-                    sectionHeader(section.kind)
+                    sectionHeader(section.kind, isFirst: section.kind == sections.first?.kind)
                 }
                 .listRowInsets(EdgeInsets())
             }
@@ -79,12 +80,12 @@ struct HistoryView: View {
         return Text("\(viewModel.roundCount) rounds read · \(percent) answered right")
     }
 
-    private func sectionHeader(_ kind: HistorySection.Kind) -> some View {
+    private func sectionHeader(_ kind: HistorySection.Kind, isFirst: Bool) -> some View {
         Kicker(title(for: kind))
             .textCase(nil)
             .listRowInsets(EdgeInsets())
             .padding(.horizontal, 24)
-            .padding(.top, kind == viewModel.sections.first?.kind ? 0 : 20)
+            .padding(.top, isFirst ? 0 : 20)
             .padding(.bottom, 8)
     }
 
@@ -95,20 +96,10 @@ struct HistoryView: View {
         case .lastWeek:
             Text("Last week")
         case let .earlierThisMonth(date):
-            Text("Earlier in \(monthName(date))")
-        case let .month(date):
-            Text(verbatim: monthTitle(date))
+            Text("Earlier in \(viewModel.monthName(date))")
+        case let .month(date, showsYear):
+            Text(verbatim: viewModel.monthName(date, showingYear: showsYear))
         }
-    }
-
-    private func monthName(_ date: Date) -> String {
-        date.formatted(.dateTime.month(.wide))
-    }
-
-    private func monthTitle(_ date: Date) -> String {
-        let calendar = Calendar.autoupdatingCurrent
-        let isCurrentYear = calendar.component(.year, from: date) == calendar.component(.year, from: Date())
-        return isCurrentYear ? monthName(date) : date.formatted(.dateTime.month(.wide).year())
     }
 }
 
