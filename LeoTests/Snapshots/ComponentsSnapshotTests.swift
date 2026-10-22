@@ -30,6 +30,11 @@ extension ViewSnapshots {
                     }
                     AgeRow(label: "9 to 11", description: "Everyday words · 80–120 words", isSelected: true) {}
                     AgeRow(label: "12 to 14", description: "Some new vocabulary · 100–150 words", isSelected: false) {}
+                    RoundResultDots(results: [true, false, true, true, false, true])
+                    HStack(spacing: 4) {
+                        HistoryButton(ageGroup: .six, action: {})
+                        HistoryButton(ageGroup: .nine, action: {})
+                    }
                     SkeletonLines()
                     HStack(alignment: .lastTextBaseline, spacing: 8) {
                         Text(verbatim: "The Sleeping Mountain")

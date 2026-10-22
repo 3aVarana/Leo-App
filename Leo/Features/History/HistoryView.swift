@@ -1,0 +1,207 @@
+import SwiftUI
+
+/// Every finished round at the current age group (H7): the header totals, then the rounds
+/// grouped by when they were read. Swipe to delete a round (H3), no confirmation.
+struct HistoryView: View {
+    let viewModel: RoundHistoryViewModel
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedRoundID: UUID?
+
+    var body: some View {
+        List {
+            header
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+            ForEach(viewModel.sections, id: \.kind) { section in
+                Section {
+                    ForEach(section.rounds) { round in
+                        Button {
+                            selectedRoundID = round.id
+                        } label: {
+                            HistoryRow(round: round)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                viewModel.delete(id: round.id)
+                            } label: {
+                                Text("Delete")
+                            }
+                        }
+                    }
+                } header: {
+                    sectionHeader(section.kind)
+                }
+                .listRowInsets(EdgeInsets())
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .leoScreenBackground()
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(Text(verbatim: ""))
+        .navigationDestination(item: $selectedRoundID) { id in
+            RoundView(id: id, viewModel: viewModel)
+        }
+        .onChange(of: viewModel.hasRounds) { _, hasRounds in
+            // Deleting the last round closes History (1.2): the button that opened it is hidden now.
+            if !hasRounds {
+                dismiss()
+            }
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Your rounds")
+                .leoTextStyle(.display(40))
+                .accessibilityAddTraits(.isHeader)
+            summaryLine
+                .leoTextStyle(.bodyLarge)
+                .foregroundStyle(Color.leoInkSoft)
+        }
+        .leoReadableWidth()
+        .padding(.top, 20)
+        .padding(.bottom, 28)
+    }
+
+    private var summaryLine: Text {
+        let percent = viewModel.correctShare.formatted(.percent.precision(.fractionLength(0)))
+        return Text("\(viewModel.roundCount) rounds read · \(percent) answered right")
+    }
+
+    private func sectionHeader(_ kind: HistorySection.Kind) -> some View {
+        Kicker(title(for: kind))
+            .textCase(nil)
+            .listRowInsets(EdgeInsets())
+            .padding(.horizontal, 24)
+            .padding(.top, kind == viewModel.sections.first?.kind ? 0 : 20)
+            .padding(.bottom, 8)
+    }
+
+    private func title(for kind: HistorySection.Kind) -> Text {
+        switch kind {
+        case .thisWeek:
+            Text("This week")
+        case .lastWeek:
+            Text("Last week")
+        case let .earlierThisMonth(date):
+            Text("Earlier in \(monthName(date))")
+        case let .month(date):
+            Text(verbatim: monthTitle(date))
+        }
+    }
+
+    private func monthName(_ date: Date) -> String {
+        date.formatted(.dateTime.month(.wide))
+    }
+
+    private func monthTitle(_ date: Date) -> String {
+        let calendar = Calendar.autoupdatingCurrent
+        let isCurrentYear = calendar.component(.year, from: date) == calendar.component(.year, from: Date())
+        return isCurrentYear ? monthName(date) : date.formatted(.dateTime.month(.wide).year())
+    }
+}
+
+/// One row: the date and time, the score over the round's dots, a chevron. At accessibility sizes
+/// the row stacks instead.
+private struct HistoryRow: View {
+    let round: RoundSummary
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 10) {
+                    dateTime
+                    scoreAndDots
+                }
+            } else {
+                HStack(spacing: 12) {
+                    dateTime
+                    Spacer(minLength: 8)
+                    scoreAndDots
+                    Image(systemName: "chevron.right")
+                        .imageScale(.small)
+                        .foregroundStyle(Color.leoInkSoft)
+                }
+            }
+        }
+        .leoReadableWidth()
+        .padding(.vertical, 12)
+        .contentShape(.rect)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(Text("Shows the round"))
+    }
+
+    private var dateTime: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(round.finishedAt, format: .dateTime.day().month(.abbreviated))
+                .leoTextStyle(LeoTextStyle(size: 17, weight: .semibold, relativeTo: .callout))
+            Text(round.finishedAt, format: .dateTime.hour().minute())
+                .leoTextStyle(.bodySmall)
+                .foregroundStyle(Color.leoInkSoft)
+        }
+        .foregroundStyle(Color.leoInk)
+    }
+
+    private var scoreAndDots: some View {
+        VStack(alignment: .trailing, spacing: 6) {
+            Text("\(round.correctCount) of \(round.results.count)")
+                .leoTextStyle(LeoTextStyle(size: 17, weight: .semibold, relativeTo: .callout))
+                .foregroundStyle(Color.leoInk)
+            RoundResultDots(results: round.results)
+        }
+    }
+
+    private var accessibilityLabel: Text {
+        let day = round.finishedAt.formatted(.dateTime.day().month(.wide))
+        let time = round.finishedAt.formatted(.dateTime.hour().minute())
+        return Text("\(day), \(time), \(round.correctCount) of \(round.results.count) right")
+    }
+}
+
+#Preview {
+    let repository = SwiftDataRoundHistoryRepository.inMemory()
+    let viewModel = RoundHistoryViewModel(repository: repository)
+    for result in [
+        [true, true, true, true, true, true],
+        [true, false, true, true, false, true],
+        [false, false, true, false, false, true],
+    ] {
+        try? repository.save(.previewFixture(ageGroup: .nine, results: result))
+    }
+    viewModel.ageGroup = .nine
+    return NavigationStack {
+        HistoryView(viewModel: viewModel)
+    }
+}
+
+private extension RoundRecord {
+    static func previewFixture(ageGroup: AgeGroup, results: [Bool]) -> RoundRecord {
+        let topic = RoundTopic(prompt: "volcanoes", name: "Volcanoes")
+        var answers: [RoundAnswer] = []
+        for (index, isCorrect) in results.enumerated() {
+            let exercise = Exercise(
+                topic: topic,
+                skill: .detail,
+                title: "Preview text \(index + 1)",
+                passage: "A short passage.",
+                question: "A question?",
+                options: ["A", "B", "C", "D"],
+                correctIndex: 0,
+                explanation: "An explanation.",
+            )
+            let selected = isCorrect ? 0 : 1
+            answers.append(RoundAnswer(index: index, exercise: exercise, selectedOption: selected))
+        }
+        return RoundRecord(id: UUID(), finishedAt: Date(), ageGroup: ageGroup, answers: answers)
+    }
+}

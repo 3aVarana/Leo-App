@@ -6,6 +6,8 @@ struct WelcomeView: View {
     let topicNames: [String]
     let onStart: () -> Void
     let onSettings: () -> Void
+    /// `nil` hides the button (H6): no saved round to show yet.
+    var onHistory: (() -> Void)?
 
     @ScaledMetric(relativeTo: .title3) private var gearSize = 24
 
@@ -17,15 +19,20 @@ struct WelcomeView: View {
                     .accessibilityAddTraits(.isHeader)
                     .launchWordmarkTarget()
                 Spacer()
-                Button(action: onSettings) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: gearSize))
-                        .symbolRenderingMode(.hierarchical)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .contentShape(.rect)
+                HStack(spacing: 4) {
+                    if let onHistory {
+                        HistoryButton(ageGroup: ageGroup, action: onHistory)
+                    }
+                    Button(action: onSettings) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: gearSize))
+                            .symbolRenderingMode(.hierarchical)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Settings"))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("Settings"))
             }
             .padding(.top, 4)
             .frame(minHeight: 44)

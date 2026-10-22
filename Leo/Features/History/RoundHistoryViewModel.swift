@@ -4,7 +4,7 @@ import OSLog
 
 /// One group of rounds in the History list, newest group first.
 struct HistorySection: Equatable {
-    enum Kind: Equatable {
+    enum Kind: Hashable {
         case thisWeek
         case lastWeek
         /// Earlier in the current month, not in `.thisWeek` or `.lastWeek`. The month's first day.

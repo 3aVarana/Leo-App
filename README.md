@@ -24,6 +24,7 @@ Reading and understanding a text is the foundation for learning everything else.
 - **Topics the reader chooses:** each age group has its own list of suggested topics that can be turned on and off, and readers can add their own. The on-device model checks that a new topic suits the reader's age and tidies up its wording before it's saved.
 - **Read first, then answer:** each exercise shows only the title and the passage at first. The question and its answers appear when the reader taps "Answer the question" or the reading timer runs out. The timer gives each age group time to read at a relaxed pace, at least 30 seconds; it can be turned off in Settings and is always off while VoiceOver is running.
 - **Feedback that teaches:** after a wrong answer, Leo shows the correct one and a short explanation that points back to the passage. At the end of a round, Review goes back through the missed texts with the reader's answer, the right one, the explanation and the passage.
+- **History:** every finished round is saved on the device, grouped by week and month, with its score and which texts were missed, so a reader can come back to it and review a text again. History follows the current age group, and a round can be swiped away.
 - **Reads in your language:** texts are written in the device's language when the on-device model supports it, and in English otherwise. The interface is available in English, Spanish and Brazilian Portuguese for the moment.
 - **Little waiting for questions:** the exercises start generating in the background as soon as the app opens, before the reader taps Start. A text that can't be written is replaced by another one automatically, up to 3 times per round.
 - **Accessible:** supports Dynamic Type up to accessibility sizes, Dark Mode, Increase Contrast and VoiceOver.
@@ -55,7 +56,7 @@ If Apple Intelligence is turned off, the device isn't eligible or the model is s
 
 ## Privacy
 
-Leo has no accounts, no analytics and no network code. Exercises and topic reviews are generated on the device. The only thing Leo stores is the reader's preferences (age group, topics and whether the reading timer is on), in `UserDefaults` on the device.
+Leo has no accounts, no analytics and no network code. Exercises and topic reviews are generated on the device. Leo stores the reader's preferences (age group, topics and whether the reading timer is on) in `UserDefaults`, and every finished round (its score and the texts, so History and Review can show them again) in a local SwiftData store. Neither ever leaves the device.
 
 ## Requirements
 
@@ -72,14 +73,16 @@ Leo/
 ├── App/           The composition root: MyApp builds the repositories and ViewModels
 ├── Domain/        Plain value types and rules, with no SwiftUI or FoundationModels imports: AgeGroup,
 │                  Exercise, ComprehensionSkill, ReaderPreferences (with the topic editing rules),
-│                  RoundSettings, RoundTopic, Topic, ModelAvailability and TopicReviewOutcome
+│                  RoundSettings, RoundTopic, Topic, RoundAnswer, RoundRecord, RoundSummary,
+│                  ModelAvailability and TopicReviewOutcome
 ├── Data/          Repositories/ holds the protocols the ViewModels depend on and their implementations
-│                  (preferences in UserDefaults, exercises, topic reviews, model availability), and
-│                  FoundationModels/ holds the on-device model code behind them: ExerciseGenerator,
-│                  GeneratedExercise, ExerciseRepair, PromptVocabulary, TopicValidator and
-│                  ContentLanguage
+│                  (preferences in UserDefaults, exercises, topic reviews, model availability, round
+│                  history in SwiftData), FoundationModels/ holds the on-device model code behind them:
+│                  ExerciseGenerator, GeneratedExercise, ExerciseRepair, PromptVocabulary,
+│                  TopicValidator and ContentLanguage, and SwiftData/ holds the round history schema
 ├── Features/      One folder per feature, each with its ViewModel and views: Root (RootViewModel,
-│                  the launch intro and the Unavailable screen), Quiz (QuizViewModel) and Preferences
+│                  the launch intro and the Unavailable screen), Quiz (QuizViewModel), History
+│                  (RoundHistoryViewModel, the History list and a saved round) and Preferences
 │                  (PreferencesEditorViewModel, shared by onboarding and settings), plus Theme
 │                  (colors, type and layout) and Components (the shared Broadsheet controls)
 └── Resources/     Fonts/ holds Source Serif 4 and its licence, registered through Info.plist
@@ -119,7 +122,7 @@ Every pull request to `main` runs SwiftLint, SwiftFormat and the `Leo` test plan
 
 Leo is in development and isn't on the App Store or TestFlight yet. Planned next:
 
-- **Progress tracking:** a history of rounds and scores, with results per comprehension skill
+- **Results per comprehension skill:** a breakdown of how the reader is doing on each skill, from the same saved rounds as History
 - **Adaptive difficulty:** adjusting passage level and skills to how the reader is doing
 - **More languages** for the interface
 - **Read aloud and vocabulary help:** listening to a passage, and tapping a word to see what it means

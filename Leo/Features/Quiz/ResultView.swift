@@ -6,6 +6,8 @@ struct ResultView: View {
     let ageGroup: AgeGroup
     let onRestart: () -> Void
     let onSettings: () -> Void
+    /// `nil` hides the button (H6): no saved round to show yet.
+    var onHistory: (() -> Void)?
 
     /// The position in `misses` that Review opens at.
     @State private var reviewStart: Int?
@@ -15,16 +17,20 @@ struct ResultView: View {
         ScrollingScreen {
             HStack {
                 Spacer()
-                Button(action: onSettings) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: gearSize))
-                        .symbolRenderingMode(.hierarchical)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
-                        .contentShape(.rect)
+                HStack(spacing: 4) {
+                    if let onHistory {
+                        HistoryButton(ageGroup: ageGroup, action: onHistory)
+                    }
+                    Button(action: onSettings) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: gearSize))
+                            .symbolRenderingMode(.hierarchical)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Settings"))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("Settings"))
             }
             .frame(minHeight: 44)
             .padding(.top, 4)
@@ -162,16 +168,7 @@ private struct ResultRow: View {
                 .leoTextStyle(LeoTextStyle(size: 14, weight: .semibold, relativeTo: .subheadline))
                 .foregroundStyle(Color.leoAccent700)
         } else {
-            HStack(spacing: 4) {
-                Text("Review")
-                Image(systemName: "arrow.right")
-                    .imageScale(.small)
-            }
-            .leoTextStyle(LeoTextStyle(size: 14, weight: .semibold, relativeTo: .subheadline))
-            .foregroundStyle(Color.leoMagenta700)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 10)
-            .overlay { RoundedRectangle(cornerRadius: 2).strokeBorder(Color.leoDivider) }
+            ReviewLabel()
         }
     }
 }
