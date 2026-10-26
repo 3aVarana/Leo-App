@@ -141,9 +141,11 @@ private struct RoundResultRow: View {
     }
 }
 
-#Preview {
-    let round = RoundRecord.previewFixture(ageGroup: .nine, results: [true, false, true, true, false, true])
-    return NavigationStack {
-        RoundView(round: round)
+#if DEBUG
+    #Preview {
+        let round = RoundRecord.previewFixture(ageGroup: .nine, results: [true, false, true, true, false, true])
+        return NavigationStack {
+            RoundView(round: round)
+        }
     }
-}
+#endif

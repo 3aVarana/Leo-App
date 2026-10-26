@@ -163,18 +163,20 @@ private struct HistoryRow: View {
     }
 }
 
-#Preview {
-    let repository = SwiftDataRoundHistoryRepository.inMemory()
-    let viewModel = RoundHistoryViewModel(repository: repository)
-    for result in [
-        [true, true, true, true, true, true],
-        [true, false, true, true, false, true],
-        [false, false, true, false, false, true],
-    ] {
-        try? repository.save(.previewFixture(ageGroup: .nine, results: result))
+#if DEBUG
+    #Preview {
+        let repository = SwiftDataRoundHistoryRepository.inMemory()
+        let viewModel = RoundHistoryViewModel(repository: repository)
+        for result in [
+            [true, true, true, true, true, true],
+            [true, false, true, true, false, true],
+            [false, false, true, false, false, true],
+        ] {
+            try? repository.save(.previewFixture(ageGroup: .nine, results: result))
+        }
+        viewModel.ageGroup = .nine
+        return NavigationStack {
+            HistoryView(viewModel: viewModel)
+        }
     }
-    viewModel.ageGroup = .nine
-    return NavigationStack {
-        HistoryView(viewModel: viewModel)
-    }
-}
+#endif
