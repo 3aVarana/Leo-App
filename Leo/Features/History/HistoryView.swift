@@ -84,7 +84,7 @@ struct HistoryView: View {
         Kicker(title(for: kind))
             .textCase(nil)
             .listRowInsets(EdgeInsets())
-            .padding(.horizontal, 24)
+            .leoReadableWidth()
             .padding(.top, isFirst ? 0 : 20)
             .padding(.bottom, 8)
     }
