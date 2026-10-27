@@ -71,6 +71,9 @@ struct ExerciseGenerator {
     /// is full, which takes minutes, before the next topic is tried.
     private static let maxResponseTokens = 1200
 
+    /// Internal so the live passage-length test generates exactly as the app does.
+    static let generationOptions = GenerationOptions(temperature: 0.8, maximumResponseTokens: maxResponseTokens)
+
     /// The model kept writing the passage past the accepted length.
     private struct RunawayPassage: Error {}
 
@@ -168,7 +171,7 @@ struct ExerciseGenerator {
         let stream = session.streamResponse(
             to: prompt,
             generating: GeneratedExercise.self,
-            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens),
+            options: Self.generationOptions,
         )
         var content: GeneratedContent?
         for try await snapshot in stream {

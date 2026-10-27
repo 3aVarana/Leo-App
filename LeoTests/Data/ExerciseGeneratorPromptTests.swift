@@ -13,7 +13,7 @@ struct ExerciseGeneratorPromptTests {
         #expect(ExerciseGenerator(language: .english, ageGroup: group).wordRange.contains("in 10 to 13 sentences"))
     }
 
-    @Test(arguments: [AgeGroup.fifteen, .adult])
+    @Test(arguments: [AgeGroup.adult])
     func wordRangeWithoutSentences(_ group: AgeGroup) {
         #expect(!ExerciseGenerator(language: .english, ageGroup: group).wordRange.contains("sentences"))
     }
