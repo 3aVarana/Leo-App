@@ -14,13 +14,16 @@ nonisolated extension AgeGroup {
         }
     }
 
-    /// How many sentences to ask for alongside the word range, if any. With short, simple sentences
-    /// the model stops well under the word range unless it's also given a sentence count. Older
-    /// groups reach the range without one, and asking them for sentences makes passages run on.
-    var passageSentenceRange: ClosedRange<Int>? {
+    /// How many sentences to ask for alongside the word range. Without one the model stops well
+    /// under the word range, and on iOS 27.2 it ignores word counts but follows sentence counts.
+    /// There, without one, 15–17 passages were 4 to 5 sentences and 18+ passages about 9. Its
+    /// sentences there are short, about 7.5 words, so the older groups get more of them: asking for
+    /// longer sentences made them shorter still.
+    var passageSentenceRange: ClosedRange<Int> {
         switch self {
         case .six, .nine, .twelve: 10 ... 13
-        case .fifteen, .adult: nil
+        case .fifteen: 14 ... 17
+        case .adult: 18 ... 22
         }
     }
 

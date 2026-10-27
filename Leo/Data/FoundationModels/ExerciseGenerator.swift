@@ -11,9 +11,11 @@ struct ExerciseGenerator {
     var wordRange: String {
         let range = ageGroup.passageWordRange
         let midpoint = (range.lowerBound + range.upperBound) / 2
-        let words = "between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words"
-        guard let sentences = ageGroup.passageSentenceRange else { return words }
-        return "\(words) in \(sentences.lowerBound) to \(sentences.upperBound) sentences"
+        let sentences = ageGroup.passageSentenceRange
+        return """
+        between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words \
+        in \(sentences.lowerBound) to \(sentences.upperBound) sentences
+        """
     }
 
     /// Apple's prompting guide: a role, MUST for the rules the model keeps breaking, and nothing
@@ -70,6 +72,9 @@ struct ExerciseGenerator {
     /// Sometimes the model never stops writing; without a cap it runs until the context window
     /// is full, which takes minutes, before the next topic is tried.
     private static let maxResponseTokens = 1200
+
+    /// Internal so the live passage-length test generates exactly as the app does.
+    static let generationOptions = GenerationOptions(temperature: 0.8, maximumResponseTokens: maxResponseTokens)
 
     /// The model kept writing the passage past the accepted length.
     private struct RunawayPassage: Error {}
@@ -168,7 +173,7 @@ struct ExerciseGenerator {
         let stream = session.streamResponse(
             to: prompt,
             generating: GeneratedExercise.self,
-            options: GenerationOptions(temperature: 0.8, maximumResponseTokens: Self.maxResponseTokens),
+            options: Self.generationOptions,
         )
         var content: GeneratedContent?
         for try await snapshot in stream {
