@@ -1,6 +1,6 @@
 # Passage length at 15–17 and 18+: plan
 
-Written 2026-10-27. Status: step 0 done, step 2 decided (B: 14 to 17 sentences at 15–17, 18 to 22 at 18+), in PR #47. Step 1 not started.
+Written 2026-10-27. Status: step 0 done, step 2 decided (B: 14 to 17 sentences at 15–17, 18 to 22 at 18+), in PR #47. Step 1 not started. On the Mac's model (macOS 27.0.1) the new counts make passages run on and fail more often (§3.6), which is still to be decided.
 
 **Decision (2026-10-27):** 15–17 asks for "about 150 words in 14 to 17 sentences" (`passageSentenceRange` 14...17), with no sentence-length line. On the iPhone that's 26/30 accepted (§3.3), against 1/30 before. The passages read as lists of short facts. That's accepted for now as the cost of a passage the phone will write; an example passage in the instructions is the remaining lever if it needs improving.
 
@@ -113,6 +113,31 @@ The 14 to 17 run was rate-limited by the system ("Client rate limit exceeded") a
 
 The sentence count added about 10 words on the Mac and halved the share under 120. The extra failures are within noise at n = 30, but the runaway matches the 2026-10-04 note that asking older groups for sentences "makes passages run on".
 
+### 3.6 The new counts on the Mac's model (2026-10-27)
+
+The review of PR #47 pointed out that 14 to 17 and 18 to 22 had only been measured on the iPhone. The same `PassageLengthLiveTests` cases were run on the iPhone 18 Pro simulator, which uses the Mac's model (macOS 27.0.1), with 30 cases per row. The 18+ "none" row is the branch with the adult sentence count taken out of `wordRange` for the run, which is what `main` asks. 18 to 22 was run twice.
+
+| Group | Sentence count | Accepted | Rejected for length | Parse errors | Other rejections | Words: mean (min–max) | Sentences: mean | Words per sentence | Seconds per attempt: mean (max) |
+|---|---|---|---|---|---|---|---|---|---|
+| 15–17 | none (§3.1) | 27 / 30 | 0 | 0 | 3 standout answer | 107 (93–153) | 10.2 | 10.5 | 6.6 |
+| 15–17 | 14 to 17 | **22 / 30** | 3 | 2 | 2 standout answer, 1 distractors | 154 (104–395) | 20.7 | 7.4 | 8.2 (16.2) |
+| 18+ | none | 24 / 30 | 0 | 0 | 6 standout answer | 154 (105–198) | 13.5 | 11.3 | 8.3 (10.2) |
+| 18+ | 18 to 22, run 1 | **20 / 30** | 2 | 4 | 3 self-reference, 1 standout answer | 233 (108–675) | 32.2 | 7.2 | 11.1 (29.3) |
+| 18+ | 18 to 22, run 2 | **17 / 30** | 5 | 4 | 2 self-reference, 2 standout answer | 268 (128–740) | 38.7 | 6.9 | 12.1 (27.9) |
+
+Unlike the phone's model, the Mac's doesn't keep to the count. It reads it as a cue for short sentences and writes about twice as many as asked, so some passages run on. Passages ran past the accepted ceiling in 3 of 30 attempts at 15–17 (291–395 words) and in 7 of 60 at 18+ (390–740 words, up to 109 sentences). One purpose passage ended in a loop of "The writer shows…" sentences. The parse errors are the model writing the title, question and answers inside the passage, and took 23–28 seconds each. In the app, the streaming check stops a passage once it passes the accepted ceiling (270 words at 15–17, 345 at 18+). These parse errors stay under the ceiling, so the app waits the full 25 seconds or so before it tries the next topic. Without a count, the Mac's model wrote neither run-ons nor parse errors.
+
+The harness `--all` (one run each, 10 exercises per group) agrees:
+
+| Version | Failed: all | Failed: 6–14 | Failed: 15–17 | Failed: 18+ | 15–17 words: mean | 18+ words: mean | Under range |
+|---|---|---|---|---|---|---|---|
+| `main` (489dc48) | 5 | 3 | 0 | 2 | 119 | 133 | 13 |
+| This branch (b948222) | 11 | 5 | 2 (1 runaway, 1 standout answer) | 4 (all standout answer) | 155 | 212 | 6 |
+
+The other columns were identical: 1 self-reference, 0 standout, 8 longest+25%, and 0 in the rest. The 6–14 prompts didn't change, so their 3 against 5 is the run-to-run noise. At 15–17 and 18+, the passages now reach the requested range, but more attempts fail.
+
+With 3 topics per exercise, an exercise fails only if all 3 fail. On the Mac's model that goes from about 0.1% to 2% at 15–17 ((8/30)³), and from about 1% to 6% at 18+ ((23/60)³). Each attempt also takes longer. On the iPhone (§3.3, §3.5) it goes from about 90% to 0.2% at 15–17, and from about 30% to 0.1% at 18+. The change is a large gain on the iOS 27.2 model and a smaller loss on the macOS 27.0.1 model. How much that loss matters depends on how many users have the older model, which is open question 4 in §6.
+
 ## 4. Plan
 
 ### Step 0: measure on the iPhone (do first)
@@ -152,7 +177,7 @@ Keep step 1 whichever of A–C is chosen.
 
 - On the iPhone, at least 90% of 15–17 attempts pass the length check, and no exercise needs more than one topic for length reasons in the step 0 run.
 - The rejected attempts that remain end at the passage (step 1), as the "short passage" signpost outcome shows.
-- The harness `--all` on the Mac shows no regression in the other columns, per the harness README rule.
+- The harness `--all` on the Mac shows no regression in the other columns, per the harness README rule. Run in §3.6: the quality columns are unchanged, but failures at 15–17 and 18+ went from 2 to 6 of 20.
 - A hand check of 6 accepted 15–17 exercises on the iPhone: the passages read as texts, not lists.
 
 ## 6. Open questions
@@ -160,3 +185,4 @@ Keep step 1 whichever of A–C is chosen.
 1. ~~Which iOS version is the iPhone on?~~ iOS 27.2 (24B119), see §3.1.
 2. If A works, use it only at 15–17 (and maybe 18+), or at every age?
 3. Is lowering the 15–17 range (C) acceptable as a last resort?
+4. How many users are on the Mac's older model, where the sentence counts cost run-ons (§3.6)? Updating this Mac to macOS 27.2 and rerunning §3.6 would show whether 27.2 ships the phone's model on every platform. If it doesn't, option A or a streaming check on the sentence count would cover both models.
