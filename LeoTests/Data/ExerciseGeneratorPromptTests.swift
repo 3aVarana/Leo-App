@@ -8,14 +8,15 @@ struct ExerciseGeneratorPromptTests {
     // nonisolated: `@Test(arguments:)` reads it outside the main actor.
     private nonisolated static let spanish = ContentLanguage(locale: Locale(identifier: "es_ES"))
 
-    @Test(arguments: [AgeGroup.six, .nine, .twelve])
-    func wordRangeWithSentences(_ group: AgeGroup) {
-        #expect(ExerciseGenerator(language: .english, ageGroup: group).wordRange.contains("in 10 to 13 sentences"))
-    }
-
-    @Test(arguments: [AgeGroup.adult])
-    func wordRangeWithoutSentences(_ group: AgeGroup) {
-        #expect(!ExerciseGenerator(language: .english, ageGroup: group).wordRange.contains("sentences"))
+    @Test(arguments: [
+        (AgeGroup.six, "in 10 to 13 sentences"),
+        (.nine, "in 10 to 13 sentences"),
+        (.twelve, "in 10 to 13 sentences"),
+        (.fifteen, "in 14 to 17 sentences"),
+        (.adult, "in 18 to 22 sentences"),
+    ])
+    func wordRangeWithSentences(_ group: AgeGroup, sentences: String) {
+        #expect(ExerciseGenerator(language: .english, ageGroup: group).wordRange.contains(sentences))
     }
 
     @Test(arguments: AgeGroup.allCases)

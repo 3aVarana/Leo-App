@@ -60,9 +60,9 @@ struct AgeGroupTests {
         (.nine, 10 ... 13),
         (.twelve, 10 ... 13),
         (.fifteen, 14 ... 17),
-        (.adult, nil),
-    ] as [(AgeGroup, ClosedRange<Int>?)])
-    func passageSentenceRange(_ group: AgeGroup, expected: ClosedRange<Int>?) {
+        (.adult, 18 ... 22),
+    ] as [(AgeGroup, ClosedRange<Int>)])
+    func passageSentenceRange(_ group: AgeGroup, expected: ClosedRange<Int>) {
         #expect(group.passageSentenceRange == expected)
     }
 

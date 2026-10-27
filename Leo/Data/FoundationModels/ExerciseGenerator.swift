@@ -11,9 +11,11 @@ struct ExerciseGenerator {
     var wordRange: String {
         let range = ageGroup.passageWordRange
         let midpoint = (range.lowerBound + range.upperBound) / 2
-        let words = "between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words"
-        guard let sentences = ageGroup.passageSentenceRange else { return words }
-        return "\(words) in \(sentences.lowerBound) to \(sentences.upperBound) sentences"
+        let sentences = ageGroup.passageSentenceRange
+        return """
+        between \(range.lowerBound) and \(range.upperBound) words long, about \(midpoint) words \
+        in \(sentences.lowerBound) to \(sentences.upperBound) sentences
+        """
     }
 
     /// Apple's prompting guide: a role, MUST for the rules the model keeps breaking, and nothing

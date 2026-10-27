@@ -1,8 +1,10 @@
-# Passage length at 15–17: plan
+# Passage length at 15–17 and 18+: plan
 
-Written 2026-10-27. Status: step 0 done, step 2 decided (B with 14 to 17 sentences), all uncommitted. Step 1 not started.
+Written 2026-10-27. Status: step 0 done, step 2 decided (B: 14 to 17 sentences at 15–17, 18 to 22 at 18+), in PR #47. Step 1 not started.
 
 **Decision (2026-10-27):** 15–17 asks for "about 150 words in 14 to 17 sentences" (`passageSentenceRange` 14...17), with no sentence-length line. On the iPhone that's 26/30 accepted (§3.3), against 1/30 before. The passages read as lists of short facts. That's accepted for now as the cost of a passage the phone will write; an example passage in the instructions is the remaining lever if it needs improving.
+
+**Decision (2026-10-27), 18+:** adults ask for "about 195 words in 18 to 22 sentences" (`passageSentenceRange` 18...22). On the iPhone that's 27/30 accepted (§3.5), against 10/30 with no sentence count. Every group now gets a sentence count, so `passageSentenceRange` is no longer optional.
 
 ## 1. The problem
 
@@ -93,6 +95,22 @@ Reading them (all 30 are in `build/passage-samples-15-17.md`, which is not commi
 
 Worse on every count. The phone ignored the words-per-sentence request, and its sentences got shorter still. Two passages ran to 28 and 32 sentences of 3–5 words ("Its impact endured. Generations adapted. The river bridged eras."). The passages read no more connected than in §3.3. All 30 are in `build/passage-samples-15-17-style.md`. On this model, a sentence count is followed and a sentence length isn't.
 
+### 3.5 18+ on the iPhone (2026-10-27)
+
+The same test with `group` set to `.adult` and 3 adult default topics (turning points in history, scientific breakthroughs, psychology and habits) × 5 skills × 2 runs. 18+ asks for 160–230 words ("about 195") and accepts 96–345.
+
+| Sentence count | Accepted | Rejected for length | Other failures | Words: mean (min–max) | Sentences: mean | Words per sentence | Seconds per attempt |
+|---|---|---|---|---|---|---|---|
+| none | 10 / 30 | 17 | 2 parse errors, 1 guardrail | 89 (7–137) | 9.4 | 9.5 | 3–6 |
+| 14 to 17 | 23 / 29 | 5 | 1 guardrail | 112 (70–143) | 14.5 | 7.7 | 4–8 |
+| 18 to 22 | **27 / 30** | **1** | 2 guardrail | 139 (94–199) | 18.3 | 7.6 | 5–8 |
+
+Without a sentence count, the phone writes adults about 9 sentences, under half the requested length. Vocabulary was 0/6. Passages with 12 or more sentences were almost always accepted. The phone kept to both counts (16–22 sentences at 18 to 22), and nothing ran past the 345 ceiling, so the run-on seen on the Mac (§3) didn't happen here. At 14 to 17, four psychology passages had 14–15 sentences of about 5 words and were rejected at 70–94 words, so 18+ needs the higher count. Passages are still under 160 words in most attempts.
+
+The passages read like 15–17's: lists of one-fact sentences, with some wrong facts ("The development of vaccines eradicated infectious diseases"). All three versions are in `build/passage-samples-adult.md`, which is not committed.
+
+The 14 to 17 run was rate-limited by the system ("Client rate limit exceeded") after about 20 requests in a row. Psychology and habits was rerun on its own, and one case (scientific breakthroughs, purpose, run 2) is missing, hence 29.
+
 The sentence count added about 10 words on the Mac and halved the share under 120. The extra failures are within noise at n = 30, but the runaway matches the 2026-10-04 note that asking older groups for sentences "makes passages run on".
 
 ## 4. Plan
@@ -104,6 +122,8 @@ The `LeoLiveModel` test plan already runs the real model and can run on the phon
 ```bash
 xcodebuild test -scheme Leo -testPlan LeoLiveModel -destination 'platform=iOS,name=<iPhone name>' -only-testing:LeoTests/LiveModel/PassageLengthLiveTests
 ```
+
+It measures 15–17. Set its `group` to `.adult` to measure 18+ with adult topics. The phone must stay unlocked, and back-to-back runs can be rate-limited by the system.
 
 Run it once for the current code and once for each variant below, with the same 3 topics × 5 skills × 2 runs as §3, so the iPhone numbers line up with the Mac's. Also note the iPhone's iOS version and the Mac's macOS version for the record.
 
@@ -127,7 +147,6 @@ Keep step 1 whichever of A–C is chosen.
 
 - **Accepting the samples as they are**: see §2.
 - **Asking the model to continue a short passage** in the same session: this needs a second request per short passage, and new sentences can make a wrong answer true.
-- **18+**: same structure (no sentence count, 160–230). The user sees only a first-exercise delay there, so it should follow whatever step 0 shows works for 15–17, not be changed blind.
 
 ## 5. Done when
 

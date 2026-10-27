@@ -3,7 +3,7 @@ import FoundationModels
 @testable import Leo
 import Testing
 
-/// Measures 15–17 passage lengths on the device that runs it, for docs/Leo-Passage-Length-Plan.md
+/// Measures passage lengths on the device that runs it, for docs/Leo-Passage-Length-Plan.md
 /// (step 0). Same cases as the Mac harness run in that plan: one attempt per run, with no
 /// replacement topic and no runaway check. It records numbers instead of checking them: read the
 /// `PASSAGE-LENGTH` lines in the test output, and the passages in the `PASSAGE-TEXT` lines.
@@ -11,8 +11,12 @@ extension LiveModel {
     @MainActor
     @Suite(.timeLimit(.minutes(2)))
     struct PassageLengthLiveTests {
-        private static let group = AgeGroup.fifteen
-        private nonisolated static let topicIDs = ["ancient-civilizations", "sports-science", "animal-behavior"]
+        /// 15–17, or `.adult` to measure 18+. The other groups' topics aren't listed below.
+        private nonisolated static let group = AgeGroup.fifteen
+        private nonisolated static let topicIDs = switch group {
+        case .adult: ["historic-turning-points", "science-breakthroughs", "psychology-habits"]
+        default: ["ancient-civilizations", "sports-science", "animal-behavior"]
+        }
         private static let runs = 2
 
         @Test(arguments: topicIDs, ComprehensionSkill.allCases)
