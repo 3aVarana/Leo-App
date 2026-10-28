@@ -8,6 +8,8 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
     /// Whether the question replaces the passage when its reading time runs out. Without it,
     /// the passage stays until the reader moves on.
     var isReadingTimerOn = true
+    /// How many texts each round has, within `RoundSettings.exerciseCountRange`.
+    var exercisesPerRound = RoundSettings.defaultExerciseCount
 
     static let minimumEnabledTopics = 3
     static let maximumCustomTopics = 20
@@ -25,6 +27,13 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
         ) ?? [:]
         customTopics = try container.decodeIfPresent([AgeGroup: [CustomTopic]].self, forKey: .customTopics) ?? [:]
         isReadingTimerOn = try container.decodeIfPresent(Bool.self, forKey: .isReadingTimerOn) ?? true
+        let storedCount = try container.decodeIfPresent(Int.self, forKey: .exercisesPerRound)
+            ?? RoundSettings.defaultExerciseCount
+        exercisesPerRound = Self.clampedExerciseCount(storedCount)
+    }
+
+    private static func clampedExerciseCount(_ count: Int) -> Int {
+        min(max(count, RoundSettings.exerciseCountRange.lowerBound), RoundSettings.exerciseCountRange.upperBound)
     }
 
     func isEnabled(_ topic: DefaultTopic, in group: AgeGroup) -> Bool {
@@ -45,6 +54,10 @@ nonisolated struct ReaderPreferences: Codable, Equatable, Sendable {
     }
 
     var roundSettings: RoundSettings {
-        RoundSettings(ageGroup: ageGroup, topics: enabledTopics(for: ageGroup))
+        RoundSettings(
+            ageGroup: ageGroup,
+            topics: enabledTopics(for: ageGroup),
+            exerciseCount: Self.clampedExerciseCount(exercisesPerRound),
+        )
     }
 }

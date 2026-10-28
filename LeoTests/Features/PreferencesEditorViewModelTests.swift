@@ -330,6 +330,17 @@ extension PreferencesEditorViewModelTests {
         #expect(saved[0].ageGroup == .adult)
     }
 
+    @Test func saveCallsOnSaveWithExercisesPerRound() {
+        var saved: [ReaderPreferences] = []
+        let editor = makeEditor { saved.append($0) }
+        #expect(editor.draft.exercisesPerRound == 6)
+        editor.draft.exercisesPerRound = 9
+        #expect(saved.isEmpty)
+
+        editor.save()
+        #expect(saved.map(\.exercisesPerRound) == [9])
+    }
+
     /// Every suggested topic in `.six` turned off except the last 3.
     private var minimumDraft: ReaderPreferences {
         let ids = DefaultTopics.topics(for: .six).map(\.id)

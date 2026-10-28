@@ -1230,6 +1230,22 @@
         }
       }
     },
+    "How many short texts each round has, with a question after each.": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuántos textos breves tiene cada ronda, con una pregunta después de cada uno."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantos textos curtos cada rodada tem, com uma pergunta depois de cada um."
+          }
+        }
+      }
+    },
     "How old are you?": {
       "localizations": {
         "es": {
@@ -1950,6 +1966,22 @@
         }
       }
     },
+    "Round": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ronda"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rodada"
+          }
+        }
+      }
+    },
     "Round complete · readers %@": {
       "localizations": {
         "es": {
@@ -2378,6 +2410,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Texto %1$lld, %2$@, errada"
+          }
+        }
+      }
+    },
+    "Texts per round": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Textos por ronda"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Textos por rodada"
           }
         }
       }

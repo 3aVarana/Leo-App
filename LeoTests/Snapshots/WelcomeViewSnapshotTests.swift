@@ -8,8 +8,15 @@ extension ViewSnapshots {
     struct WelcomeViewSnapshotTests {
         private let topics = ["Volcanoes", "The solar system", "Pirates and treasure", "Inventors", "Rainforests"]
 
-        private func welcome(_ group: AgeGroup, topics: [String]) -> some View {
-            WelcomeView(ageGroup: group, topicNames: topics, onStart: {}, onSettings: {}, onHistory: {})
+        private func welcome(_ group: AgeGroup, count: Int = 6, topics: [String]) -> some View {
+            WelcomeView(
+                ageGroup: group,
+                exerciseCount: count,
+                topicNames: topics,
+                onStart: {},
+                onSettings: {},
+                onHistory: {},
+            )
         }
 
         /// Different `displayName` lengths.
@@ -26,6 +33,22 @@ extension ViewSnapshots {
         /// Before the round is planned.
         @Test func noTopicsYet() {
             assertViewSnapshot(of: welcome(.nine, topics: []), named: "no-topics")
+        }
+
+        /// The shortest and the longest round: the number in the heading and the dots.
+        @Test(arguments: [3, 9])
+        func textCount(_ count: Int) {
+            assertViewSnapshot(of: welcome(.nine, count: count, topics: topics), named: "\(count)-texts")
+        }
+
+        /// Nine dots must still fit across the width.
+        @Test func accessibilitySizeNineTexts() {
+            assertViewSnapshot(
+                of: welcome(.six, count: 9, topics: topics),
+                named: "nine-texts-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+                height: 1750,
+            )
         }
 
         @Test func accessibilitySize() {

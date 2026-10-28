@@ -23,7 +23,7 @@ final nonisolated class StoredRound {
     /// `AgeGroup.rawValue`.
     var ageGroup: String
     /// Whether each answer was right, in round order. Duplicates what `answers` says, on
-    /// purpose: the History list reads this without faulting in six passages per row.
+    /// purpose: the History list reads this without faulting in up to nine passages per row.
     var results: [Bool]
     @Relationship(deleteRule: .cascade) var answers: [StoredAnswer]
 

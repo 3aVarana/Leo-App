@@ -9,7 +9,7 @@ struct QuizViewModelOptionStateTests {
         let stub = StubExerciseRepository.ready()
         let quiz = QuizViewModel { _ in stub }
         quiz.configure(RoundSettings(ageGroup: .nine, topics: ["owls", "rivers", "kites"]))
-        await waitUntil { stub.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { stub.calls.count == RoundSettings.defaultExerciseCount }
         quiz.start()
         return quiz
     }

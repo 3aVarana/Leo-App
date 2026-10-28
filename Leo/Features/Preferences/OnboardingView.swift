@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shown on first launch: the reader picks their age group, then their topics.
+/// Shown on first launch: the reader picks their age group, then their topics and how many texts a round has.
 struct OnboardingView: View {
     @State private var viewModel: PreferencesEditorViewModel
     @State private var selection: AgeGroup?
@@ -65,11 +65,13 @@ struct AgeGroupPicker: View {
     }
 }
 
-/// The second onboarding screen. The system back button returns to the age groups.
+/// The second onboarding screen: topics, and how many texts a round has.
+/// The system back button returns to the age groups.
 struct OnboardingTopics: View {
     let viewModel: PreferencesEditorViewModel
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Kicker("Welcome to Leo")
@@ -87,6 +89,7 @@ struct OnboardingTopics: View {
                     .padding(.bottom, 10)
                     .accessibilityAddTraits(.isHeader)
                 TopicsEditor(viewModel: viewModel)
+                OnboardingRoundSection(count: $viewModel.draft.exercisesPerRound)
             }
             .foregroundStyle(Color.leoInk)
             .padding(.top, 8)
@@ -102,6 +105,21 @@ struct OnboardingTopics: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .leoScreenBackground()
+    }
+}
+
+/// The "Round" heading and the texts-per-round stepper at the end of the topics screen.
+struct OnboardingRoundSection: View {
+    @Binding var count: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Kicker("Round")
+                .padding(.top, 22)
+                .padding(.bottom, 10)
+                .accessibilityAddTraits(.isHeader)
+            TextsPerRoundStepper(count: $count)
+        }
     }
 }
 

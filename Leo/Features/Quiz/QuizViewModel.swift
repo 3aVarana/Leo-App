@@ -28,10 +28,11 @@ final class QuizViewModel {
         case idle, correct, incorrect, dimmed
     }
 
-    nonisolated static let exerciseCount = 6
     /// How many failed exercises a round replaces automatically.
     nonisolated static let maxReplacements = 3
 
+    /// The number of texts in the prepared round, set when the round is prepared.
+    private(set) var exerciseCount = RoundSettings.defaultExerciseCount
     private(set) var phase: Phase = .welcome
     private(set) var currentIndex = 0
     private(set) var currentExercise: Exercise?
@@ -100,7 +101,7 @@ final class QuizViewModel {
     #endif
 
     var isLastExercise: Bool {
-        currentIndex == Self.exerciseCount - 1
+        currentIndex == exerciseCount - 1
     }
 
     /// How long the reader gets to read the current passage, for the reading timer.
@@ -211,7 +212,8 @@ final class QuizViewModel {
     private func prepareRound() {
         guard let settings else { return }
         var rng = SystemRandomNumberGenerator()
-        plan = Self.makePlan(topics: settings.topics, using: &rng)
+        exerciseCount = settings.exerciseCount
+        plan = Self.makePlan(topics: settings.topics, count: settings.exerciseCount, using: &rng)
         // Made per round, so a change to the device language applies to the next round.
         repository = makeRepository(settings)
         queue = plan
@@ -331,16 +333,21 @@ extension QuizViewModel {
 
     /// The topics and skill for each exercise of a round. Each exercise gets its own topic while
     /// there are enough, cycling through them otherwise without repeating a topic back to back,
-    /// plus two other topics to fall back on if generation fails. Every skill is used at least once.
-    static func makePlan(topics: [RoundTopic], using rng: inout some RandomNumberGenerator) -> [PlanItem] {
+    /// plus two other topics to fall back on if generation fails. Every skill is used at least once
+    /// when `count` is at least the number of skills; a shorter round gets `count` different skills.
+    static func makePlan(
+        topics: [RoundTopic],
+        count: Int,
+        using rng: inout some RandomNumberGenerator,
+    ) -> [PlanItem] {
         let shuffled = topics.shuffled(using: &rng)
-        let count = shuffled.count
+        let topicCount = shuffled.count
         var skills: [ComprehensionSkill] = []
-        while skills.count < exerciseCount {
+        while skills.count < count {
             skills += ComprehensionSkill.allCases.shuffled(using: &rng)
         }
-        return skills.prefix(exerciseCount).enumerated().map { i, skill in
-            let primary = (i + i / count) % count
+        return skills.prefix(count).enumerated().map { i, skill in
+            let primary = (i + i / topicCount) % topicCount
             let spares = shuffled.indices.filter { $0 != primary }.shuffled(using: &rng).prefix(2).map { shuffled[$0] }
             return PlanItem(topics: [shuffled[primary]] + spares, skill: skill)
         }

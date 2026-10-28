@@ -29,7 +29,7 @@ final class StubExerciseRepository: ExerciseRepository {
     }
 
     /// Answers every call of a round right away.
-    static func ready(count: Int = QuizViewModel.exerciseCount) -> StubExerciseRepository {
+    static func ready(count: Int = RoundSettings.defaultExerciseCount) -> StubExerciseRepository {
         StubExerciseRepository(results: (0 ..< count).map { .success(.fixture(title: "Exercise \($0 + 1)")) })
     }
 

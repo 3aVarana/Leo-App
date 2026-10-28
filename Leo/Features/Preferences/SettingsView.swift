@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Changes the age group, the reading timer and the topics. Nothing is saved until Done.
+/// Changes the age group, the number of texts per round, the reading timer and the topics. Nothing is saved until Done.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -24,6 +24,12 @@ struct SettingsView: View {
                         .leoTextStyle(.caption)
                         .foregroundStyle(Color.leoInkMuted)
                         .padding(.top, 8)
+
+                    Kicker("Round")
+                        .accessibilityAddTraits(.isHeader)
+                        .padding(.top, 28)
+                        .padding(.bottom, 6)
+                    TextsPerRoundStepper(count: $viewModel.draft.exercisesPerRound)
 
                     Kicker("Reading")
                         .accessibilityAddTraits(.isHeader)

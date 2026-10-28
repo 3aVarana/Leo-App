@@ -1,6 +1,6 @@
 # Leo
 
-Leo helps people of all ages build their reading comprehension. Each round has six short texts, written for the reader's age on topics they like, each followed by a question. Everything is generated on the device by Apple's [Foundation Models](https://developer.apple.com/documentation/foundationmodels) framework, so Leo works offline and nothing the reader does leaves their iPhone or iPad.
+Leo helps people of all ages build their reading comprehension. Each round has six short texts by default (3 to 9, chosen during onboarding or in Settings), written for the reader's age on topics they like, each followed by a question. Everything is generated on the device by Apple's [Foundation Models](https://developer.apple.com/documentation/foundationmodels) framework, so Leo works offline and nothing the reader does leaves their iPhone or iPad.
 
 <table>
   <tr>
@@ -20,8 +20,9 @@ Reading and understanding a text is the foundation for learning everything else.
 ## Features
 
 - **Five age groups:** 6–8, 9–11, 12–14, 15–17 and 18+. The age group sets how long the passages are and how complex their language is, from 50–80 words of short, everyday sentences up to 160–230 words with varied structure and precise vocabulary, and younger readers get larger text.
-- **Five comprehension skills:** every round mixes questions on the main idea, key details, inference, vocabulary in context and the author's purpose.
+- **Five comprehension skills:** a round of five or more texts mixes questions on the main idea, key details, inference, vocabulary in context and the author's purpose, so every skill appears. A shorter round of 3 or 4 texts gets a different skill for each text, so it doesn't cover all five.
 - **Topics the reader chooses:** each age group has its own list of suggested topics that can be turned on and off, and readers can add their own. The on-device model checks that a new topic suits the reader's age and tidies up its wording before it's saved.
+- **Texts per round:** the reader picks how many texts a round has, from 3 to 9 (six by default), on the topics screen of onboarding and in Settings. A change applies to the next round.
 - **Read first, then answer:** each exercise shows only the title and the passage at first. The question and its answers appear when the reader taps "Answer the question" or the reading timer runs out. The timer gives each age group time to read at a relaxed pace, at least 30 seconds; it can be turned off in Settings and is always off while VoiceOver is running.
 - **Feedback that teaches:** after a wrong answer, Leo shows the correct one and a short explanation that points back to the passage. At the end of a round, Review goes back through the missed texts with the reader's answer, the right one, the explanation and the passage.
 - **History:** every finished round is saved on the device, grouped by week and month, with its score and which texts were missed, so a reader can come back to it and review a text again. History follows the current age group, and a round can be swiped away.
@@ -56,7 +57,7 @@ If Apple Intelligence is turned off, the device isn't eligible or the model is s
 
 ## Privacy
 
-Leo has no accounts, no analytics and no network code. Exercises and topic reviews are generated on the device. Leo stores the reader's preferences (age group, topics and whether the reading timer is on) in `UserDefaults`, and every finished round (its score and the texts, so History and Review can show them again) in a local SwiftData store. Neither ever leaves the device.
+Leo has no accounts, no analytics and no network code. Exercises and topic reviews are generated on the device. Leo stores the reader's preferences (age group, topics, how many texts a round has and whether the reading timer is on) in `UserDefaults`, and every finished round (its score and the texts, so History and Review can show them again) in a local SwiftData store. Neither ever leaves the device.
 
 ## Requirements
 

@@ -26,5 +26,6 @@
       "volcanoes"
     ]
   },
+  "exercisesPerRound" : 6,
   "isReadingTimerOn" : true
 }

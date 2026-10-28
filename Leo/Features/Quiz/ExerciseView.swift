@@ -119,7 +119,7 @@ struct ExerciseView: View {
     }
 
     private var dots: [DotState] {
-        (0 ..< QuizViewModel.exerciseCount).map(quiz.dotState(at:))
+        (0 ..< quiz.exerciseCount).map(quiz.dotState(at:))
     }
 
     /// A, B, C, D.

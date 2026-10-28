@@ -14,7 +14,7 @@ struct RoundResultDots: View {
                 dot(correct: results[index])
             }
         }
-        // Capped like `ProgressDots`, so a row of six still fits across a phone.
+        // Capped like `ProgressDots`, so a row of up to nine still fits across a phone.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         // The row and column already say the score; VoiceOver doesn't need the dots too.
         .accessibilityHidden(true)

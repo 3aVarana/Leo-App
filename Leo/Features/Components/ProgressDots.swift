@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The six numbered circles of a round.
+/// The numbered circles of a round, from three to nine.
 struct ProgressDots: View {
     enum Size {
         /// 28 points, above Loading, Error and Exercise.
@@ -23,8 +23,8 @@ struct ProgressDots: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))
-        // Six dots must fit across a phone, so the circles and their numbers stop growing past the
-        // largest standard size, and the row shrinks all six equally below that when it must.
+        // Up to nine dots must fit across a phone, so the circles and their numbers stop growing past the
+        // largest standard size, and the row shrinks all of them equally below that when it must.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
