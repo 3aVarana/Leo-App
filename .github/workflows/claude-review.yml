@@ -1,6 +1,6 @@
 # Advisory Claude Code review of every pull request to main, when it's opened and on every push to its branch.
-# Not a required check: it never blocks merging. Claude only reads the code; this workflow keeps one review
-# comment on the pull request and updates it with each new review.
+# Not a required check: it never blocks merging. Claude only reads the code; this workflow posts each review
+# as a new comment on the pull request, so earlier reviews stay as a history.
 # Runs on the Claude subscription: the CLAUDE_CODE_OAUTH_TOKEN secret comes from `claude setup-token`.
 name: Claude Review
 
@@ -83,16 +83,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          marker='<!-- claude-review -->'
-          body=$(printf '%s\n## Claude review\n\n%s\n\n<sub>Reviewed at %s. Advisory: this review never blocks merging.</sub>' \
-            "$marker" "$(jq -r '.review' <<< "$REVIEW")" "$HEAD_SHA")
+          body=$(printf '## Claude review\n\n%s\n\n<sub>Reviewed at %s. Advisory: this review never blocks merging.</sub>' \
+            "$(jq -r '.review' <<< "$REVIEW")" "$HEAD_SHA")
 
-          comment_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" \
-            | head -n 1)
-
-          if [ -n "$comment_id" ]; then
-            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" -f body="$body" > /dev/null
-          else
-            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
-          fi
+          gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
