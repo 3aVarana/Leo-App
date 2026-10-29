@@ -41,7 +41,7 @@ Leo uses Apple's on-device language model for two jobs: writing exercises and re
 [`ExerciseGenerator`](Leo/Data/FoundationModels/ExerciseGenerator.swift) asks the model for a `@Generable` [`GeneratedExercise`](Leo/Data/FoundationModels/GeneratedExercise.swift): a passage, a question, the correct answer, three incorrect answers, an explanation and a title, generated in that order so the passage comes first and the title sums it up. Guided generation means the output always has this structure, with no JSON parsing.
 
 - **The app places the correct answer.** The model writes the correct answer and the distractors as separate fields, and the app shuffles them, so the app, not the model, decides where the correct answer appears.
-- **The app repairs what it can and checks every exercise.** [`ExerciseRepair`](Leo/Data/FoundationModels/ExerciseRepair.swift) removes markdown, gives all the answers the same final punctuation and drops an explanation the token limit cut off. Exercises with a missing answer, duplicate options, a passage of the wrong length, a passage that describes itself ("the author wanted to show...", in English, Spanish and Portuguese) or a correct answer much longer than the others are discarded, the reason is logged, and Leo tries the next topic instead (up to three).
+- **The app repairs what it can and checks every exercise.** [`ExerciseRepair`](Leo/Data/FoundationModels/ExerciseRepair.swift) removes markdown, gives all the answers the same final punctuation and drops an explanation the token limit cut off. A duplicate or empty answer option is dropped, so a few exercises have three options instead of four. Exercises with a missing answer, fewer than two incorrect answers left, a passage of the wrong length, a passage that describes itself ("the author wanted to show...", in English, Spanish and Portuguese) or a correct answer much longer than the others are discarded, the reason is logged, and Leo tries the next topic instead (up to three).
 - **Runaway passages are stopped early.** The response is streamed, and a passage that keeps going past the accepted length is abandoned after a few seconds instead of running until the token limit.
 - **A fresh session per exercise** keeps every request well inside the model's context window.
 - **Prompts are measured, not eyeballed.** The instructions give the model a role, say whether the passage should be a story or an informative text (each suggested topic is one or the other, and the reader's own topics can be either), forbid passages that talk about themselves, and each comprehension skill has a three-part hint. Prompt changes are checked with the evaluation harness in [`scripts/exercise-eval`](scripts/exercise-eval/README.md); see [the quality plan](docs/Leo-Exercise-Quality-Plan.md).
@@ -89,14 +89,13 @@ Leo/
 └── Resources/     Fonts/ holds Source Serif 4 and its licence, registered through Info.plist
 LeoTests/          Unit, snapshot and live-model tests, mirroring the folders above
 LeoTestsSnapshots/ Reference images and text snapshots
-docs/              Feature specifications and the plans behind each larger change: architecture,
-                   tests, the Broadsheet redesign, the launch screen, resilient generation and
-                   exercise quality
+docs/              Feature specifications and the plans behind each larger change, with an index
+                   of what each one shipped and what is still open (docs/README.md)
 scripts/           The exercise evaluation harness (exercise-eval/) and the script that renders
                    the launch screen wordmark
 ```
 
-Dependencies point inward: views read their ViewModel and Domain types, ViewModels depend on the repository protocols, and only the repository implementations touch `FoundationModels` and `UserDefaults`. `MyApp` wires the real implementations together, and tests inject hand-written fakes from `LeoTests/Support/`. Two SwiftLint rules keep the boundaries: nothing in `Leo/Domain/` imports SwiftUI, UIKit or FoundationModels, and nothing in `Leo/Features/` imports FoundationModels. The plan behind this layout is in [docs/Leo-MVVM-Repository-Plan.md](docs/Leo-MVVM-Repository-Plan.md).
+Dependencies point inward: views read their ViewModel and Domain types, ViewModels depend on the repository protocols, and only the repository implementations touch `FoundationModels`, `UserDefaults` and SwiftData. `MyApp` wires the real implementations together, and tests inject hand-written fakes from `LeoTests/Support/`. Two SwiftLint rules keep the boundaries: nothing in `Leo/Domain/` imports SwiftUI, UIKit or FoundationModels, and nothing in `Leo/Features/` imports FoundationModels. The plan behind this layout is in [docs/Leo-MVVM-Repository-Plan.md](docs/Leo-MVVM-Repository-Plan.md).
 
 ## Testing
 
@@ -121,7 +120,7 @@ Every pull request to `main` runs SwiftLint, SwiftFormat and the `Leo` test plan
 
 ## Status and roadmap
 
-Leo is in development and isn't on the App Store or TestFlight yet. Planned next:
+Leo is in TestFlight, and version 2.0 has been submitted to the App Store. Planned next:
 
 - **Results per comprehension skill:** a breakdown of how the reader is doing on each skill, from the same saved rounds as History
 - **Adaptive difficulty:** adjusting passage level and skills to how the reader is doing

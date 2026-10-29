@@ -52,7 +52,7 @@ Rules:
 
 - Views only lay out their ViewModel's state. A view never calls a repository, a data source or FoundationModels; logic goes in the ViewModel or in Domain.
 - ViewModels depend on repository protocols, never on implementations. Tests inject the hand-written fakes in `LeoTests/Support/` (`Stub…`, `…Spy`); add a new fake there rather than a mocking library.
-- The view that creates a ViewModel owns it with `@State`; a view handed one by its parent receives it as a plain property, or `@Bindable` when it needs bindings.
+- The view that owns a ViewModel keeps it in `@State`. That includes a view handed a new one built for it in its parent's body, as `SettingsView` and `OnboardingView` are (`makeSettingsEditor()`, `makeOnboardingEditor()`): `@State` keeps the first instance when the parent re-renders. A view handed a ViewModel that someone else owns receives it as a plain property, or `@Bindable` when it needs bindings.
 - Navigation uses `NavigationStack` with `navigationDestination`.
 - Log failures with `Logger(subsystem: "Leo", category: "<TypeName>")`, never `print`.
 - Match the Broadsheet design: colors and text styles come from `Leo/Features/Theme/`, and shared controls from `Components/`. Reuse them before adding a new one.

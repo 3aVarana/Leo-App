@@ -66,7 +66,7 @@ extension PreferencesEditorViewModel {
 }
 
 extension RoundRecord {
-    /// A finished round of six exercises, correct or not as `results` says, in round order.
+    /// A finished round with one exercise per entry in `results`, correct or not as it says, in round order.
     @MainActor
     static func fixture(
         ageGroup: AgeGroup = .nine,
