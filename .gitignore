@@ -6,3 +6,7 @@ xcuserdata/
 
 # Test results
 build/
+
+# Claude Code: the /feature pipeline's working notes and the agents' local memory
+.claude/workflow/
+.claude/agent-memory-local/
