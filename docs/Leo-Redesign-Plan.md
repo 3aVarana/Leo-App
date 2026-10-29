@@ -1,5 +1,7 @@
 # Leo Redesign Plan: Broadsheet 2a (light) and 3a (dark)
 
+**Status (2026-10-29):** shipped as #15–#21, and the decisions in 1.1 and section 10 still hold. Later work changed several screens this plan specifies, and notes marked *Update 2026-10-29* say where: the reading step (#22) splits the exercise into passage first, then question; automatic replacement (#27) changes what the retry buttons do; the History screens (#40, #41) add a History button to Welcome and Results; and a round has 3 to 9 texts since #52 (6 by default), so "six" dots, rows and texts below mean the round's count. Suggestions 4 and 6 in section 11 are done.
+
 ## 1. Scope and sources
 
 This plan compares the Claude Design redesign with the current SwiftUI app. For each screen it lists what can be built, what has to change in the views and in the business logic, what isn't doable or isn't recommended, and suggestions.
@@ -19,6 +21,8 @@ The redesign has 10 screens: Onboarding age, Onboarding topics, Welcome, Loading
 |---|---|---|
 | D1 | Typeface | Bundle **Source Serif 4** (regular, italic, semibold) and scale it with Dynamic Type. |
 | D2 | Passage after answering | **Keep the passage** and scroll to the feedback, as today. The mock's passage-less feedback screen isn't copied. |
+
+> *Update 2026-10-29:* since #22 an exercise opens with the topic, title and passage only. "Answer the question" (or the reading timer, which can be turned off in Settings) replaces the passage with the skill, question and answers. After answering, the passage comes back under the feedback, so D2 still holds.
 | D3 | Generation-failed buttons | **Two buttons with different logic.** "Try again" retries the same topics. "Try a different topic" picks new ones. |
 | D4 | Review of several misses | **Page between misses** with an "N of M missed" counter. |
 | D5 | Progress dots after moving on | **Neutral.** A dot turns cyan or magenta only while its feedback is on screen, then plain ink. |
@@ -80,7 +84,7 @@ Also:
 
 ### 3.2 Typography
 
-**Font files.** Bundle `SourceSerif4-Regular`, `SourceSerif4-It` and `SourceSerif4-Semibold` (static TTF/OTF, SIL OFL 1.1). Put them in `Leo/Resources/Fonts/` with `OFL.txt`, and register them through `UIAppFonts` in a small `Info.plist` that Xcode merges with the generated one.
+**Font files.** Bundle `SourceSerif4-Regular`, `SourceSerif4-It` and `SourceSerif4-Semibold` (static TTF/OTF, SIL OFL 1.1). Put them in `Leo/Resources/Fonts/` with `OFL.txt` (*as built:* `.otf` files and `OFL.md`), and register them through `UIAppFonts` in a small `Info.plist` that Xcode merges with the generated one.
 
 **Fallback.** Glyphs Source Serif 4 lacks, such as CJK in passages written in Japanese or Chinese, fall back to the system font automatically. That's acceptable.
 
@@ -170,6 +174,8 @@ New files go in `Leo/Features/Theme/`, or `Leo/Features/Components/` for compone
 | `SkeletonLines` | Six bars, 9pt high, widths 100/96/100/88/100/72%, 12pt gap, `Neutral300`, 1pt radius. Opacity pulses 0.35↔1 over 1.8s, staggered 0.15s. Static at 0.6 opacity with Reduce Motion |
 | `DottedLeader` | A 1pt dotted `Line` at Ink 45%, aligned to the first text baseline |
 
+> *Update 2026-10-29:* `ProgressDots` shows one dot per text, 3 to 9 since #52, and shrinks them to fit the row (#25, see the [Hand-Check Fixes plan](Leo-Hand-Check-Fixes-Plan.md)). `Components/` has since gained `DotState`, `ScrollingScreen` (with the pinned bottom bar), `HistoryButton`, `ReviewLabel` and `RoundResultDots`, and `Preferences/` has `TextsPerRoundStepper`.
+
 ### 3.6 Contrast fixes to the mock (light mode)
 
 WCAG contrast for the 2a token pairs. Dark mode (3a) passes every check.
@@ -225,6 +231,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 
 ### 4.2 Onboarding · topics
 
+> *Update 2026-10-29:* since #52 the screen ends with a "Round" section holding the "Texts per round" stepper (3 to 9, 6 by default).
+
 **Current.** A pushed `List`:
 
 - The large header "What do you like reading about?".
@@ -265,6 +273,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 **Not doable / not recommended.** The custom "Back" button. Use the native one (10.5).
 
 ### 4.3 Welcome
+
+> *Update 2026-10-29:* since #41 the header has a History button left of the gear once a round has been saved, and since #52 the headline says how many texts the round has.
 
 **Current.** A centered `book.pages` icon, "Leo", and "Six short texts for readers aged {age}, about the topics you chose.", then Start. The Settings gear is a toolbar item that `RootView` adds.
 
@@ -327,6 +337,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 
 ### 4.5 Generation failed
 
+> *Update 2026-10-29:* since #27 a failed exercise is first replaced automatically, up to 3 times per round, and this screen shows only when the reader reaches a text that couldn't be written. Its `{topic}` is the first failed job's topic, and both buttons queue every failed job again (see the [Resilient Generation plan](Leo-Resilient-Generation-Plan.md)).
+
 **Current.** `ContentUnavailableView` with "Something went wrong", the error's `localizedDescription` and a bordered "Try again" button.
 
 **Redesign.**
@@ -362,6 +374,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 **Not doable / not recommended.** The mock's fixed "text 1 is saved" copy (see above). The print metaphor, "didn't print", needs careful translation in es and pt-BR.
 
 ### 4.6 Exercise (unanswered)
+
+> *Update 2026-10-29:* since #22 this screen comes in two steps: first the topic, title and passage with an "Answer the question" button, then the skill, question and answers in place of the passage. See the note under D2.
 
 **Current.** Navigation title "Exercise {n}", then:
 
@@ -435,6 +449,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 
 ### 4.8 Results
 
+> *Update 2026-10-29:* since #41 the header has a History button left of the gear, and the gear has no outline. The rows follow the round's text count.
+
 **Current.** Centered star, thumbs-up or book icon, "{n} of 6 correct", a message, and "Practice again". The gear is in the toolbar.
 
 **Redesign.**
@@ -464,6 +480,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 **Not doable / not recommended.** None.
 
 ### 4.9 Review (new screen)
+
+> *Update 2026-10-29:* the last page's button label is a `backTitle` parameter since #41: "Back to results" from Results, "Back to round" from History.
 
 **Current.** Doesn't exist.
 
@@ -500,6 +518,8 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 **Not doable / not recommended.** The cut-off passage (10.6) and a custom back button (10.5).
 
 ### 4.10 Settings (sheet)
+
+> *Update 2026-10-29:* the sheet now has Age group, then Round (the "Texts per round" stepper, #52), then Reading (the reading timer switch, #22), then the topics.
 
 **Current.** A `Form` with a navigation-link age picker and the `TopicsEditor` sections (toggles, Reset, custom rows, field). The toolbar has Cancel and Done.
 
@@ -552,6 +572,7 @@ Each screen below has the same parts: the current state, the redesign, the UI up
 - Settings entry points move from `RootView`'s toolbar into the content of Welcome and Results. Only those two screens call `onSettings`, so Settings is reachable only in the `.welcome` and `.finished` phases.
 - The navigation bar is hidden on Welcome, Loading, Failed, Exercise and Results. It's visible on Review (system back).
 - The phase cross-fade (`.animation(.default, value: quiz.phase)`) stays.
+- *Update 2026-10-29:* `RootView` also pushes History from Welcome and Results (#41), with the navigation bar visible, and plays the launch intro (#24).
 
 ---
 
@@ -566,6 +587,7 @@ nonisolated struct RoundTopic: Hashable, Sendable {
     let prompt: String   // English phrase for the model (unchanged)
     let name: String     // Shown to the reader: the localized DefaultTopic name, or the CustomTopic name
 }
+// Update 2026-10-29: it also has `kind: TopicKind` since #30.
 ```
 
 - `ReaderPreferences.enabledTopics(for:) -> [RoundTopic]` replaces `enabledTopicPrompts(for:)`, with the same stable order.
@@ -577,6 +599,8 @@ nonisolated struct RoundTopic: Hashable, Sendable {
 Because `RoundSettings` now contains names, a UI-language change also counts as a settings change. That only happens at relaunch and leads to a fresh round, which is fine.
 
 ### 5.2 Round history: `RoundAnswer` (QuizViewModel)
+
+> *Update 2026-10-29:* `RoundAnswer` moved to `Leo/Domain/RoundAnswer.swift` in #40, and finished rounds are saved (see the [Round History plan](Leo-Round-History-Plan.md)).
 
 ```swift
 struct RoundAnswer: Identifiable {
@@ -596,6 +620,8 @@ var misses: [RoundAnswer] { answers.filter { !$0.isCorrect } }
 - `prepareRound()` **doesn't** touch `answers`, so Results and Review survive a settings save.
 
 ### 5.3 Progress dot state (QuizViewModel)
+
+> *Update 2026-10-29:* `DotState` lives in `Leo/Features/Components/DotState.swift`.
 
 ```swift
 enum DotState { case done, current, currentCorrect, currentMissed, failed, upcoming }
@@ -624,6 +650,7 @@ Keeping this in the ViewModel makes the rules testable without snapshots.
 
 - `retry()` keeps `plan[index]` and regenerates.
 - `retryWithDifferentTopics()` replaces `plan[index].topics` with up to three topics, preferring ones not in the failed item, and regenerates.
+- *Update 2026-10-29:* since #27 both work on the failed jobs instead of `plan[index]`; see the note under 4.5.
 
 ### 5.5 Live topic and planned topics (QuizViewModel)
 
@@ -644,6 +671,7 @@ Keeping this in the ViewModel makes the rules testable without snapshots.
 ### 5.7 Unchanged
 
 - `RootViewModel` and preference persistence (the stored JSON format is unchanged; the `savedFormat` snapshot guards it).
+  - *Update 2026-10-29:* the stored preferences have since gained `isReadingTimerOn` (#22) and `exercisesPerRound` (#52).
 - `TopicValidator`, model availability.
 - `ExerciseGenerator` prompts. Only the attempt callback is added.
 
@@ -721,7 +749,7 @@ Strings that go away: "Writing text %lld of %lld…", "This can take a few secon
   - Settings at 6–8 and 15–17 (25 chips).
   - Topics at the minimum.
   - Unavailable.
-  - One `es` snapshot each for Results and Welcome, to catch long titles and strings.
+  - One `es` snapshot each for Results and Welcome, to catch long titles and strings. (*Update 2026-10-29:* not done. Every snapshot is still English; localized snapshots remain deferred, see the [Test Coverage plan](Leo-Test-Coverage-Plan.md), section 11.)
 - **Fonts in tests:** the snapshot host must register Source Serif 4. `UIAppFonts` does it for the hosted app. Confirm that a snapshot doesn't silently fall back to New York or SF.
 - **README:** update the four screenshots once the snapshots are re-recorded.
 - **Hand check:** on the iPhone 18 Pro simulator, which has the on-device model, check the live topic fallback and a real generation failure.
@@ -789,8 +817,8 @@ All of these are specified above and marked *(extrapolated)*. They're collected 
 1. **Show the explanation after correct answers too.** Today it only shows after a miss. Confirming *why* an answer is right reinforces the skill, and the data is already there.
 2. **Evidence highlighting in Review.** Ask the model for an `evidence` sentence in `GeneratedExercise`, check it's a substring of the passage, and highlight it under "From the text". This changes the prompts, so evaluate it with the live-model test plan first.
 3. **A "Quit round" affordance.** Neither the mock nor the app has a way out of a round in progress. A small toolbar ✕ with a confirmation would help on long rounds.
-4. **Keep the last round across launches.** Results and Review live in memory today. Persisting the last `RoundAnswer`s would let a reader come back to Review later. Out of scope here.
+4. **Keep the last round across launches.** Results and Review live in memory today. Persisting the last `RoundAnswer`s would let a reader come back to Review later. Out of scope here. *Done: every finished round is saved and can be reviewed from History, see `docs/Leo-Round-History-Plan.md` (#40, #41).*
 5. **iPad regular width.** Show the passage and the question side by side in two columns on iPad landscape, instead of one capped column.
-6. **App icon and launch screen** in the Broadsheet palette, so the first frame matches the new ground color instead of flashing white or black. *Launch screen done: see `docs/Leo-Launch-Screen-Plan.md`. The app icon is still open.*
+6. **App icon and launch screen** in the Broadsheet palette, so the first frame matches the new ground color instead of flashing white or black. *Launch screen done: see `docs/Leo-Launch-Screen-Plan.md`. App icon done in #36 (a Liquid Glass Icon Composer icon, `Leo/AppIcon.icon`).*
 7. **Enforce the theme with SwiftLint.** A custom rule in `Leo/Features` that flags `Color.red`, `.green`, `.foregroundStyle(.secondary)` and system `.font(.headline)`-style fonts outside `Theme/`, so new views don't drift back to system styling. This is like the existing layer-boundary rules.
 8. **Ask Claude Design for the extrapolated states** in section 9 before PRs 5–7, especially Feedback correct and Results 6/6, which most readers will see.

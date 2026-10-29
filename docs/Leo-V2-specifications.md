@@ -1,5 +1,7 @@
 # Leo V2 Specification: Age Groups, Topic Management, Onboarding
 
+**Status (2026-10-29):** implemented before the repo's numbered PRs. The age groups, topic rules (2–60 characters, up to 20 of the reader's own topics, at least 3 on), the add-topic sequence and the `readerPreferences` storage still hold. Much else was changed by later work: the file paths and types by the MVVM refactor ([plan](Leo-MVVM-Repository-Plan.md), #9–#13), the screens by the Broadsheet redesign ([plan](Leo-Redesign-Plan.md), #15–#21), the prompts by the [Exercise Quality](Leo-Exercise-Quality-Plan.md) and [Passage Length](Leo-Passage-Length-Plan.md) plans, retries by the [Resilient Generation plan](Leo-Resilient-Generation-Plan.md), and the round size by #52 (3 to 9 texts). Finished rounds are also stored with SwiftData now ([Round History plan](Leo-Round-History-Plan.md)). Notes marked *Update 2026-10-29* point out the rules that changed.
+
 ## 1. Scope
 
 Leo V1 generates reading comprehension rounds with the on-device Foundation Model for readers aged 15–18, from a fixed English topic list. V2 adds:
@@ -17,7 +19,7 @@ Out of scope for V2: per-age-group changes to exercise count, option count or qu
 | Area | Decision |
 |---|---|
 | Age groups | 6–8, 9–11, 12–14, 15–17, 18+ |
-| What varies per group | Passage word range and language complexity only. Round shape is unchanged: 6 exercises, 3–4 options, all five skills. |
+| What varies per group | Passage word range and language complexity only. Round shape is unchanged: 6 exercises, 3–4 options, all five skills. *Update 2026-10-29:* since #52 the reader picks 3 to 9 texts per round (6 by default), and all five skills appear only in rounds of 5 or more. |
 | Custom topic validation | Local checks, then an on-device model review that returns a verdict and a cleaned-up phrase. The cleaned phrase is what gets stored and displayed. |
 | Custom topic scope | Stored under the age group they were added in. |
 | Minimum enabled topics | 3 per age group (enabled defaults + custom topics). |
@@ -89,6 +91,8 @@ nonisolated enum AgeGroup: String, CaseIterable, Codable, CodingKeyRepresentable
 
 Why the sentence counts: given only a word range, the model wrote passages well under it for the younger groups (6–8 averaged ~40 words), because their style guidance asks for short sentences. Adding a sentence count brings them into range. For 15–17 and 18+ a sentence count made passages run on without stopping, so those groups get the word target only.
 
+> *Update 2026-10-29:* reversed in #47 for the iPhone's model, which writes much shorter passages without a count: 15–17 now asks for 14 to 17 sentences and 18+ for 18 to 22, and `passageSentenceRange` is no longer optional. It lives in `Leo/Data/FoundationModels/PromptVocabulary.swift`. See the [Passage Length plan](Leo-Passage-Length-Plan.md).
+
 `acceptedWordCount` is the range `Exercise` accepts. It is wider than the requested range because the model doesn't count words precisely, but it rejects passages that were cut off or never stopped.
 
 ### `Leo/Models/Topic.swift` (replaces `Topics.swift`, which is deleted)
@@ -140,7 +144,7 @@ nonisolated struct RoundSettings: Equatable, Hashable, Sendable {
 
 Rules:
 - `enabledTopicPrompts` returns a deterministic order: defaults in list order, then custom topics in insertion order. Never shuffled before storage, or the equality checks regenerate on every save.
-- If the result is empty (stale ids), fall back to all default prompts for the group.
+- If the result is empty (stale ids), fall back to all default prompts for the group. (*Update 2026-10-29:* since #28, `enabledTopics(for:)` returns `[RoundTopic]` and tops the list up to 3 with suggested topics the reader turned off.)
 - Custom `init(from:)` using `decodeIfPresent` with defaults for both dictionaries, so adding fields later never breaks old data.
 
 ### `Leo/Services/PreferencesStore.swift`
@@ -185,6 +189,8 @@ catch {
 
 ### `Leo/Views/Onboarding/OnboardingView.swift`
 
+> *Update 2026-10-29:* the three view specs below (`OnboardingView`, `SettingsView`, `TopicsEditor`) were replaced by the Broadsheet redesign: scrolling screens with age rows, an age segmented control and topic chips, and the review task in `PreferencesEditorViewModel`. At the minimum of 3 topics, a toggle isn't disabled: turning one off shows a warning instead. Settings and onboarding also have a "Texts per round" stepper (#52), and Settings a reading timer switch (#22). The add-topic sequence below still holds.
+
 `NavigationStack` with two steps:
 1. `AgeGroupPicker`: title "How old are you?", `List` of `AgeGroup.allCases` rows with checkmark selection, prominent "Continue" disabled until a group is picked.
 2. Topics step: title "What do you like reading about?", a `List` containing the `TopicsEditor` sections, toolbar "Done". Done builds `ReaderPreferences` from the draft and sets `store.preferences`.
@@ -220,7 +226,7 @@ Add-topic sequence. Matching a name ignores case and accents, and compares again
 
 ### `Leo/Models/Exercise.swift`
 - `GeneratedExercise.passage` guide becomes age-neutral: "An original, self-contained reading passage, with the length and reading level requested in the instructions". Other guides unchanged.
-- `Exercise.init?(generated:topic:skill:acceptedWordCount:)` replaces the hard-coded `wordCount >= 60`. The passage's word count must be inside `acceptedWordCount`.
+- `Exercise.init?(generated:topic:skill:acceptedWordCount:)` replaces the hard-coded `wordCount >= 60`. (*Since #31 it throws `ExerciseRejection` and takes a `language:`.*) The passage's word count must be inside `acceptedWordCount`.
 - The linguistic word count (`enumerateSubstrings(.byWords)`, so languages without spaces work) moves into a `String.wordCount` extension, shared with `ExerciseGenerator`.
 - `ComprehensionSkill` unchanged.
 - Since [the exercise quality plan](Leo-Exercise-Quality-Plan.md), the model always writes 3 distractors (`.count(3)`). The app still accepts 2 after dropping a blank or duplicate one, so most exercises have 4 options and a few have 3. The schema generates the passage first and the title last.
@@ -228,7 +234,7 @@ Add-topic sequence. Matching a name ignores case and accents, and compares again
 ### `Leo/Services/ExerciseGenerator.swift`
 - Add `let ageGroup: AgeGroup`.
 - Word range phrase: "between X and Y words long, about M words", where M is the midpoint, plus " in A to B sentences" when `passageSentenceRange` isn't nil. For example, 6–8 gives "between 50 and 80 words long, about 65 words in 10 to 13 sentences".
-- Instructions start with: "You create reading comprehension exercises for `promptAudience`. The passage must be `word range phrase`. `styleGuidance`", then the existing rules unchanged.
+- Instructions start with (*since #30 they open with a role line instead, see the [Exercise Quality plan](Leo-Exercise-Quality-Plan.md), 2.1*): "You create reading comprehension exercises for `promptAudience`. The passage must be `word range phrase`. `styleGuidance`", then the existing rules unchanged.
 - The per-exercise prompt in `generate(topics:skill:)` repeats the word range phrase.
 - Pass `ageGroup.acceptedWordCount` to `Exercise.init?`.
 - Generate with `streamResponse` instead of `respond`. On each snapshot, if the partial passage is longer than `acceptedWordCount.upperBound` words, throw a private `RunawayPassage` error. The attempt loop logs it and tries the next topic. When the stream finishes, build `GeneratedExercise` from the last snapshot's `rawContent`.
@@ -243,7 +249,7 @@ Add-topic sequence. Matching a name ignores case and accents, and compares again
 - `private var settings: RoundSettings?`. `prepareRound()` and `retry()` begin with `guard let settings else { return }`; `start()` is a no-op without settings.
 - Replace `prepare()` with `func configure(_ s: RoundSettings) { guard plan.isEmpty || s != settings else { return }; settings = s; prepareRound() }`. `prepareRound()` already cancels the in-flight task, clears `exercises`, and resets `isRoundStarted`, so phase stays `.welcome` or `.finished` and the next `start()` uses the new round.
 - Replace `Topics.all` in `prepareRound()` and `retry()` with `settings.topics`.
-- Topic planning: `shuffled = topics.shuffled()`; `primary[i] = shuffled[(i + i / count) % count]`; spares for exercise i = `shuffled` minus `primary[i]`, shuffled, first 2. With 3 topics each exercise still gets 3 attempts, matching `ExerciseGenerator.maxAttempts`. `retry()` keeps `settings.topics.shuffled().prefix(3)`.
+- Topic planning: `shuffled = topics.shuffled()`; `primary[i] = shuffled[(i + i / count) % count]`; spares for exercise i = `shuffled` minus `primary[i]`, shuffled, first 2. With 3 topics each exercise still gets 3 attempts, matching `ExerciseGenerator.maxAttempts`. `retry()` keeps `settings.topics.shuffled().prefix(3)`. (*Update 2026-10-29:* since #27 a failed exercise is replaced automatically up to 3 times per round, `retry()` tries the failed exercises' topics again, and `retryWithDifferentTopics()` picks other ones.)
 - `generator = ExerciseGenerator(language: .current(), ageGroup: settings.ageGroup)` in `prepareRound()`.
 
 ### `Leo/Views/RootView.swift`
@@ -253,7 +259,7 @@ Add-topic sequence. Matching a name ignores case and accents, and compares again
 - Preview: `RootView().environment(PreferencesStore(defaults: UserDefaults(suiteName: "preview")!))`. Every new view reading the store needs the same in its preview.
 
 ### `Leo/Views/WelcomeView.swift`
-- Takes `ageGroup`. Subtitle: "Six short texts for readers aged %@, about the topics you chose." Check es and pt-BR read naturally with all five `displayName` values. Update preview.
+- Takes `ageGroup`. Subtitle: "Six short texts for readers aged %@, about the topics you chose." (*Since the redesign and #52 the headline is "\(count) short texts, written for you.", with the count spelled out.*) Check es and pt-BR read naturally with all five `displayName` values. Update preview.
 
 ### `Leo/MyApp.swift`
 - `@State private var store = PreferencesStore()`, injected with `.environment(store)`.
@@ -285,7 +291,7 @@ Manual checks:
 1. Fresh install: onboarding appears; Continue disabled until an age is picked; topics step shows that group's defaults all on.
 2. Turn off topics until 3 remain: remaining enabled toggles disable and the footer appears.
 3. Custom topics: "dinosaurs that play soccer" accepted and shown as a cleaned phrase that keeps its meaning; a duplicate shows a local error with no model call; an obviously unsafe topic is rejected with a reason; 61 characters shows a local error; "pirates and treasure" and "volcanoes" are accepted; typing a disabled default's name re-enables that default instead of adding a duplicate. Run with a device region other than the US (e.g. en-BO) to catch the region leaking into phrases.
-4. Done → welcome shows the age group; a round generates immediately and no exercise takes more than a few seconds; passage lengths roughly match the group's range. Expect 18+ to come in around 150–160 words, at or just under its 160 lower bound: no prompt wording tried got this model longer without passages running on.
+4. Done → welcome shows the age group; a round generates immediately and no exercise takes more than a few seconds; passage lengths roughly match the group's range. Expect 18+ to come in around 150–160 words, at or just under its 160 lower bound: no prompt wording tried got this model longer without passages running on. (*Update 2026-10-29:* superseded by #47, see the note under the age-group table.)
 5. Kill and relaunch: welcome appears directly, no onboarding; Start works.
 6. Change age group from the welcome gear → Done → Start: passages visibly change. Cancel after edits, or Done with no edits → no regeneration (temporary debug log in `prepareRound()`).
 7. Open settings while generation is in flight, change a topic, Done → old generation cancelled, new round uses the new topic list.

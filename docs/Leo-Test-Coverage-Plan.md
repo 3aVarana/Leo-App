@@ -1,5 +1,7 @@
 # Leo Test Coverage Plan: Unit and Snapshot Tests
 
+**Status (2026-10-29):** shipped as #2; the CI it asks for in section 12 came in #4. Still in force: the decisions in section 2 (Swift Testing, one pinned simulator, English only, an opt-in live suite), how references are stored and recorded (sections 4 and 5.3), the findings in section 10, and the CI environment and command in section 12. Sections 4.5, 6 and 7 name the app as it was before the MVVM refactor (`QuizModel`, `StubGenerator`, `Leo/Models`, `Leo/Services`, `Leo/Views`). Tests now mirror `Leo/` (`Domain/`, `Data/`, `Features/`, `Snapshots/`, `LiveModel/`, `Support/`, see [CLAUDE.md](../CLAUDE.md), Tests) and cover much more than this catalog. Notes marked *Update 2026-10-29* correct the rest.
+
 ## 1. Scope
 
 Leo has zero test coverage. Before adding features, this plan adds:
@@ -21,7 +23,7 @@ Out of scope: UI tests (XCUITest), `RootView` snapshots, the CI workflow itself 
 | Live model suite | Included, opt-in only: tagged `.liveModel`, runs only when the model is available, excluded from the default test plan, never blocks a merge. |
 | Questionable current behavior | Lock the current behavior in tests, no app changes: `Exercise` accepts an empty title; `ContentLanguage.name` returns "Unknown language" for identifiers like `und`. |
 | Languages tested | **English only.** The test plans have a single configuration with Application Language English and Region United States. Spanish and Brazilian Portuguese UI testing is deferred (section 11). |
-| Non-English exercise content | The language the model writes in is still covered where it is pure logic: `ContentLanguage.name` for non-English locales, and the check that prompts include `language.name` (with English and Spanish). Live generation in Spanish is deferred. |
+| Non-English exercise content | The language the model writes in is still covered where it is pure logic: `ContentLanguage.name` for non-English locales, and the check that prompts include `language.name` (with English and Spanish). Live generation in Spanish is deferred. *Update 2026-10-29:* done in #31 (`generatesSpanishExercise`). |
 | Snapshot device | One pinned simulator: iPhone 18 Pro, iOS 27.0. Images differ across devices and OS versions. |
 | Actor isolation in tests | Annotate suites that touch app types with `@MainActor` (the app target defaults to `MainActor`, the test target does not). No build-setting change. |
 
@@ -125,6 +127,8 @@ Tests must still **never** read or write `UserDefaults.standard`. Every store un
 
 ### 4.5 File layout
 
+> *Update 2026-10-29:* this is the layout before #9. The tests now mirror the app's folders, and test doubles are named after the repository protocols (`StubExerciseRepository`, `ExerciseRepositoryFactorySpy`, `PreferencesRepositorySpy`, `RoundHistoryRepositorySpy`…). See the [MVVM plan](Leo-MVVM-Repository-Plan.md), sections 4 and 7.
+
 Delete `LeoTests/LeoTests.swift`. Create:
 
 ```
@@ -226,6 +230,8 @@ Repeats `await Task.yield()` until the condition holds. If the timeout passes fi
 - `GeneratorFactorySpy` records the `RoundSettings` of every factory call and hands out the stubs.
 
 ## 6. Approved code changes
+
+> *Update 2026-10-29:* all seven landed in #2. The types and paths have since been renamed by the MVVM refactor (#9–#13): `QuizModel` is `QuizViewModel`, `ExerciseGenerating` is `ExerciseRepository`, and `MyApp` also gives the test host an in-memory history store. The `--leo-running-tests` guard (E) still holds.
 
 Make each change in its own commit, with its tests in the same commit. App behavior must not change.
 
@@ -329,7 +335,7 @@ Every suite that touches app types is `@MainActor`. Use parameterized `@Test(arg
 - For every case, `acceptedWordCount` contains `passageWordRange`.
 - `acceptedWordCount` values: six `30...120`, nine `48...180`, twelve `60...225`, fifteen `72...270`, adult `96...345`.
 - The lower and upper bounds of `passageWordRange` never decrease from one age group to the next.
-- `passageSentenceRange` is `10...13` for six, nine and twelve, and `nil` for fifteen and adult.
+- `passageSentenceRange` is `10...13` for six, nine and twelve, and `nil` for fifteen and adult. (*Update 2026-10-29:* since #47 every group has one: 14...17 for fifteen, 18...22 for adult.)
 - `displayName`, `promptAudience` and `styleGuidance` are not empty for every case.
 
 **`ExerciseTests`** (`Exercise.init?(generated:topic:skill:acceptedWordCount:)`)
@@ -362,7 +368,7 @@ Every suite that touches app types is `@MainActor`. Use parameterized `@Test(arg
   - Disabled suggested topics are excluded.
   - Other groups' custom topics are excluded.
   - Disabled ids that don't exist are ignored.
-  - With every suggested topic disabled and no custom topics, it falls back to all suggested prompts.
+  - With every suggested topic disabled and no custom topics, it falls back to all suggested prompts. (*Update 2026-10-29:* since #28 it tops the list up to 3 topics with suggested ones the reader turned off.)
 - `roundSettings` uses the current `ageGroup`. Equal preferences give equal `RoundSettings`, and turning one topic off changes them. `QuizModel.configure` relies on this to skip work.
 - `minimumEnabledTopics == 3` and `maximumCustomTopics == 20`, which lock the documented limits.
 
@@ -409,10 +415,12 @@ All snapshot suites are tagged `.snapshot`, run in English. Every snapshot below
 
 Not covered by snapshots: `RootView` (depends on the device's model availability), the failed state inside `RootView`, and `TopicsEditor`'s error message and "checking topic" states (private `@State`, only reachable by typing).
 
+> *Update 2026-10-29:* the screens were redesigned (#15–#21), so these cases changed: Results has no star, thumbs up or book symbols, and Settings and the topics editor take a `PreferencesEditorViewModel`. The failed state (`GenerationFailedViewSnapshotTests`) and the editor's message and reviewing states (`TopicsEditorSnapshotTests`) are covered now. Later suites cover Review, History, the round page, the launch intro and the shared components.
+
 ### 7.3 Phase 3 — tests for changes B, C, D, G
 
 **`QuizPlanTests`** (B, `QuizModel.makePlan`, seeded with `SplitMix64`)
-- Always `QuizModel.exerciseCount` (6) items.
+- Always `QuizModel.exerciseCount` (6) items. (*Update 2026-10-29:* since #52 `makePlan` takes a `count:` and is tested for 3 to 9; every skill is required only when the count is at least 5.)
 - Every `ComprehensionSkill` appears at least once.
 - With 6 or more topics, the 6 main topics (`topics[0]`) are all different.
 - With 3, 4 and 5 topics, no main topic repeats in two exercises in a row.
@@ -430,7 +438,7 @@ Not covered by snapshots: `RootView` (depends on the device's model availability
 - Compare against `String(localized:)` of the generic message rather than the English literal, so the test keeps passing when more languages are added.
 
 **`ExerciseGeneratorPromptTests`** (D)
-- `wordRange` for six, nine and twelve includes "in 10 to 13 sentences". Fifteen and adult don't include "sentences".
+- `wordRange` for six, nine and twelve includes "in 10 to 13 sentences". Fifteen and adult don't include "sentences". (*Update 2026-10-29:* every group includes a sentence count since #47.)
 - `wordRange` includes the bounds and the midpoint, for example "between 50 and 80 words long, about 65 words".
 - `instructions` contains `ageGroup.promptAudience`, `ageGroup.styleGuidance` and `language.name`, for English and for Spanish (`ContentLanguage(locale: Locale(identifier: "es_ES"))`).
 - `prompt(topic:skill:)` contains the topic, `language.name`, `wordRange` and `skill.promptHint`.
@@ -442,6 +450,8 @@ Not covered by snapshots: `RootView` (depends on the device's model availability
 ### 7.4 Phase 4 — tests for changes A and F
 
 **`QuizModelTests`** (part 2, with `StubGenerator` and `GeneratorFactorySpy`)
+
+> *Update 2026-10-29:* the generation rules below changed later. Since #27 generation goes on after a failure, with up to 3 automatic replacements and exercises shown in the order they finish, `.failed` has no message, and there are two retries ([Resilient Generation plan](Leo-Resilient-Generation-Plan.md)). Since #22 an answer is ignored while the passage shows. Since #52 a round has 3 to 9 texts. These are tested in the `QuizViewModel…Tests` suites.
 
 - **Configure**
   - `configure(s)` calls the factory once with `s` and starts exercise 0 using plan item 0. The first topic is from `s.topics`.
@@ -483,7 +493,7 @@ Tags: `.liveModel`. Traits: `.enabled(if: TestEnvironment.isModelAvailable)` (`S
 
 **`ExerciseGeneratorLiveTests`**
 - For each `AgeGroup` (parameterized), `ExerciseGenerator(language: .english, ageGroup:)` generates, from 3 suggested topics for that group, an exercise whose passage word count is within `acceptedWordCount`. The init already checks this, so the test confirms the prompts produce usable output within 3 attempts.
-- English only. Generation in Spanish is deferred (section 11).
+- English only. Generation in Spanish is deferred (section 11). (*Update 2026-10-29:* a Spanish case was added in #31, and `PassageLengthLiveTests` measures passage length on a device, see the [Passage Length plan](Leo-Passage-Length-Plan.md).)
 
 **`TopicValidatorLiveTests`**
 - "dinosaurs" for `.six` → `.accepted`, with no leading or trailing punctuation.
@@ -562,7 +572,7 @@ Also found:
 
 - Snapshots are drawn in the key window (`drawHierarchyInKeyWindow: true`). Drawing only the layer leaves the navigation bar's glass buttons unstyled, black on black in dark mode. Because tests share that window, the view snapshot suites are nested in one `.serialized` suite, `ViewSnapshots`.
 - `assertViewSnapshot` takes an optional `height` to capture lists taller than the screen. Above about 2700 points the image comes out blank.
-- At `.accessibilityExtraExtraExtraLarge`, `WelcomeView` truncates its description ("…about the topics you ch…"). Recorded as is; not fixed.
+- At `.accessibilityExtraExtraExtraLarge`, `WelcomeView` truncates its description ("…about the topics you ch…"). Recorded as is; not fixed. (*Update 2026-10-29:* the redesigned Welcome no longer truncates it. The current reference shows a different problem at that size: the header wordmark wraps to "Le / o" and the "Past rounds" button runs into the gear.)
 
 ## 11. Deferred: Spanish and Brazilian Portuguese
 
@@ -588,11 +598,13 @@ Use the Application Language setting, not `.environment(\.locale, …)` alone. `
   - the keys behind `ComprehensionSkill.displayName`
 - Verify that the compiled string catalog answers in this way. If it doesn't, compare `String(localized:)` of the resource with `locale` set (verified to work, section 3.1) against the English value, with an allowlist for translations spelled the same as English.
 
-**Live generation in Spanish.** Add to `ExerciseGeneratorLiveTests`: `ExerciseGenerator(language: ContentLanguage(locale: Locale(identifier: "es_ES")), ageGroup: .nine)` generates successfully.
+**Live generation in Spanish.** (*Done in #31.*) Add to `ExerciseGeneratorLiveTests`: `ExerciseGenerator(language: ContentLanguage(locale: Locale(identifier: "es_ES")), ageGroup: .nine)` generates successfully.
 
 ## 12. CI requirements
 
 The workflow itself is the next step and isn't part of this plan. This section records what the tests need from it. Items marked *unverified* haven't been tried.
+
+> *Update 2026-10-29:* the workflow is `.github/workflows/ci.yml` (#4), which cites this section. It runs on the hosted `xcode-27` runner, which has Xcode 27.0 and the iOS 27.0 runtime, on every pull request to `main`, with no path filter. `live-model.yml` runs the `LeoLiveModel` plan by hand, and `claude-review.yml` adds the advisory review. There is no re-recording job (12.5): references are re-recorded locally.
 
 ### 12.1 Environment
 
@@ -640,8 +652,9 @@ A separate manual job (`workflow_dispatch`) runs the same command with `SNAPSHOT
 - Use a shallow checkout (`fetch-depth: 1`). `LeoTestsSnapshots/` is about 9.5 MB in 40 files and will grow when Spanish and Portuguese are added (section 11).
 - Run the workflow on pull requests that change `Leo/**`, `LeoTests/**`, `LeoTestsSnapshots/**`, the test plans or the project file.
 - Git LFS isn't used. Revisit it if the folder passes about 50 MB: a checkout without LFS gives pointer files and confusing failures.
+- *Update 2026-10-29:* `LeoTestsSnapshots/` is now about 61 MB in 143 files, past that mark, still without LFS.
 
 ### 12.7 Open items
 
-- Set `displayScale` to 2 in `assertViewSnapshot` (currently 3) to roughly halve the image size (an estimate: 44% of the pixels). It means re-recording every image, so do it before CI starts keeping history.
+- Set `displayScale` to 2 in `assertViewSnapshot` (currently 3) to roughly halve the image size (an estimate: 44% of the pixels). It means re-recording every image, so do it before CI starts keeping history. (*Still open on 2026-10-29.*)
 - Confirm the runner has the Xcode and runtime in 12.1.

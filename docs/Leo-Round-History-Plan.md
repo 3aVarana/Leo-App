@@ -1,5 +1,7 @@
 # Leo Round History Plan
 
+**Status (2026-10-29):** shipped. PR 1 is #40, PR 2 is #41, followed by #45 (History previews only in Debug) and #46 (section headers line up with the reading column). H1–H8 hold as written. Notes marked *Update 2026-10-29* below record where the code differs from this plan: changes from the #41 review, and #52, which lets a round have 3 to 9 texts (6 by default) instead of always 6. #52 changed no stored type, so the schema is still `RoundHistorySchemaV1`.
+
 ## 1. Scope and sources
 
 Today a round lives only in memory: `QuizViewModel.answers` feeds Results and Review, and is gone after "Practice again" or a relaunch. This plan saves every finished round on the device, so the reader can come back to it later, review the texts they missed, and see how they're doing over time. It's the first part of the README's "Progress tracking" roadmap item, and the Redesign plan's suggestion 4 ("Keep the last round across launches").
@@ -64,6 +66,8 @@ All in `Leo/Domain`, Foundation only (the `domain_imports` lint rule).
   }
   ```
 
+  > *Update 2026-10-29:* `index` runs from 0 to the round's text count minus 1, up to 0...8 since #52. `RoundRecord` is also `Hashable` by `id`, so it can drive `navigationDestination(item:)` (#41 review).
+
 - **New `RoundSummary`:** what a History row needs, without the texts.
 
   ```swift
@@ -90,7 +94,7 @@ New folder `Leo/Data/SwiftData/`.
 | `StoredRound` | `@Attribute(.unique) id: UUID`, `finishedAt: Date`, `ageGroup: String` (`AgeGroup.rawValue`), `results: [Bool]`, `@Relationship(deleteRule: .cascade) answers: [StoredAnswer]` |
 | `StoredAnswer` | `index: Int`, `exerciseID: UUID`, `topicPrompt`, `topicName`, `topicKind` (raw), `skill` (raw), `title`, `passage`, `question`, `options: [String]`, `correctIndex: Int`, `selectedOption: Int`, `explanation`, `round: StoredRound?` (inverse) |
 
-- `results` duplicates what the answers say, on purpose: the History list fetches rounds and reads `results` without faulting in six passages per row. It's written once, at save, from the same answers.
+- `results` duplicates what the answers say, on purpose: the History list fetches rounds and reads `results` without faulting in six passages per row (up to nine since #52). It's written once, at save, from the same answers.
 - SwiftData relationship arrays aren't ordered, so answers are sorted by `index` when read.
 - Stored text is what the reader saw: localized topic names, the passage and options in the language of the round. Nothing is re-localized later.
 - The store file is named `RoundHistory.store` in Application Support (a named `ModelConfiguration`, not SwiftData's `default.store`). It's local only: no CloudKit. It's in the device backup like any app data.
@@ -159,7 +163,7 @@ New `Leo/Features/History/RoundHistoryViewModel.swift`, `@Observable`.
 | `private(set) var summaries: [RoundSummary]` | The current age group's rounds, newest first |
 | `var hasRounds: Bool` | Drives the entry button (H6) |
 | `var roundCount: Int`, `var correctShare: Double` | The header: rounds and the share of all answers that were right (`81%` = 0.81, formatted with `.percent`, no decimals) |
-| `var sections: [HistorySection]` | `summaries` grouped as in 1.2. `HistorySection` has a `kind` (`.thisWeek`, `.lastWeek`, `.earlierThisMonth(Date)`, `.month(Date)`) and its rounds; the view turns the kind into a title |
+| `var sections: [HistorySection]` | `summaries` grouped as in 1.2. `HistorySection` has a `kind` (`.thisWeek`, `.lastWeek`, `.earlierThisMonth(Date)`, `.month(Date)`) and its rounds; the view turns the kind into a title. *Update 2026-10-29:* the code has `.month(Date, showsYear: Bool)`, and the ViewModel's `monthName(_:showingYear:)` writes the title |
 | `func record(_ round: RoundRecord)` | Saves; reloads when the round's age group is the current one |
 | `func round(id: UUID) -> RoundRecord?` | For the round page |
 | `func delete(id: UUID)` | Deletes and reloads |
@@ -180,6 +184,8 @@ New views in `Leo/Features/History/`. Sizes are the mock's, as `LeoTextStyle`s w
 - The age group that picks the variant is the one in the current preferences.
 - `WelcomeView` gets `.navigationTitle(Text(verbatim: "Leo"))` (its bar stays hidden), so History's native back button reads "Leo" as in the mock. Results already sets "Results".
 
+  > *Update 2026-10-29:* not implemented. `WelcomeView` sets no navigation title, so History's back button from Welcome doesn't read "Leo". Still open.
+
 ### 5.2 History · all rounds (`HistoryView`)
 
 Pushed on the root `NavigationStack` from Welcome or Results, native back button, inline empty title.
@@ -197,6 +203,8 @@ Pushed on the root `NavigationStack` from Welcome or Results, native back button
 
 Loads the `RoundRecord` by id. If it's gone (deleted, unreadable) the view pops back.
 
+> *Update 2026-10-29:* as built (#41), `HistoryView` loads the round before pushing, and `RoundView(round:)` takes the loaded `RoundRecord`. A round that can't be loaded isn't pushed.
+
 - `Kicker` "20 Oct, 16:45 · readers \(ageGroup.displayName)", 28pt below the bar.
 - The score "4 of 6" (`.score`, header trait), then `RoundResultDots` 14pt below.
 - 24pt below, a row per text (10pt vertical padding): the number (15 semibold, top-aligned), then the title (17/24) over "\(topic name) · \(skill)" (14, `leoInkSoft`); trailing "Correct" (14 semibold, `leoAccent700`) or the Review label. Missed rows are buttons that open Review at that miss, like Results.
@@ -210,7 +218,7 @@ Loads the `RoundRecord` by id. If it's gone (deleted, unreadable) the view pops 
 
 ### 5.5 Navigation
 
-`RootView` holds the History route: Welcome and Results call `onHistory`, which pushes `HistoryView`; `HistoryView` pushes `RoundView(id:)` with `navigationDestination(item:)`; `RoundView` pushes `ReviewView` the way `ResultView` does today. Starting a round or saving settings from Welcome never happens while History is on screen, so the round flow is untouched.
+`RootView` holds the History route: Welcome and Results call `onHistory`, which pushes `HistoryView`; `HistoryView` pushes `RoundView(id:)` with `navigationDestination(item:)` (*as built:* `navigationDestination(item: $selectedRound)` and `RoundView(round:)`, see 5.3); `RoundView` pushes `ReviewView` the way `ResultView` does today. Starting a round or saving settings from Welcome never happens while History is on screen, so the round flow is untouched.
 
 ---
 
@@ -221,7 +229,7 @@ All in the `Leo` test plan, Swift Testing, hand-written fakes.
 ### 6.1 PR 1
 
 - `Support/RoundHistoryRepositorySpy`: in-memory, records saves and deletes, can be told to throw.
-- `Support/Fixtures`: `RoundRecord.fixture(ageGroup:finishedAt:results:)` building six exercises.
+- `Support/Fixtures`: `RoundRecord.fixture(ageGroup:finishedAt:results:)` building six exercises (*as built:* one per entry in `results`).
 - `Data/SwiftDataRoundHistoryRepositoryTests` (in-memory container unless noted):
   - `saveThenRoundRestoresEveryField`: all exercise fields, order, topic kind, skill, `Exercise.id`.
   - `summariesAreNewestFirstAndPerAgeGroup`
@@ -279,6 +287,8 @@ Stacked PRs, one at a time against `main` (CI runs only on PRs to `main`), using
 | 2. History screens | 5.1–5.5, `ReviewLabel` extraction, strings, snapshots 6.2, README, hand checks 6.3 | The History button, History, the round page, Review from History; on Results, a plain gear and "Review" without the arrow |
 
 PR 1 freezes the stored format. Once a TestFlight build with it ships, any change to the schema needs a `RoundHistorySchemaV2` and a migration stage.
+
+> *Update 2026-10-29:* that build has shipped, so the rule applies (see CLAUDE.md, Persistence). Snapshot tests for History and the round page still use 6-text rounds only; nothing checks a 9-dot row at large text sizes yet. The 6.3 hand checks were done before #52.
 
 ---
 

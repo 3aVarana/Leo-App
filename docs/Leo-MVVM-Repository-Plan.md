@@ -1,5 +1,7 @@
 # Leo MVVM + Repository Plan
 
+**Status (2026-10-29):** shipped as #9–#13. The layers, the dependency direction and the rules in sections 2 and 4 still hold; [CLAUDE.md](../CLAUDE.md) (Architecture) is the current summary, and `.swiftlint.yml` and the Claude review workflow point here for the reasoning. The file trees, signatures and test doubles below describe the app at #13. Later work added files and changed signatures, so read the code for the current inventory; notes marked *Update 2026-10-29* point out the changes that matter most. The "refactor only, snapshots unchanged" rules applied to these five PRs only: since then snapshots are re-recorded on purpose when a screen changes.
+
 ## 1. Scope
 
 Leo's code is organized as observable models and views: `QuizModel` and `PreferencesStore` are `@Observable` classes, and the views read and write them directly. This plan restructures the app into **MVVM with repositories**:
@@ -96,6 +98,13 @@ LeoTests/
 
 `Localizable.xcstrings` and the asset catalog stay at the `Leo/` root.
 
+> *Update 2026-10-29:* the trees above are the app at #13. Since then:
+> - **Domain** gained `RoundTopic`, `RoundAnswer`, `RoundRecord` and `RoundSummary`. The topic editing rules live in `ReaderPreferencesTopicEditing.swift`, not in `ReaderPreferences.swift`.
+> - **Data** gained `Repositories/RoundHistoryRepository.swift`, `SwiftData/RoundHistorySchema.swift` and `FoundationModels/ExerciseRepair.swift`.
+> - **Features** gained `Theme/`, `Components/` and `History/`, plus `Quiz/GenerationFailedView`, `Quiz/ReviewView`, `Quiz/AgeGroup+Typography`, `Root/LaunchIntro` and `Preferences/TextsPerRoundStepper`. `OnboardingTitle` is gone; `OnboardingView.swift` holds `OnboardingTopics` and `OnboardingRoundSection`.
+> - **Leo/Resources/** holds the bundled fonts.
+> - **LeoTests** split `QuizViewModelTests` into several suites (generation, option state, reading, round size, round), and added tests for the history, the repair rules, the launch intro, the progress dots and the theme. `Support/` adds `RoundHistoryRepositorySpy`, `Fixtures`, `SplitMix64`, `WaitUntil`, `Tags` and `TestEnvironment`.
+
 ### Dependency direction
 
 ```
@@ -103,6 +112,8 @@ Features (Views → ViewModels) ──▶ Data/Repositories (protocols) ──�
                                           ▲
 App (composition root) ── builds ─────────┘ implementations ──▶ Data/FoundationModels, UserDefaults
 ```
+
+> *Update 2026-10-29:* SwiftData is a third data source since #40: `SwiftDataRoundHistoryRepository` stores finished rounds with the schema in `Data/SwiftData/`.
 
 - Views depend on their ViewModel and on Domain types. They never import `FoundationModels`.
 - ViewModels depend on repository **protocols** and Domain types only.
@@ -169,6 +180,8 @@ extension ReaderPreferences {
 
 The domain methods return results. The ViewModel turns them into localized messages. Like today, `setEnabled` doesn't enforce the minimum itself: the view disables the toggle.
 
+> *Update 2026-10-29:* since the redesign (#16, #17), `removeCustomTopics(atOffsets:in:)` is `removeCustomTopic(id:in:)`, and the toggle isn't disabled: `PreferencesEditorViewModel.setEnabled` refuses to turn off a topic at the minimum and shows a warning (`isShowingMinimumWarning`).
+
 ### 5.2 Data: repositories
 
 All protocols are main-actor isolated (the module default), like `ExerciseGenerating` today.
@@ -198,6 +211,8 @@ struct UserDefaultsPreferencesRepository: PreferencesRepository {
 protocol ExerciseRepository {
     func exercise(topics: [String], skill: ComprehensionSkill) async throws -> Exercise
 }
+// Update 2026-10-29: since #16 it is
+// exercise(topics: [RoundTopic], skill:, onAttempt: @escaping (RoundTopic) -> Void)
 
 struct FoundationModelsExerciseRepository: ExerciseRepository {
     let generator: ExerciseGenerator      // internal, so tests can check how it was built
@@ -260,6 +275,7 @@ func makeSettingsEditor() -> PreferencesEditorViewModel?   // nil before onboard
 ```
 
 - `RootView` keeps `.task(id: viewModel.preferences?.roundSettings) { viewModel.preferencesDidChange() }`, so unchanged settings still keep the round that's already prepared.
+- *Update 2026-10-29:* since #40 the init also takes `history: RoundHistoryViewModel`, and `preferencesDidChange()` sets `history.ageGroup` too.
 - The editors' `onSave` closures capture `[weak self]`.
 
 **`QuizViewModel`** (renamed from `QuizModel`)
@@ -270,6 +286,7 @@ func makeSettingsEditor() -> PreferencesEditorViewModel?   // nil before onboard
   - `func optionState(at index: Int) -> OptionState`
   - `var isAnswerCorrect: Bool?`: `nil` before answering.
 - `ExerciseView` and `OptionButton` use these. `ExerciseView(quiz:exercise:)` keeps its shape. Only the type name changes.
+- *Update 2026-10-29:* the init now also takes `now:` and `onRoundFinished:` (#40), and `ExerciseView` is `ExerciseView(quiz:exercise:isReadingTimed:)` (#22).
 
 **`PreferencesEditorViewModel`** (`@Observable`)
 
@@ -294,7 +311,7 @@ func isToggleDisabled(_ topic: DefaultTopic) -> Bool   // isOn && isAtMinimum
 
 func setEnabled(_ isOn: Bool, _ topic: DefaultTopic)
 func resetSuggestedTopics()
-func removeCustomTopics(atOffsets: IndexSet)
+func removeCustomTopics(atOffsets: IndexSet)   // since #17: removeCustomTopic(_:)
 func add()                            // local checks, then a review if needed
 func cancelReview()
 func save()                           // calls onSave(draft)
@@ -318,6 +335,8 @@ func save()                           // calls onSave(draft)
 | `WelcomeView`, `LoadingView`, `ResultView` | Unchanged. |
 
 Previews build the real implementations, using `UserDefaults(suiteName: "preview")` for preferences, as today. No preview fakes in the app target.
+
+> *Update 2026-10-29:* `MyApp` also builds `RoundHistoryViewModel` on `SwiftDataRoundHistoryRepository.live()` (`.inMemory()` under `--leo-running-tests`). `RootView` presents Settings with `if let` instead of force-unwrapping, and Settings' age control is `AgeSegmentedControl`, not a `Picker`. The History previews use `RoundRecord.previewFixture`, which is preview data in the app target under `#if DEBUG` (#45), not a fake repository.
 
 ## 6. Pull requests
 
@@ -486,6 +505,7 @@ Tests:
 | `StubTopicReviewRepository` | new | `PreferencesEditorViewModelTests`, `RootViewModelTests`, preference snapshots |
 | `PreferencesRepositorySpy` | `TestDefaults` + `PreferencesStore` in VM tests | `RootViewModelTests` |
 | `StubModelAvailabilityProvider` | new | `RootViewModelTests` |
+| `RoundHistoryRepositorySpy` | new in #40 (*Update 2026-10-29*) | `RoundHistoryViewModelTests`, `RootViewModelTests`, `HistoryViewSnapshotTests` |
 
 `TestDefaults` stays for `UserDefaultsPreferencesRepositoryTests`. As today, every test suite that touches app types is `@MainActor`, and async ViewModel tests use `waitUntil` and `settle`.
 

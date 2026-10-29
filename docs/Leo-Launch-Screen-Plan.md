@@ -1,5 +1,7 @@
 # Leo Launch Screen Plan: 3a "Quieter, native-speed"
 
+**Status (2026-10-29):** shipped as #23 (static launch screen) and #24 (intro), then polished by #26 (see the [Hand-Check Fixes plan](Leo-Hand-Check-Fixes-Plan.md)). The behavior, timings and decisions L1–L4 match the code. Some implementation names in section 3 differ from what was built; notes marked *Update 2026-10-29* give the built names. The app icon, out of scope here, was replaced in #36.
+
 ## 1. Scope and sources
 
 This plan adds a branded launch screen and a short SwiftUI intro that picks up from it. It closes the launch-screen half of follow-up 6 in `docs/Leo-Redesign-Plan.md` ("so the first frame matches the new ground color instead of flashing white or black"). The app icon half is out of scope.
@@ -89,7 +91,7 @@ No changes to ViewModels or repositories. Whether the intro has played is view s
 
 ### 3.2 How it works
 
-Three layers in `RootView`, bottom to top:
+Three layers in `RootView`, bottom to top (*as built:* they live in `LaunchIntroModifier`, which `RootView` applies with `.launchIntro()`):
 
 1. **Ground.** `Color.leoBackground`, ignoring the safe area. Always there, so nothing flashes while the page above it is transparent.
 2. **Page.** Today's `RootView` content (Welcome, Onboarding or Unavailable), with `opacity` and a vertical offset driven by the intro.
@@ -113,7 +115,7 @@ Driven by a single `.task` that sets the phase after `Task.sleep`, so it is canc
 
 **The rise is a `visualEffect`, not `.offset`.** With a plain `.offset` on the page, the Welcome layout flickered between two heights during the rise. `visualEffect` only changes how the page is drawn, not its layout.
 
-**Move target (Welcome).** `WelcomeView` attaches `anchorPreference(key: LaunchWordmarkTarget.self, value: .bounds)` to its header wordmark. `RootView` reads it with `overlayPreferenceValue` and computes:
+**Move target (Welcome).** `WelcomeView` attaches `anchorPreference(key: LaunchWordmarkTarget.self, value: .bounds)` to its header wordmark. `RootView` reads it with `overlayPreferenceValue` and computes (*as built:* `WelcomeView` marks the header with `.launchWordmarkTarget()`, which publishes its global frame through the `LaunchWordmarkFrame` preference, and `LaunchIntroModifier` reads it with `onPreferenceChange`):
 
 - the overlay's end center: the header wordmark's center, minus the page's current rise offset, so the target is where the wordmark will be **at rest** rather than where it is mid-rise;
 - the end scale: header wordmark height ÷ overlay height. That is 20 / 48 at the default text size, and follows Dynamic Type for larger sizes, so the swap is seamless at any text size.
@@ -132,7 +134,7 @@ While the wordmark is moving, `WelcomeView` sets its header wordmark's opacity t
 
 ### 3.3 When it plays
 
-- **Cold launch only.** A `@State private var hasPlayedIntro = false` in `RootView`. Coming back from the background, or the scene being re-created on iPad, doesn't replay it.
+- **Cold launch only.** A `@State private var hasPlayedIntro = false` in `RootView` (*as built:* `static var LaunchIntro.hasPlayed`). Coming back from the background, or the scene being re-created on iPad, doesn't replay it.
 - **Not in tests.** The test host already shows `EmptyView` with `--leo-running-tests`, and snapshot tests render screens directly, so they don't see the intro.
 - **Previews.** `RootView`'s preview plays it. A `#Preview("Launch frame")` shows the first frame for comparison against the launch image.
 
@@ -155,7 +157,7 @@ While the wordmark is moving, `WelcomeView` sets its header wordmark's opacity t
 | Test | Kind |
 |---|---|
 | Launch frame light and dark: the intro's first frame on iPhone portrait | Snapshot (`LeoTests/Snapshots/LaunchIntroSnapshotTests.swift`), recorded and compared by eye against a screenshot of the real launch screen once |
-| Rest frame light and dark: the intro's final frame equals today's Welcome snapshot | Snapshot (same reference as `WelcomeViewSnapshotTests`) |
+| Rest frame light and dark: the intro's final frame equals today's Welcome snapshot | Snapshot (*as built:* its own reference, `LaunchIntroSnapshotTests/restFrame.six-*`, which should match Welcome's) |
 | End scale and target: the computation from header bounds and rise offset, at default and an accessibility text size | Unit test on a small pure function in `LaunchIntro.swift` |
 | Timeline: the page rises during the move and ends after it; the swap waits for the page | Unit test on `LaunchIntro.Timing` |
 | Hit testing: the page isn't hit-testable before the swap and is after it | Unit test on the intro's phase → `allowsHitTesting` mapping |

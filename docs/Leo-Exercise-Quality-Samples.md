@@ -1,5 +1,7 @@
 # Leo exercise samples, 2026-10-09 (macOS 27.0.1 on-device model, English)
 
+*Note (2026-10-29):* raw output kept as the record behind the [Exercise Quality plan](Leo-Exercise-Quality-Plan.md); it reflects the prompts of 2026-10-09, not today's. Section B is empty: the 3 Spanish samples the plan mentions weren't saved here. Section A has 18 entries, one more than the 17 the plan scored.
+
 ## A. Current prompts (ExerciseGenerator on branch code-review-cleanup)
 
 ===== [6-8 | mainIdea | a story about a kind robot] #1  words=74  7.2s

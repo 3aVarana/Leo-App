@@ -6,7 +6,9 @@ Generates exercises with the app's own `ExerciseGenerator` on this Mac and score
 
 ## Requirements
 
-A Mac with Apple Intelligence turned on. macOS runs the same on-device model as iOS, so results carry over to the app. Nothing here touches the Xcode project or runs in CI.
+A Mac with Apple Intelligence turned on. Nothing here touches the Xcode project or runs in CI.
+
+The Mac's model isn't always the one on the reader's device. On 2026-10-27 an iPhone on iOS 27.2 wrote passages about half as long as the model in macOS 27.0.1 did ([docs/Leo-Passage-Length-Plan.md](../../docs/Leo-Passage-Length-Plan.md), section 3). The harness compares two versions of the prompts on the same model, so its before/after table still holds. For anything about length or rejection rates on a phone, also run `PassageLengthLiveTests` on a device.
 
 ## Build
 

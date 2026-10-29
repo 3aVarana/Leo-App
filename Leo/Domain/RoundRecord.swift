@@ -6,7 +6,7 @@ nonisolated struct RoundRecord: Identifiable, Hashable, Sendable {
     let id: UUID
     let finishedAt: Date
     let ageGroup: AgeGroup
-    /// In round order, `index` 0...5.
+    /// In round order, `index` 0 to the round's text count minus 1.
     let answers: [RoundAnswer]
 
     var correctCount: Int {
