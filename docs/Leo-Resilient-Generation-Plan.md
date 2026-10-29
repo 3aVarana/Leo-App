@@ -1,8 +1,10 @@
 # Leo Resilient Generation Plan
 
+**Status (2026-10-29):** shipped as #27. Section 2 matches `QuizViewModel`. Since #52 a round has 3 to 9 texts (6 by default) instead of always 6, so read "6" below as the round's `exerciseCount`; the notes marked *Update 2026-10-29* give the details. Parallel generation (D6, section 6) is still deferred and hasn't been measured.
+
 ## 1. Scope and sources
 
-`QuizViewModel.generateRemaining()` writes a round's 6 exercises one at a time and stops at the first failure. The reader then sees the failure screen when they reach that exercise, even though the rest of the round was never tried. Each failure is already 3 failed model calls: `ExerciseGenerator.generate` tries the main topic and two spares before it throws.
+Before this plan, `QuizViewModel.generateRemaining()` wrote a round's 6 exercises one at a time and stopped at the first failure. The reader then saw the failure screen when they reached that exercise, even though the rest of the round was never tried. Each failure is already 3 failed model calls: `ExerciseGenerator.generate` tries the main topic and two spares before it throws.
 
 This plan keeps generation going after a failure and automatically queues a replacement exercise, so the failure screen becomes a last resort. Generation stays sequential. Parallel generation is left for later, but the design keeps it a small follow-up (§6).
 
@@ -20,6 +22,11 @@ Current app: `main` at `ebc0d8d`. The `code-review-cleanup` branch (3 commits on
 | D6 | Parallelism | **Not now.** Sequential generation, with a measurement spike before any parallel work. |
 | D7 | Manual retry and the limit | **Outside the limit.** "Try again" and "Try a different topic" never count against the 3 and never reset it. If a manual retry fails, the failure screen comes back at once. |
 
+> *Update 2026-10-29 (#52):*
+> - **D2:** the round size is the reader's choice, 3 to 9 (`RoundSettings.exerciseCount`, 6 by default), set in `prepareRound()`. The rule holds at any size: a round never ends short.
+> - **D3:** still 3 automatic replacements per round at every size (`QuizViewModel.maxReplacements`), the user's choice in #52. That's every text of a 3-text round, but a third of a 9-text round.
+> - **D4:** `makePlan` covers every skill only when the round has at least as many texts as there are skills (5). A shorter round gets that many different skills. A replacement still keeps the failed exercise's skill.
+
 ---
 
 ## 2. Design
@@ -36,7 +43,7 @@ Replace the in-order `exercises` array and the `generationFailed` flag with a jo
 | `failedJobs: [PlanItem]` | Jobs that failed after the replacements ran out. Kept for manual retry. |
 | `replacementsLeft: Int` | Starts at `maxReplacements` (`3`) in `prepareRound()`. |
 
-**Invariant:** `exercises.count + queue.count + failedJobs.count == exerciseCount`. A failed job is either swapped for a replacement (queue length unchanged) or moved to `failedJobs`. Tests assert this after every step (§3).
+**Invariant:** `exercises.count + queue.count + failedJobs.count == exerciseCount` (*Update 2026-10-29:* a per-round property since #52, no longer `static let exerciseCount = 6`). A failed job is either swapped for a replacement (queue length unchanged) or moved to `failedJobs`. Tests assert this after every step (§3).
 
 Two facts follow from the design, and the code can rely on them:
 
@@ -121,6 +128,7 @@ Both buttons are allowed only when generation is stuck: `settings != nil && queu
 
 - `ExerciseRepository`, `ExerciseGenerator` and the 3-topic fallback within one job.
 - `makePlan`, `plannedTopicNames`, `writingTopicName` (still the topic of the job being written, which is the one the waiting reader will get), `LoadingView`, `GenerationFailedView`, `ProgressDots`.
+- *Update 2026-10-29:* #52 later gave `makePlan` a `count:` argument and made `ProgressDots` follow `quiz.exerciseCount`.
 
 ---
 
@@ -153,7 +161,7 @@ All in `LeoTests/Features/`. The stub answers calls in call order, which still w
 | `manualRetryDoesNotUseOrResetLimit` | A failed manual retry → `.failed` again with exactly one more call. |
 | `manualRetryRequeuesEveryFailedJob` | Two failed jobs, retry → both requested. One succeeds → the reader answers it, then sees `.failed` for the other. |
 | `newRoundResetsReplacementLimit` | After "Practice again", 3 more automatic replacements are available. |
-| `jobCountInvariant` | `exercises + queue + failedJobs == 6` after every step of a mixed scenario. Needs a `#if DEBUG` or internal accessor, or an equivalent check through the call count. |
+| `jobCountInvariant` | `exercises + queue + failedJobs == 6` (the default `exerciseCount`) after every step of a mixed scenario. Needs a `#if DEBUG` or internal accessor, or an equivalent check through the call count. |
 | `replacementTopics…` (static) | Untried topics first, at most 3, falls back to the failed topics in another order when there are no others. Seeded RNG. |
 
 Snapshot tests are unaffected.

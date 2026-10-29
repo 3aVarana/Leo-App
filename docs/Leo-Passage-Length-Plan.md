@@ -1,6 +1,6 @@
 # Passage length at 15–17 and 18+: plan
 
-Written 2026-10-27. Status: step 0 done, step 2 decided (B: 14 to 17 sentences at 15–17, 18 to 22 at 18+), in PR #47. Step 1 not started. On the Mac's model (macOS 27.0.1) the new counts make passages run on and fail more often (§3.6), which is still to be decided.
+Written 2026-10-27. Status (updated 2026-10-29): step 0 done, step 2 decided (B: 14 to 17 sentences at 15–17, 18 to 22 at 18+) and merged in #47 (500acf5) on 2026-10-27. Step 1 not started. On the Mac's model (macOS 27.0.1) the new counts make passages run on and fail more often (§3.6); the user merged #47 anyway, and that regression is an open follow-up (open question 4).
 
 **Decision (2026-10-27):** 15–17 asks for "about 150 words in 14 to 17 sentences" (`passageSentenceRange` 14...17), with no sentence-length line. On the iPhone that's 26/30 accepted (§3.3), against 1/30 before. The passages read as lists of short facts. That's accepted for now as the cost of a passage the phone will write; an example passage in the instructions is the remaining lever if it needs improving.
 
@@ -17,6 +17,8 @@ The rules today (`AgeGroup`):
 | Requested (`passageWordRange`) | 120–180 words, "about 150" |
 | Accepted (`acceptedWordCount`) | 72–270 words (60% of the lower bound, 150% of the upper) |
 | Sentence count in the prompt (`passageSentenceRange`) | none (6–14 get "10 to 13 sentences") |
+
+*Update 2026-10-29:* this is the state before #47. Since #47, 15–17 gets 14 to 17 sentences and 18+ gets 18 to 22; the word ranges are unchanged.
 
 ## 2. The rejected samples
 
@@ -111,7 +113,7 @@ The passages read like 15–17's: lists of one-fact sentences, with some wrong f
 
 The 14 to 17 run was rate-limited by the system ("Client rate limit exceeded") after about 20 requests in a row. Psychology and habits was rerun on its own, and one case (scientific breakthroughs, purpose, run 2) is missing, hence 29.
 
-The sentence count added about 10 words on the Mac and halved the share under 120. The extra failures are within noise at n = 30, but the runaway matches the 2026-10-04 note that asking older groups for sentences "makes passages run on".
+(This paragraph is about the Mac run at 15–17 in §3.) The sentence count added about 10 words on the Mac and halved the share under 120. The extra failures are within noise at n = 30, but the runaway matches the 2026-10-04 note that asking older groups for sentences "makes passages run on".
 
 ### 3.6 The new counts on the Mac's model (2026-10-27)
 
@@ -180,9 +182,11 @@ Keep step 1 whichever of A–C is chosen.
 - The harness `--all` on the Mac shows no regression in the other columns, per the harness README rule. Run in §3.6: the quality columns are unchanged, but failures at 15–17 and 18+ went from 2 to 6 of 20.
 - A hand check of 6 accepted 15–17 exercises on the iPhone: the passages read as texts, not lists.
 
+*Update 2026-10-29:* the first point is met on the iPhone (§3.3). Step 1 hasn't started, so the second is open. The third found a regression that was accepted when #47 merged (open question 4). The fourth isn't met: the passages read as lists, accepted for now (the decision at the top).
+
 ## 6. Open questions
 
 1. ~~Which iOS version is the iPhone on?~~ iOS 27.2 (24B119), see §3.1.
-2. If A works, use it only at 15–17 (and maybe 18+), or at every age?
-3. Is lowering the 15–17 range (C) acceptable as a last resort?
+2. If A works, use it only at 15–17 (and maybe 18+), or at every age? (Open only if A is taken up, for example for question 4.)
+3. Is lowering the 15–17 range (C) acceptable as a last resort? (Not needed while B holds on the iPhone.)
 4. How many users are on the Mac's older model, where the sentence counts cost run-ons (§3.6)? Updating this Mac to macOS 27.2 and rerunning §3.6 would show whether 27.2 ships the phone's model on every platform. If it doesn't, option A or a streaming check on the sentence count would cover both models.

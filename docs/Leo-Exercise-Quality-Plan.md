@@ -1,5 +1,7 @@
 # Leo Exercise Quality Plan
 
+**Status (2026-10-29):** PRs A–D shipped as #30, #31, #29 and #32; PR E (temperature by kind) was closed unmerged as #33, and #34 recorded why. Section 8 lists the departures from the plan. Notes marked *Update 2026-10-29* correct the places where the plan body still reads as current: the distractor rule, the sentence counts (changed by the [Passage Length plan](Leo-Passage-Length-Plan.md), #47) and the Mac model. The section 7 experiments are postponed (user's decision, 2026-10-20).
+
 ## 1. Scope and sources
 
 `ExerciseGenerator` and `GeneratedExercise` produce structurally valid exercises, but the content has repeatable defects: passages that talk about themselves, correct answers that stand out, inference questions that are really detail questions, and factual drift. This plan changes the prompts, the `@Generable` schema and the app-side validation to fix what can be measured, and adds an evaluation harness so prompt changes are measured rather than eyeballed.
@@ -9,7 +11,7 @@ Sources:
 - Apple, Foundation Models documentation, in particular *Prompting an on-device foundation model*, *Generating Swift data structures with guided generation*, *Supporting languages and locales*, *Managing the context window*, *Evaluating prompts to measure performance*, *Updating prompts for new model versions* and *Improving the safety of generative model output* (iOS 27 versions, read 2026-10-09).
 - Apple, code-along 205 (trip planner): `Instructions {}`/`Prompt {}` builders, one-shot example, `prewarm()`, `includeSchemaInPrompt`.
 - Gamut, *10 best practices*: declare properties in generation order, keep structures flat, static trusted instructions.
-- 36 exercises generated on 2026-10-09 with the app's own files on macOS 27.0.1, which runs the same on-device model: 17 with the current prompts in English, 3 in Spanish, 16 with a revised variant. The raw samples are in [Leo-Exercise-Quality-Samples.md](Leo-Exercise-Quality-Samples.md).
+- 36 exercises generated on 2026-10-09 with the app's own files on macOS 27.0.1, which runs the same on-device model (*Update 2026-10-29:* not quite: the iOS 27.2 model on an iPhone writes about half as much, see the Passage Length plan, §3): 17 with the current prompts in English, 3 in Spanish, 16 with a revised variant. The raw samples are in [Leo-Exercise-Quality-Samples.md](Leo-Exercise-Quality-Samples.md).
 
 Current app: `main` at `9fa521d`. The generator files are unchanged on `code-review-cleanup`, so this work branches from `main`.
 
@@ -63,6 +65,8 @@ The variant called the passage "a short story or a short informative text", and 
 | D3 | Length control | **Keep today's word-range wording.** Schema-based length control (§6) is an experiment, not part of this plan. |
 | D4 | Temperature by topic kind | **Phase 2, measured first** (§2.6). |
 | D5 | Evaluation | **A harness in `scripts/`**, run by hand before prompt changes land. It is not a CI step. |
+
+> *Update 2026-10-29:* as built (#31), D1 and D2 are looser. The schema asks for 3 distractors, but the app drops empty and duplicate options and accepts the exercise when 2 or 3 remain, so an exercise has 3 or 4 options. Duplicates cost a retry only when fewer than 2 distractors are left.
 
 ---
 
@@ -125,7 +129,7 @@ Descriptions stay short. Apple notes every description is sent as part of the sc
 
 ### 2.4 Repair and validation
 
-`Exercise.init?(generated:topic:skill:acceptedWordCount:)` grows a repair step before validation. Each rule is a small pure function in a new `ExerciseRepair` enum (in `Leo/Data/FoundationModels/`) so it can be tested without the model.
+`Exercise.init?(generated:topic:skill:acceptedWordCount:)` grows a repair step before validation. (*Update 2026-10-29:* as built it is `init(generated:topic:skill:acceptedWordCount:language:) throws(ExerciseRejection)`, and throws the rule that failed instead of returning `nil`.) Each rule is a small pure function in a new `ExerciseRepair` enum (in `Leo/Data/FoundationModels/`) so it can be tested without the model.
 
 Repairs, applied in this order:
 
@@ -141,9 +145,9 @@ Rejections (return `nil`, the generator tries the next topic):
 | Rule | Check |
 |---|---|
 | Passage length | `acceptedWordCount.contains(passage.wordCount)`, as today. |
-| Distractors | Exactly 3 after dropping empties and case-insensitive duplicates of each other or of the correct answer. |
+| Distractors | Exactly 3 after dropping empties and case-insensitive duplicates of each other or of the correct answer. *Update 2026-10-29:* 2 or 3, see the note under 1.3. |
 | Empty fields | Correct answer or question empty, as today. |
-| Self-reference | The passage matches a short phrase list per supported language: English "the author", "the writer", "the passage", "the text", "the main idea", "this shows", "this passage"; Spanish "el autor", "la autora", "el texto", "el pasaje", "la idea principal"; Portuguese "o autor", "a autora", "o texto", "a passagem", "a ideia principal". Case-insensitive, whole words. Other languages get no check. |
+| Self-reference | The passage matches a short phrase list per supported language: English "the author", "the writer", "the passage", "the text", "the main idea", "this shows", "this passage"; Spanish "el autor", "la autora", "el texto", "el pasaje", "la idea principal"; Portuguese "o autor", "a autora", "o texto", "a passagem", "a ideia principal". Case-insensitive, whole words. Other languages get no check. *Update 2026-10-29:* replaced by a narrower list in the #31 review, see §8. |
 | Standout correct answer | The correct answer's word count is more than 1.5 × the longest distractor's and at least 3 words longer. |
 
 The thresholds for the last two rules are tuned with the harness (§3) before the PR merges: the target is a rejection rate under 10% per attempt with the new prompts. If a rule rejects more than that, it ships as a log line only and is tightened later.
@@ -152,13 +156,13 @@ Logging: each rejection reason is logged with the skill and topic, so on-device 
 
 ### 2.5 Length
 
-The word-range wording is unchanged, including the 10–13 sentence request for 6–8, 9–11 and 12–14. The word "short" is never used next to the passage; the measured variant showed it costs 18+ around 40 words. The streamed runaway check and the 1,200-token cap stay.
+The word-range wording is unchanged, including the 10–13 sentence request for 6–8, 9–11 and 12–14. (*Update 2026-10-29:* since #47 every group gets a sentence count: 15–17 asks for 14 to 17 sentences and 18+ for 18 to 22. See the [Passage Length plan](Leo-Passage-Length-Plan.md).) The word "short" is never used next to the passage; the measured variant showed it costs 18+ around 40 words. The streamed runaway check and the 1,200-token cap stay.
 
 ### 2.6 Temperature by topic kind (phase 2)
 
 Apple's dynamic profile example uses 0.8 for creative tasks and 0.1–0.2 for precise ones. Leo uses 0.8 for everything. Plan:
 
-- Add `kind: TopicKind` (`.story`, `.informative`) to `DefaultTopic` and `RoundTopic`. Default topics whose prompt starts with "a story", "a short story", "a short fictional story" or "a short piece of literary fiction" are `.story`; the rest `.informative`. Custom topics are `.informative` for now.
+- Add `kind: TopicKind` (`.story`, `.informative`) to `DefaultTopic` and `RoundTopic`. Default topics whose prompt starts with "a story", "a short story", "a short fictional story" or "a short piece of literary fiction" are `.story`; the rest `.informative`. Custom topics are `.informative` for now. (*As built:* kinds are set by hand and a reader's own topic is `.open`, see §8.)
 - `GenerationOptions(temperature:)` becomes 0.8 for `.story`, 0.5 for `.informative`.
 - Informative prompts add one sentence: "Use well-known facts, and avoid exact figures and dates unless they are famous."
 
@@ -201,7 +205,7 @@ A model-as-judge check ("Can the question be answered from the passage alone, an
 ### 4.1 Existing tests that change
 
 - `ExerciseGeneratorPromptTests`: `instructions` also expects the role line and, for Spanish, the locale phrase; `prompt` expects "Skill to test:". The five prompt snapshots are re-recorded.
-- `ExerciseTests`: `wrongDistractorCount` now rejects 2 distractors too; `validInput` uses 3; `.fixture` argument order follows the new property order (labels keep it source-compatible).
+- `ExerciseTests`: `wrongDistractorCount` now rejects 2 distractors too (*as built:* it rejects 1 and 4, since 2 are accepted); `validInput` uses 3; `.fixture` argument order follows the new property order (labels keep it source-compatible).
 - `DefaultTopicsTests.comprehensionSkills`: unchanged. Add a check that every `promptHint` has at least three sentences.
 
 ### 4.2 New tests
@@ -227,6 +231,8 @@ A model-as-judge check ("Can the question be answered from the passage alone, an
 5. A purpose exercise on a story topic: the question says "the writer", never a character's name.
 6. Reduce the word range temporarily to force rejections, and confirm the log names the rule and the next topic is tried.
 
+> *Update 2026-10-29:* these were run on 2026-10-09 (results in #31's description). Since #52 a round has 3 to 9 texts, so check 1 means no more than 1 in 6 texts. Check 2's 150–230 words predates #47: the iPhone now writes 18+ passages of about 140 words, and the Mac's model longer ones (Passage Length plan, §3.5 and §3.6).
+
 ---
 
 ## 5. Docs
@@ -245,6 +251,8 @@ A model-as-judge check ("Can the question be answered from the passage alone, an
 4. **PR D, locale:** §2.7 and its tests.
 5. **PR E, temperature by kind:** §2.6, only with measurements. Closed without merging (#33), see §8.
 
+As shipped: C #29, A #30, B #31, D #32, and #34 for the 2026-10-20 temperature measurement.
+
 ## 7. Later: experiments
 
 Not in this plan. Each has a hypothesis and a pass criterion for the harness.
@@ -253,6 +261,8 @@ Not in this plan. Each has a hypothesis and a pass criterion for the harness.
 - **Passage as sentences.** `sentences: [String]` with `.count(8...11)` for 6–8 and 9–11 (`paragraphs` with `.count(2...3)` for 15+), joined by the app. Hypothesis: the constrained sampler enforces counts exactly, so lengths land in range without the list-like text the current sentence request produces. Pass: under-range rate under 10% and passages read as a story in hand checks.
 - **Evidence field.** An `evidence: String` property between `question` and `correctAnswer` ("the sentence in the passage the answer rests on"), following Apple's advice to give the model a reasoning field before the answer. Hypothesis: fewer unsupported correct answers. Cost: about 30 more output tokens.
 - **Model-as-judge in the harness** (§3).
+
+> *Update 2026-10-29:* the first three were tried on 2026-10-09, two `--all` runs each with the standout rule off, from code that was never committed. **Answers as one array** failed: no standout answers, but 9% of responses had zero or several correct flags, and the answer key was often wrong. **Passage as sentences** passed at 6–14 (under range 2 of 58 against 20 of 56, and passages read as more connected); the paragraph version for 15+ failed. **Evidence field:** no clear effect. An on-device judge was only useful for disagreeing with the answer key; its other flags were noise. The user postponed all of them on 2026-10-20.
 
 ---
 

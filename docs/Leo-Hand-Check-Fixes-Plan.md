@@ -1,5 +1,7 @@
 # Leo Hand-Check Fixes Plan
 
+**Status (2026-10-29):** shipped as #25 (PR 1, the progress dots) and #26 (PR 2, the intro fixes). F3 is detected differently from section 3.2: section 5 describes what was built. Since #52 a round has 3 to 9 texts, so the dot row holds up to nine dots, not six; notes marked *Update 2026-10-29* give the details.
+
 ## 1. Scope and sources
 
 On 2026-10-07 the launch intro (#23, #24) was hand-checked for Reduce Motion, the largest accessibility text size, and iPad/landscape, by recording cold launches on the iOS 27 simulators and stepping through the frames. Default size, the largest accessibility size, iPhone landscape and iPad portrait all swap seamlessly. Three things need fixing:
@@ -37,6 +39,8 @@ Capping alone isn't enough. At the largest standard size, Footnote scales 13 →
 | `.large` (36, Welcome) | 52.6 | **356** | 342 | 354 |
 
 So Welcome's large dots already overflow at xxxLarge, a standard (non-accessibility) setting, by up to 14 pt on 390 pt phones (computed, not observed). Narrow iPad windows (Slide Over, Stage Manager) have even less room.
+
+> *Update 2026-10-29:* with up to nine dots since #52, the row is wider still: nine large dots at the default size take 9 × 36 + 8 × 8 = 388 pt, more than the 354 pt column, so by this math Welcome shrinks them even at the default size. The shrinking row from 2.2 handles any count, but the narrow-frame component snapshot still uses 6 dots.
 
 ### 2.2 Fix
 
@@ -93,7 +97,7 @@ enum Exit { case move, fade }
 
 The header is hidden only while the intro is running **and** the exit is `.move`. With `.fade`, the header is part of the page and fades in with it, as D2 asks. The existing fade-in-place path (`opacity(isMoving && move == nil ? 0 : 1)`) and the Reduce Motion crossfade timing (0.2 s) are unchanged.
 
-Keep the environment key's name (`isLaunchIntroRunning`) or rename it to `hidesLaunchWordmarkTarget`, which says what it does now. The rename is preferred, since its value is no longer "is the intro running".
+Keep the environment key's name (`isLaunchIntroRunning`) or rename it to `hidesLaunchWordmarkTarget`, which says what it does now. The rename is preferred, since its value is no longer "is the intro running". (*Done:* it is `hidesLaunchWordmarkTarget`.)
 
 ### 3.2 A resize during the intro falls back to the fade (F3)
 
@@ -103,7 +107,7 @@ Keep the environment key's name (`isLaunchIntroRunning`) or rename it to `hidesL
 - Run the forced-landscape iPad build (3.4) and an iPhone landscape build, and compare.
 - **Expected:** on iPad, the last `.launch` update was taken before the rotation settled, and the iPhone, which launches already rotated, gets a correct frame. If instead an iPad already in landscape also gets a wrong frame, the fix below isn't enough. Stop and report back before continuing.
 
-**Step 2: fix.**
+**Step 2: fix.** (*Superseded:* the window size never changes from SwiftUI's point of view, so the fix compares the header's frame instead. See section 5; the test function is `LaunchIntro.exit(reduceMotion:hasTarget:headerMoved:)`.)
 
 - Record the window size on the first frame (`onGeometryChange(for: CGSize.self)` on the overlay's geometry, which ignores the safe area).
 - If the size changes while the intro is running, set the exit to `.fade` for the rest of the intro: the wordmark fades out in place over the move's 480 ms, and the header, no longer hidden, comes in with the page (3.1). Once it's set, it isn't switched back to `.move`.
@@ -134,7 +138,7 @@ Extract frames from the recording with `AVAssetImageGenerator` (there's no ffmpe
 2. **iPad landscape:** a throwaway build, not committed, with `INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad=UIInterfaceOrientationLandscapeRight INFOPLIST_KEY_UIRequiresFullScreen=YES` passed to `xcodebuild`. On the iPad Pro 11-inch (M5), iOS 27, it launches in portrait and rotates during the intro. The wordmark now fades out in place, with no jump at the swap.
 3. **iPhone landscape:** a throwaway build with `INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone=UIInterfaceOrientationLandscapeRight`, which launches already rotated. The move still plays and lands exactly, so the fallback doesn't trigger without a resize.
 4. **Default and AX5 portrait on iPhone and iPad:** the move is unchanged and the swap is seamless.
-5. **Not yet checked in the original pass:** taps on Start and the gear during the intro do nothing, and they work right after the swap.
+5. **Not yet checked in the original pass:** taps on Start and the gear during the intro do nothing, and they work right after the swap. (*Done 2026-10-07,* see the [Launch Screen plan](Leo-Launch-Screen-Plan.md), 4.1 check 5.)
 
 ### 3.5 Docs
 
