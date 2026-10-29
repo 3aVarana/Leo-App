@@ -8,11 +8,11 @@ extension ViewSnapshots {
     struct ExerciseViewSnapshotTests {
         /// A started round whose exercises are all ready, the first one being `first`.
         private func startedQuiz(first: Exercise = .fixture(), ageGroup: AgeGroup = .nine) async -> QuizViewModel {
-            let results = [first] + (1 ..< QuizViewModel.exerciseCount).map { _ in Exercise.fixture() }
+            let results = [first] + (1 ..< RoundSettings.defaultExerciseCount).map { _ in Exercise.fixture() }
             let stub = StubExerciseRepository(results: results.map { .success($0) })
             let quiz = QuizViewModel { _ in stub }
             quiz.configure(RoundSettings(ageGroup: ageGroup, topics: ["volcanoes", "rivers", "comets"]))
-            await waitUntil { stub.calls.count == QuizViewModel.exerciseCount }
+            await waitUntil { stub.calls.count == RoundSettings.defaultExerciseCount }
             quiz.start()
             return quiz
         }
@@ -95,7 +95,7 @@ extension ViewSnapshots {
         /// The button reads "See results".
         @Test func lastExerciseAnswered() async throws {
             let quiz = await startedQuiz()
-            for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+            for _ in 0 ..< RoundSettings.defaultExerciseCount - 1 {
                 quiz.finishReading()
                 quiz.select(0)
                 quiz.next()
@@ -108,7 +108,7 @@ extension ViewSnapshots {
         /// A wrong pick on the last text: the button reads "See results".
         @Test func lastExerciseMissed() async {
             let quiz = await startedQuiz()
-            for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+            for _ in 0 ..< RoundSettings.defaultExerciseCount - 1 {
                 quiz.finishReading()
                 quiz.select(0)
                 quiz.next()

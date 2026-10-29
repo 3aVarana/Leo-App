@@ -2,6 +2,8 @@ import SwiftUI
 
 struct WelcomeView: View {
     let ageGroup: AgeGroup
+    /// How many texts the round has.
+    let exerciseCount: Int
     /// This round's planned topics, in order. Empty until the round is prepared.
     let topicNames: [String]
     let onStart: () -> Void
@@ -40,12 +42,12 @@ struct WelcomeView: View {
             TopOffset(height: 120)
 
             Kicker("Today's round · readers \(ageGroup.displayName)", color: .leoAccent700)
-            Text("\(Self.spelledOutCount) short texts, written for you.")
+            Text("\(spelledOutCount) short texts, written for you.")
                 .leoTextStyle(.display(48))
                 .accessibilityAddTraits(.isHeader)
                 .padding(.top, 12)
             ProgressDots(
-                states: Array(repeating: .upcoming, count: QuizViewModel.exerciseCount),
+                states: Array(repeating: .upcoming, count: exerciseCount),
                 currentIndex: nil,
                 size: .large,
                 alignment: .leading,
@@ -64,10 +66,10 @@ struct WelcomeView: View {
     }
 
     /// "Six", in the reader's language.
-    private static var spelledOutCount: String {
+    private var spelledOutCount: String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .spellOut
-        let words = formatter.string(from: QuizViewModel.exerciseCount as NSNumber) ?? "\(QuizViewModel.exerciseCount)"
+        let words = formatter.string(from: exerciseCount as NSNumber) ?? "\(exerciseCount)"
         return words.prefix(1).localizedUppercase + words.dropFirst()
     }
 
@@ -90,6 +92,7 @@ struct WelcomeView: View {
 #Preview {
     WelcomeView(
         ageGroup: .nine,
+        exerciseCount: 6,
         topicNames: ["Volcanoes", "The solar system", "Pirates and treasure", "Inventors", "Rainforests"],
         onStart: {},
         onSettings: {},

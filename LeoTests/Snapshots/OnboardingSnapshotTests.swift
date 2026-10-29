@@ -35,7 +35,23 @@ extension ViewSnapshots {
             let view = NavigationStack {
                 OnboardingTopics(viewModel: .fixture(draft: ReaderPreferences(ageGroup: group)))
             }
-            assertViewSnapshot(of: view, named: "topics-\(group)", height: group == .fifteen ? 1300 : nil)
+            assertViewSnapshot(of: view, named: "topics-\(group)", height: group == .fifteen ? 1450 : nil)
+        }
+
+        /// The round section below the topics, as `OnboardingTopics` uses it. The whole topics screen at this
+        /// text size is taller than the 2700 points a snapshot can capture before it comes out blank.
+        @Test func roundRowAccessibilitySize() {
+            let view = OnboardingRoundSection(count: .constant(RoundSettings.defaultExerciseCount))
+                .foregroundStyle(Color.leoInk)
+                .leoReadableWidth()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .leoScreenBackground()
+            assertViewSnapshot(
+                of: view,
+                named: "round-ax",
+                sizeCategory: .accessibilityExtraExtraExtraLarge,
+                height: 700,
+            )
         }
     }
 }

@@ -7,7 +7,7 @@ extension ViewSnapshots {
     @MainActor
     struct GenerationFailedViewSnapshotTests {
         private func failed(at index: Int) -> some View {
-            let dots = (0 ..< QuizViewModel.exerciseCount).map { i -> DotState in
+            let dots = (0 ..< RoundSettings.defaultExerciseCount).map { i -> DotState in
                 i < index ? .done : i == index ? .failed : .upcoming
             }
             return GenerationFailedView(

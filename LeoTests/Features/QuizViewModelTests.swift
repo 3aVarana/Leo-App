@@ -67,7 +67,7 @@ struct QuizViewModelTests {
         let spy = spy ?? ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
         quiz.start()
         return quiz
     }
@@ -152,23 +152,23 @@ extension QuizViewModelTests {
         quiz.configure(settings)
         let stub = spy.latest
 
-        for index in 0 ..< QuizViewModel.exerciseCount {
+        for index in 0 ..< RoundSettings.defaultExerciseCount {
             await waitUntil { stub.waitingCount == 1 }
             await settle()
             #expect(stub.calls.count == index + 1)
             stub.resume(returning: .fixture())
         }
         await settle()
-        #expect(stub.calls.count == QuizViewModel.exerciseCount)
+        #expect(stub.calls.count == RoundSettings.defaultExerciseCount)
     }
 
     @Test func generatesWholeRoundBeforeStart() async {
         let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
         await settle()
-        #expect(spy.latest.calls.count == QuizViewModel.exerciseCount)
+        #expect(spy.latest.calls.count == RoundSettings.defaultExerciseCount)
         #expect(quiz.phase == .welcome)
     }
 }
@@ -202,7 +202,7 @@ extension QuizViewModelTests {
         _ = await startedQuiz(spy)
         await settle()
         #expect(spy.settings.count == 1)
-        #expect(spy.latest.calls.count == QuizViewModel.exerciseCount)
+        #expect(spy.latest.calls.count == RoundSettings.defaultExerciseCount)
     }
 }
 
@@ -275,7 +275,7 @@ extension QuizViewModelTests {
 
     @Test func lastExerciseFinishesRound() async {
         let quiz = await startedQuiz()
-        for index in 0 ..< QuizViewModel.exerciseCount - 1 {
+        for index in 0 ..< RoundSettings.defaultExerciseCount - 1 {
             #expect(!quiz.isLastExercise, "index \(index)")
             answer(quiz, correctly: true)
         }
@@ -301,7 +301,7 @@ extension QuizViewModelTests {
     @Test func practiceAgainStartsNewRound() async {
         let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = await startedQuiz(spy)
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             answer(quiz, correctly: true)
         }
         #expect(quiz.phase == .finished)
@@ -324,7 +324,7 @@ extension QuizViewModelTests {
                 quiz.start()
             }
             await waitUntil { quiz.phase == .answering }
-            for _ in 0 ..< QuizViewModel.exerciseCount {
+            for _ in 0 ..< RoundSettings.defaultExerciseCount {
                 #expect(quiz.phase == .answering, "round \(round)")
                 answer(quiz, correctly: true)
             }

@@ -16,12 +16,12 @@ extension ViewSnapshots {
                 disabled: [.twelve: ["mythology"]],
                 custom: [.twelve: ["Chess"]],
             )
-            assertViewSnapshot(of: settings(preferences), named: "12-14", height: 1000)
+            assertViewSnapshot(of: settings(preferences), named: "12-14", height: 1150)
         }
 
         /// The fewest suggested topics, and no Reset.
         @Test func sixToEight() {
-            assertViewSnapshot(of: settings(ReaderPreferences(ageGroup: .six)), named: "6-8", height: 1000)
+            assertViewSnapshot(of: settings(ReaderPreferences(ageGroup: .six)), named: "6-8", height: 1150)
         }
 
         /// 25 suggested topics.

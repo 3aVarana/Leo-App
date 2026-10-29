@@ -1,7 +1,7 @@
 @testable import Leo
 import Testing
 
-/// Checks `QuizViewModel.makePlan` over seeds `0..<100` for each topic count. With exactly 2 topics
+/// Checks `QuizViewModel.makePlan` over seeds `0..<100` for each topic count and round size. With exactly 2 topics
 /// the plan repeats a main topic back to back (exercises 1 and 2), but the app always has at
 /// least 3, so counts below 3 aren't tested.
 @MainActor
@@ -12,21 +12,31 @@ struct QuizPlanTests {
         (0 ..< count).map { RoundTopic(stringLiteral: "topic \($0)") }
     }
 
-    private func plan(_ topics: [RoundTopic], seed: UInt64) -> [QuizViewModel.PlanItem] {
+    private func plan(
+        _ topics: [RoundTopic],
+        count: Int = RoundSettings.defaultExerciseCount,
+        seed: UInt64,
+    ) -> [QuizViewModel.PlanItem] {
         var rng = SplitMix64(seed: seed)
-        return QuizViewModel.makePlan(topics: topics, using: &rng)
+        return QuizViewModel.makePlan(topics: topics, count: count, using: &rng)
     }
 
-    @Test(arguments: 3 ... 20)
-    func plan(topicCount: Int) {
+    @Test(arguments: 3 ... 20, RoundSettings.exerciseCountRange)
+    func plan(topicCount: Int, count: Int) {
         let topics = topics(topicCount)
         for seed in Self.seeds {
-            let plan = plan(topics, seed: seed)
+            let plan = plan(topics, count: count, seed: seed)
             let main = plan.map { $0.topics[0] }
+            let skills = plan.map(\.skill)
 
-            #expect(plan.count == QuizViewModel.exerciseCount, "seed \(seed)")
-            #expect(Set(plan.map(\.skill)) == Set(ComprehensionSkill.allCases), "seed \(seed)")
-            if topicCount >= QuizViewModel.exerciseCount {
+            #expect(plan.count == count, "seed \(seed)")
+            if count <= ComprehensionSkill.allCases.count {
+                #expect(Set(skills).count == count, "seed \(seed): \(skills)")
+            }
+            if count >= ComprehensionSkill.allCases.count {
+                #expect(Set(skills) == Set(ComprehensionSkill.allCases), "seed \(seed)")
+            }
+            if topicCount >= count {
                 #expect(Set(main).count == main.count, "seed \(seed)")
             } else {
                 for (previous, next) in zip(main, main.dropFirst()) {
@@ -41,11 +51,11 @@ struct QuizPlanTests {
         }
     }
 
-    @Test(arguments: [3, 6, 20])
-    func sameSeedSamePlan(topicCount: Int) {
+    @Test(arguments: [3, 6, 20], [3, 6, 9])
+    func sameSeedSamePlan(topicCount: Int, count: Int) {
         let topics = topics(topicCount)
         for seed in Self.seeds {
-            #expect(plan(topics, seed: seed) == plan(topics, seed: seed), "seed \(seed)")
+            #expect(plan(topics, count: count, seed: seed) == plan(topics, count: count, seed: seed), "seed \(seed)")
         }
     }
 

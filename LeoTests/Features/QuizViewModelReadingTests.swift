@@ -16,7 +16,7 @@ struct QuizViewModelReadingTests {
         let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
         quiz.start()
         return quiz
     }

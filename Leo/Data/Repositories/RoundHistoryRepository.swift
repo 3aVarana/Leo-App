@@ -67,7 +67,7 @@ final class SwiftDataRoundHistoryRepository: RoundHistoryRepository {
         try context.save()
     }
 
-    /// Doesn't touch `answers`, so the History list never faults in six passages per row: the
+    /// Doesn't touch `answers`, so the History list never faults in up to nine passages per row: the
     /// score and dots come from `results`, saved alongside it from the same answers.
     func summaries(for ageGroup: AgeGroup) throws -> [RoundSummary] {
         let raw = ageGroup.rawValue

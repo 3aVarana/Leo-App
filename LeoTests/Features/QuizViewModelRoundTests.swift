@@ -29,7 +29,7 @@ struct QuizViewModelRoundTests {
         let spy = spy ?? ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy, now: now, onRoundFinished: onRoundFinished)
         quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
         quiz.start()
         return quiz
     }
@@ -54,7 +54,7 @@ struct QuizViewModelRoundTests {
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 9 }
         quiz.start()
-        for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount - 1 {
             answer(quiz, correctly: true)
         }
         return quiz
@@ -77,7 +77,7 @@ extension QuizViewModelRoundTests {
         for correctly in [true, false, true, true, false, true] {
             answer(quiz, correctly: correctly)
         }
-        #expect(quiz.answers.map(\.index) == Array(0 ..< QuizViewModel.exerciseCount))
+        #expect(quiz.answers.map(\.index) == Array(0 ..< RoundSettings.defaultExerciseCount))
         #expect(quiz.answers.map(\.isCorrect) == [true, false, true, true, false, true])
         #expect(quiz.misses.map(\.index) == [1, 4])
         #expect(quiz.roundAgeGroup == .nine)
@@ -94,7 +94,7 @@ extension QuizViewModelRoundTests {
         }
         quiz.configure(otherSettings)
         #expect(quiz.phase == .finished)
-        #expect(quiz.answers.count == QuizViewModel.exerciseCount)
+        #expect(quiz.answers.count == RoundSettings.defaultExerciseCount)
         #expect(quiz.correctCount == 4)
         #expect(quiz.roundAgeGroup == .nine)
     }
@@ -102,7 +102,7 @@ extension QuizViewModelRoundTests {
     @Test func startClearsHistory() async {
         let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = await startedQuiz(spy)
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             answer(quiz, correctly: false)
         }
         quiz.configure(otherSettings)
@@ -136,7 +136,7 @@ extension QuizViewModelRoundTests {
         var finished: [RoundRecord] = []
         let quiz = await startedQuiz(onRoundFinished: { finished.append($0) })
 
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             answer(quiz, correctly: true)
         }
         quiz.next()
@@ -149,7 +149,7 @@ extension QuizViewModelRoundTests {
         var finished: [RoundRecord] = []
         let quiz = await startedQuiz(onRoundFinished: { finished.append($0) })
 
-        for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount - 1 {
             answer(quiz, correctly: true)
         }
 
@@ -160,13 +160,13 @@ extension QuizViewModelRoundTests {
         var finished: [RoundRecord] = []
         let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = await startedQuiz(spy, onRoundFinished: { finished.append($0) })
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             answer(quiz, correctly: true)
         }
 
         quiz.start()
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             answer(quiz, correctly: true)
         }
 
@@ -179,7 +179,7 @@ extension QuizViewModelRoundTests {
 
 extension QuizViewModelRoundTests {
     private func dots(_ quiz: QuizViewModel) -> [DotState] {
-        (0 ..< QuizViewModel.exerciseCount).map(quiz.dotState(at:))
+        (0 ..< RoundSettings.defaultExerciseCount).map(quiz.dotState(at:))
     }
 
     @Test func dotsOnWelcome() {
@@ -221,7 +221,7 @@ extension QuizViewModelRoundTests {
 
     @Test func dotsWhenFinished() async {
         let quiz = await startedQuiz()
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             answer(quiz, correctly: true)
         }
         #expect(dots(quiz) == Array(repeating: .done, count: 6))
@@ -239,7 +239,7 @@ extension QuizViewModelRoundTests {
 
         quiz.configure(settings)
         #expect(Set(quiz.plannedTopicNames) == Set(settings.topics.map(\.name)))
-        #expect(quiz.plannedTopicNames.count == QuizViewModel.exerciseCount)
+        #expect(quiz.plannedTopicNames.count == RoundSettings.defaultExerciseCount)
     }
 
     /// Three topics for six exercises: each name is listed once.

@@ -56,7 +56,7 @@ extension QuizViewModelGenerationTests {
         #expect(Set(calls[6].topics).isDisjoint(with: calls[1].topics))
 
         quiz.start()
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             #expect(quiz.phase == .answering)
             answer(quiz, correctly: true)
         }
@@ -71,7 +71,7 @@ extension QuizViewModelGenerationTests {
         await waitUntil { stub.waitingCount == 1 }
         stub.resume(with: failure)
 
-        for count in 2 ... QuizViewModel.exerciseCount {
+        for count in 2 ... RoundSettings.defaultExerciseCount {
             await waitUntil { stub.waitingCount == 1 }
             #expect(stub.calls.count == count)
             stub.resume(returning: .fixture())
@@ -111,10 +111,10 @@ extension QuizViewModelGenerationTests {
         await settle()
         #expect(spy.latest.calls.count == 9)
         #expect(spy.latest.waitingCount == 0)
-        #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+        #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
 
         quiz.start()
-        for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount - 1 {
             #expect(quiz.phase == .answering)
             answer(quiz, correctly: true)
         }
@@ -134,7 +134,7 @@ extension QuizViewModelGenerationTests {
         stub.resume(returning: .fixture())
         await settle()
         #expect(stub.calls.count == 9)
-        #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+        #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
 
         quiz.start()
         for _ in 0 ..< 4 {
@@ -154,7 +154,7 @@ extension QuizViewModelGenerationTests {
         await settle()
         #expect(quiz.phase == .answering)
 
-        for _ in 0 ..< QuizViewModel.exerciseCount - 2 {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount - 2 {
             answer(quiz, correctly: true)
         }
         quiz.finishReading()
@@ -164,21 +164,33 @@ extension QuizViewModelGenerationTests {
         #expect(quiz.phase == .failed)
     }
 
+    @Test(arguments: [3, 9])
+    func jobCountFollowsRoundSize(count: Int) async {
+        let spy = ExerciseRepositoryFactorySpy { .scripted("S F S S S S S S S S S S") }
+        let quiz = makeQuiz(spy)
+        quiz.configure(RoundSettings(ageGroup: settings.ageGroup, topics: settings.topics, exerciseCount: count))
+        #expect(quiz.jobCount == count)
+        await waitUntil { spy.latest.calls.count == count + 1 }
+        await settle()
+        #expect(quiz.jobCount == count)
+        #expect(spy.latest.calls.count == count + 1)
+    }
+
     @Test func jobCountInvariant() async {
         let spy = ExerciseRepositoryFactorySpy()
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
         let stub = spy.latest
-        #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+        #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
 
         // Jobs 1, 3 and 4 are replaced, job 5 isn't, and the replacement of job 4 fails.
         for succeeds in [false, true, false, false, false, true, true, true, false] {
             await waitUntil { stub.waitingCount == 1 }
-            #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+            #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
             stub.resume(with: succeeds ? .success(.fixture()) : failure)
         }
         await settle()
-        #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+        #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
         #expect(stub.calls.count == 9)
 
         quiz.start()
@@ -190,11 +202,11 @@ extension QuizViewModelGenerationTests {
         quiz.retry()
         for succeeds in [true, false] {
             await waitUntil { stub.waitingCount == 1 }
-            #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+            #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
             stub.resume(with: succeeds ? .success(.fixture()) : failure)
         }
         await settle()
-        #expect(quiz.jobCount == QuizViewModel.exerciseCount)
+        #expect(quiz.jobCount == RoundSettings.defaultExerciseCount)
         #expect(stub.calls.count == 11)
     }
 }
@@ -210,7 +222,7 @@ extension QuizViewModelGenerationTests {
         quiz.configure(settings)
         await waitUntil { spy.latest.calls.count == 9 }
         quiz.start()
-        for _ in 0 ..< QuizViewModel.exerciseCount - 1 {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount - 1 {
             answer(quiz, correctly: true)
         }
         return quiz
@@ -289,12 +301,12 @@ extension QuizViewModelGenerationTests {
         let spy = ExerciseRepositoryFactorySpy { .ready() }
         let quiz = makeQuiz(spy)
         quiz.configure(settings)
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
 
         quiz.retry()
         await settle()
         #expect(quiz.phase == .welcome)
-        #expect(spy.latest.calls.count == QuizViewModel.exerciseCount)
+        #expect(spy.latest.calls.count == RoundSettings.defaultExerciseCount)
     }
 
     @Test func retryWhileGeneratingDoesNothing() async {

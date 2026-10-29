@@ -7,7 +7,7 @@ extension ViewSnapshots {
     @MainActor
     struct LoadingViewSnapshotTests {
         private func dots(current index: Int) -> [DotState] {
-            (0 ..< QuizViewModel.exerciseCount).map { $0 < index ? .done : $0 == index ? .current : .upcoming }
+            (0 ..< RoundSettings.defaultExerciseCount).map { $0 < index ? .done : $0 == index ? .current : .upcoming }
         }
 
         @Test(arguments: [0, 5])

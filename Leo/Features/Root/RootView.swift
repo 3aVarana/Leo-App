@@ -49,6 +49,7 @@ struct RootView: View {
         case .welcome:
             WelcomeView(
                 ageGroup: ageGroup,
+                exerciseCount: preferences.roundSettings.exerciseCount,
                 topicNames: quiz.plannedTopicNames,
                 onStart: quiz.start,
                 onSettings: { viewModel.isShowingSettings = true },
@@ -92,7 +93,7 @@ struct RootView: View {
     }
 
     private var dots: [DotState] {
-        (0 ..< QuizViewModel.exerciseCount).map(quiz.dotState(at:))
+        (0 ..< quiz.exerciseCount).map(quiz.dotState(at:))
     }
 
     /// `nil` hides the History button (H6): no saved round to show yet.

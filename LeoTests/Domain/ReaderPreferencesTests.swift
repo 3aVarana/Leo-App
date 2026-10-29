@@ -15,11 +15,35 @@ struct ReaderPreferencesTests {
         #expect(preferences.disabledDefaultTopics.isEmpty)
         #expect(preferences.customTopics.isEmpty)
         #expect(preferences.isReadingTimerOn)
+        #expect(preferences.exercisesPerRound == 6)
+        #expect(preferences.roundSettings.exerciseCount == 6)
+    }
+
+    @Test func decodesExercisesPerRound() throws {
+        let preferences = try decode(#"{"ageGroup":"9-11","exercisesPerRound":9}"#)
+        #expect(preferences.exercisesPerRound == 9)
+        #expect(preferences.roundSettings.exerciseCount == 9)
+    }
+
+    /// Out-of-range stored values are clamped into 3...9, not reset to the default.
+    @Test(arguments: [(1, 3), (0, 3), (-5, 3), (3, 3), (9, 9), (10, 9), (42, 9)])
+    func clampsExercisesPerRound(stored: Int, expected: Int) throws {
+        let preferences = try decode(#"{"ageGroup":"9-11","exercisesPerRound":\#(stored)}"#)
+        #expect(preferences.exercisesPerRound == expected)
+        #expect(preferences.roundSettings.exerciseCount == expected)
     }
 
     @Test func decodesReadingTimerOff() throws {
         let preferences = try decode(#"{"ageGroup":"9-11","isReadingTimerOn":false}"#)
         #expect(!preferences.isReadingTimerOn)
+    }
+
+    @Test func roundTripsExercisesPerRound() throws {
+        var preferences = ReaderPreferences(ageGroup: .twelve)
+        preferences.exercisesPerRound = 4
+        let decoded = try JSONDecoder().decode(ReaderPreferences.self, from: JSONEncoder().encode(preferences))
+        #expect(decoded.exercisesPerRound == 4)
+        #expect(decoded == preferences)
     }
 
     @Test func unknownAgeGroupThrows() {
@@ -138,8 +162,21 @@ struct ReaderPreferencesTests {
         #expect(copy.roundSettings != preferences.roundSettings)
     }
 
+    @Test func roundSettingsFollowExercisesPerRound() {
+        let preferences = ReaderPreferences.fixture(ageGroup: .twelve)
+        #expect(preferences.roundSettings.exerciseCount == 6)
+
+        var copy = preferences
+        copy.exercisesPerRound = 8
+        #expect(copy.roundSettings.exerciseCount == 8)
+        #expect(copy.roundSettings != preferences.roundSettings)
+        #expect(copy.roundSettings.topics == preferences.roundSettings.topics)
+    }
+
     @Test func limits() {
         #expect(ReaderPreferences.minimumEnabledTopics == 3)
         #expect(ReaderPreferences.maximumCustomTopics == 20)
+        #expect(RoundSettings.exerciseCountRange == 3 ... 9)
+        #expect(RoundSettings.defaultExerciseCount == 6)
     }
 }

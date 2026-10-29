@@ -108,6 +108,26 @@ extension RootViewModelTests {
         #expect(repository.saved == [editor.draft])
     }
 
+    @Test func onboardingEditorStartsAtSixTexts() {
+        let root = makeRoot()
+        let editor = root.makeOnboardingEditor()
+        #expect(editor.draft.exercisesPerRound == 6)
+
+        editor.save()
+        #expect(repository.saved.map(\.exercisesPerRound) == [6])
+        #expect(root.preferences?.roundSettings.exerciseCount == 6)
+    }
+
+    @Test func onboardingEditorSavesTextsPerRound() {
+        let root = makeRoot()
+        let editor = root.makeOnboardingEditor()
+
+        editor.draft.exercisesPerRound = 3
+        editor.save()
+        #expect(repository.saved.map(\.exercisesPerRound) == [3])
+        #expect(root.preferences?.roundSettings.exerciseCount == 3)
+    }
+
     @Test func settingsEditorIsNilBeforeOnboarding() {
         #expect(makeRoot().makeSettingsEditor() == nil)
     }
@@ -142,9 +162,9 @@ extension RootViewModelTests {
         )
 
         root.preferencesDidChange()
-        await waitUntil { spy.latest.calls.count == QuizViewModel.exerciseCount }
+        await waitUntil { spy.latest.calls.count == RoundSettings.defaultExerciseCount }
         quiz.start()
-        for _ in 0 ..< QuizViewModel.exerciseCount {
+        for _ in 0 ..< RoundSettings.defaultExerciseCount {
             let exercise = try #require(quiz.currentExercise)
             quiz.finishReading()
             quiz.select(exercise.correctIndex)

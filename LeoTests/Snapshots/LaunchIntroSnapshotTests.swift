@@ -9,7 +9,7 @@ extension ViewSnapshots {
         private let topics = ["Volcanoes", "The solar system", "Pirates and treasure", "Inventors", "Rainforests"]
 
         private func welcome(intro phase: LaunchIntro.Phase, reduceMotion: Bool? = nil) -> some View {
-            WelcomeView(ageGroup: .six, topicNames: topics, onStart: {}, onSettings: {})
+            WelcomeView(ageGroup: .six, exerciseCount: 6, topicNames: topics, onStart: {}, onSettings: {})
                 .modifier(LaunchIntroModifier(initialPhase: phase, plays: false, reduceMotion: reduceMotion))
         }
 
